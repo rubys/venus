@@ -54,10 +54,10 @@
     <div class="content">
       <xsl:choose>
         <xsl:when test="atom:content">
-          <p><xsl:copy-of select="atom:content/*"/></p>
+          <xsl:copy-of select="atom:content/*"/>
         </xsl:when>
         <xsl:otherwise>
-          <p><xsl:copy-of select="atom:summary/*"/></p>
+          <xsl:copy-of select="atom:summary/*"/>
         </xsl:otherwise>
       </xsl:choose>
     </div>

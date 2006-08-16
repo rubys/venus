@@ -21,6 +21,10 @@ def splice(configFile):
     doc = minidom.parseString('<feed xmlns="http://www.w3.org/2005/Atom"/>')
     feed = doc.documentElement
 
+    # insert Google/LiveJournal's noindex
+    feed.setAttribute('indexing:index','no')
+    feed.setAttribute('xmlns:indexing','urn:atom-extension:indexing')
+
     # insert feed information
     createTextElement(feed, 'title', config.name())
 
