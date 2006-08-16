@@ -86,10 +86,11 @@ def links(xentry, entry):
     if not entry.has_key('links'): return
     xdoc = xentry.ownerDocument
     for link in entry.links:
+        if not 'href' in link.keys(): continue
         xlink = xdoc.createElement('link')
-        xlink.setAttribute('type', link.type)
+        xlink.setAttribute('type', link.get('type',None))
         xlink.setAttribute('href', link.href)
-        xlink.setAttribute('rel', link.rel)
+        xlink.setAttribute('rel', link.get('rel',None))
         xentry.appendChild(xlink)
 
 def date(xentry, name, parsed):
