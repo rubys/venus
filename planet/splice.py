@@ -1,7 +1,7 @@
 """ Splice together a planet from a cache of feed entries """
 import glob, os
-from planet import config
 from xml.dom import minidom
+import config
 from reconstitute import createTextElement
 
 def splice(configFile):
