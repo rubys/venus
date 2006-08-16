@@ -3,8 +3,10 @@ Fetch either a single feed, or a set of feeds, normalize to Atom and XHTML,
 and write each as a set of entries in a cache directory.
 """
 
-from planet import config, feedparser, reconstitute
+# Standard library modules
 import time, calendar, re, os
+# Planet modules
+import config, feedparser, reconstitute
 
 try:
     from xml.dom.ext import PrettyPrint

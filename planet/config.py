@@ -7,7 +7,7 @@ the structure of the ini file, to knowledge of data types, even down to
 what are the defaults.
 
 Usage:
-  from planet import config
+  import config
   config.load('config.ini')
 
   # administrative / structural information
@@ -35,7 +35,7 @@ planet_predefined_options = []
 
 def __init__():
     """define the struture of an ini file"""
-    from planet import config
+    import config
 
     def get(section, option, default):
         if section and parser.has_option(section, option):
@@ -95,7 +95,7 @@ def planet_options():
 
 def feed_options(section):
     """ dictionary of feed specific options"""
-    from planet import config
+    import config
     options = dict([(key,value) for key,value in planet_options().items()
         if key not in planet_predefined_options])
     if parser.has_section(section):
