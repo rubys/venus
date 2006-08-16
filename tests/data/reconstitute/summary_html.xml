@@ -1,0 +1,10 @@
+<!--
+Description:  entity encoded html summary
+Expect:       summary_detail.value == u'D\xe9tente' and summary_detail.type=='text/plain'
+-->
+
+<feed xmns="http://www.w3.org/2005/Atom">
+  <entry>
+    <summary type="html">D&amp;eacute;tente</summary>
+  </entry>
+</feed>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Sam Ruby</title>
+    <link>http://intertwingly.net/code/venus/tests/data/spider/testfeed3.rss</link>
+    <description>It’s just data</description>
+
+    <item>
+      <guid>tag:planet.intertwingly.net,2006:testfeed3/1</guid>
+      <link href="http://example.com/1"/>
+      <title>Mercury</title>
+      <description>Messenger of the Roman Gods</description>
+      <pubDate>Sun, 01 Jan 2006 00:00:00 +0000</pubDate>
+    </item>
+
+    <item>
+      <guid>tag:planet.intertwingly.net,2006:testfeed3/2</guid>
+      <link>http://example.com/2</link>
+      <title>Venus</title>
+      <description>the Morning Star</description>
+    </item>
+
+    <item>
+      <link>http://example.com/3</link>
+      <title>Earth</title>
+      <description>the Blue Planet</description>
+      <pubDate>Tue, 03 Jan 2006 00:00:00 +0000</pubDate>
+    </item>
+
+    <entry>
+      <link href="http://example.com/4"/>
+      <title>Mars</title>
+      <description>the Red Planet</description>
+    </entry>
+
+</feed>
+

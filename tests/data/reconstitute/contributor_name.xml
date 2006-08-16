@@ -1,0 +1,13 @@
+<!--
+Description:  contributor name
+Expect:       contributors[0].name == 'John Doe'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <contributor>
+      <name>John Doe</name>
+    </contributor>
+  </entry>
+</feed>
+

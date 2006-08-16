@@ -1,0 +1,10 @@
+<!--
+Description:  source subtitle
+Expect:       source.subtitle == 'snarky phrase'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <subtitle>snarky phrase</subtitle>
+  <entry/>
+</feed>
+

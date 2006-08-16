@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<entry xmlns='http://www.w3.org/2005/Atom' xmlns:planet='http://planet.intertwingly.net/'>
+  <id>tag:planet.intertwingly.net,2006:testfeed1/3</id>
+  <link href='http://example.com/3' type='text/html' rel='alternate'/>
+  <title>Earth</title>
+  <content>the Blue Planet</content>
+  <updated>2006-01-03T00:00:00Z</updated>
+  <source>
+    <id>tag:planet.intertwingly.net,2006:testfeed1</id>
+    <author>
+      <name>Sam Ruby</name>
+      <email>rubys@intertwingly.net</email>
+      <uri>http://www.intertwingly.net/blog/</uri>
+    </author>
+    <link href='http://intertwingly.net/code/venus/tests/data/spider/testfeed1a.atom' type='application/atom+xml' rel='self'/>
+    <link href='http://www.intertwingly.net/blog/' type='text/html' rel='alternate'/>
+    <subtitle>It’s just data</subtitle>
+    <title>Sam Ruby</title>
+    <updated>2006-06-17T00:15:18Z</updated>
+    <planet:name>one</planet:name>
+  </source>
+</entry>

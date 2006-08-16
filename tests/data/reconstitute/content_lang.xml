@@ -1,0 +1,10 @@
+<!--
+Description:  content value
+Expect:       content[0].language == 'en-us'
+-->
+
+<feed xmns="http://www.w3.org/2005/Atom">
+  <entry>
+    <content xml:lang="en-us">foo</content>
+  </entry>
+</feed>

@@ -1,0 +1,10 @@
+<!--
+Description:  improperly nested tags
+Expect:       content[0].value == 'This is <b><i>very</i></b> confused'
+-->
+
+<feed xmns="http://www.w3.org/2005/Atom">
+  <entry>
+    <content type="html">This is &lt;B&gt;&lt;i;&gt;very&lt;/b&gt;&lt;/I&gt; confused</content>
+  </entry>
+</feed>

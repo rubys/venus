@@ -1,0 +1,10 @@
+<!--
+Description:  illegal control character
+Expect:       content[0].value == u'Page 1<acronym title="U+000c">\ufffd</acronym>Page 2'
+-->
+
+<feed xmns="http://www.w3.org/2005/Atom">
+  <entry>
+    <content type="html">Page 1&#12;Page 2</content>
+  </entry>
+</feed>

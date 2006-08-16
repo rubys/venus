@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <link rel="self" href="http://intertwingly.net/code/venus/tests/data/spider/testfeed1a.atom"/>
+  <id>tag:planet.intertwingly.net,2006:testfeed1</id>
+
+  <title>Sam Ruby</title>
+  <subtitle>It’s just data</subtitle>
+  <author>
+    <name>Sam Ruby</name>
+    <email>rubys@intertwingly.net</email>
+    <uri>http://www.intertwingly.net/blog/</uri>
+  </author>
+  <updated>2006-06-16T20:15:18-04:00</updated>
+  <link href="http://www.intertwingly.net/blog/"/>
+
+  <entry>
+    <id>tag:planet.intertwingly.net,2006:testfeed1/1</id>
+    <link href="http://example.com/1"/>
+    <title>Mercury</title>
+    <content>Messenger of the Roman Gods</content>
+    <updated>2006-01-01T00:00:00Z</updated>
+  </entry>
+
+  <entry>
+    <id>tag:planet.intertwingly.net,2006:testfeed1/2</id>
+    <link href="http://example.com/2"/>
+    <title>Venus</title>
+    <content>the Jewel of the Sky</content>
+    <published>2006-01-02T00:00:00Z</published>
+    <updated>2006-02-02T00:00:00Z</updated>
+  </entry>
+
+  <entry>
+    <id>tag:planet.intertwingly.net,2006:testfeed1/3</id>
+    <link href="http://example.com/3"/>
+    <title>Earth</title>
+    <content>the Blue Planet</content>
+    <updated>2006-01-03T00:00:00Z</updated>
+  </entry>
+
+  <entry>
+    <id>tag:planet.intertwingly.net,2006:testfeed1/4</id>
+    <link href="http://example.com/4"/>
+    <title>Mars</title>
+    <content>the Red Planet</content>
+    <updated>2006-01-04T00:00:00Z</updated>
+  </entry>
+
+</feed>
+

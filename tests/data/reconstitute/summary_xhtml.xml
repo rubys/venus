@@ -1,0 +1,13 @@
+<!--
+Description:  xhtml summary
+Expect:       summary_detail.value == 'A <b>very</b> bad day'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <summary type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">A <b>very</b> bad day</div>
+    </summary>
+  </entry>
+</feed>
+

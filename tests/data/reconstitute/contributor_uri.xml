@@ -1,0 +1,13 @@
+<!--
+Description:  contributor name
+Expect:       contributors[0].href == 'http://example.com/~john/'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <contributor>
+      <uri>http://example.com/~john/</uri>
+    </contributor>
+  </entry>
+</feed>
+

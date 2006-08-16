@@ -1,0 +1,10 @@
+<!--
+Description:  source title
+Expect:       source.title == 'visible name'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>visible name</title>
+  <entry/>
+</feed>
+

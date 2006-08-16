@@ -1,0 +1,10 @@
+<!--
+Description:  summary value
+Expect:       summary_detail.language == 'en-us'
+-->
+
+<feed xmns="http://www.w3.org/2005/Atom">
+  <entry>
+    <summary xml:lang="en-us">foo</summary>
+  </entry>
+</feed>

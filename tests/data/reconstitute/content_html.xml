@@ -1,0 +1,10 @@
+<!--
+Description:  entity encoded html content
+Expect:       content[0].value == u'D\xe9tente' and content[0].type=='text/plain'
+-->
+
+<feed xmns="http://www.w3.org/2005/Atom">
+  <entry>
+    <content type="html">D&amp;eacute;tente</content>
+  </entry>
+</feed>

@@ -1,0 +1,10 @@
+<!--
+Description:  source icon
+Expect:       source.icon == 'http://www.example.com/favicon.ico'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <icon>http://www.example.com/favicon.ico</icon>
+  <entry/>
+</feed>
+

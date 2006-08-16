@@ -1,0 +1,12 @@
+<!--
+Description:  source author
+Expect:       source.author_detail.name == 'John Doe'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <author>
+    <name>John Doe</name>
+  </author>
+  <entry/>
+</feed>
+

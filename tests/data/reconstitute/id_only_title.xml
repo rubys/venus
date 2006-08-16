@@ -1,0 +1,13 @@
+<!--
+Description:  id generated from title
+Expect:       id == 'http://example.com//d5d3db1765287eef77d7927cc956f50a'
+-->
+
+<rss xml:base="http://example.com/">
+  <channel>
+    <item>
+      <title>title</title>
+    </item>
+  </channel>
+</rss>
+

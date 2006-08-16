@@ -1,0 +1,10 @@
+<!--
+Description:  source updated, rollover past midnight on feb 28 in leap year
+Expect:       source.updated_parsed == (2004, 2, 29, 2, 14, 55, 6, 60, 0)
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <updated>2004-02-28T18:14:55-08:00</updated>
+  <entry/>
+</feed>
+

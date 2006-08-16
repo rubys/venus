@@ -1,0 +1,10 @@
+<!--
+Description:  source logo
+Expect:       source.logo == 'http://www.example.com/logo.jpg'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <logo>http://www.example.com/logo.jpg</logo>
+  <entry/>
+</feed>
+

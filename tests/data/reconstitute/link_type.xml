@@ -1,0 +1,11 @@
+<!--
+Description:  link relationship
+Expect:       links[0].type == 'text/html'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <link href="http://example.com/1"/>
+  </entry>
+</feed>
+
