@@ -14,8 +14,8 @@ except:
     PrettyPrint = None
 
 # Regular expressions to sanitise cache filenames
-re_url_scheme    = re.compile(r'^[^:]*://')
-re_slash         = re.compile(r'[?/]+')
+re_url_scheme    = re.compile(r'^\w+:/*(\w+:|www\.)?')
+re_slash         = re.compile(r'[?/:]+')
 re_initial_cruft = re.compile(r'^[,.]*')
 re_final_cruft   = re.compile(r'[,.]*$')
 
@@ -68,9 +68,13 @@ def spiderFeed(feed):
         xml = reconstitute.reconstitute(data, entry)
         
         file = open(out,'w')
-        if PrettyPrint:
+        try:
             PrettyPrint(reconstitute.reconstitute(data, entry), file)
-        else:
+        except:
+            # known reasons for failure include no pretty printer installed,
+            # and absurdly high levels of markup nesting causing Python to
+            # declare infinite recursion.
+            file.seek(0)
             file.write(reconstitute.reconstitute(data, entry).toxml('utf-8'))
         file.close()
 

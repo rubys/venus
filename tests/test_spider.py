@@ -24,8 +24,12 @@ class SpiderTest(unittest.TestCase):
     def test_filename(self):
         self.assertEqual('./example.com,index.html',
             filename('.', 'http://example.com/index.html'))
-        self.assertEqual('./www.xn--8ws00zhy3a.com',
+        self.assertEqual('./xn--8ws00zhy3a.com',
             filename('.', u'http://www.\u8a79\u59c6\u65af.com/'))
+        self.assertEqual('./planet.intertwingly.net,2006,testfeed1,1',
+            filename('.', u'tag:planet.intertwingly.net,2006:testfeed1,1'))
+        self.assertEqual('./00000000-0000-0000-0000-000000000000',
+            filename('.', u'urn:uuid:00000000-0000-0000-0000-000000000000'))
 
     def test_spiderFeed(self):
         config.load(configfile)
@@ -37,7 +41,7 @@ class SpiderTest(unittest.TestCase):
 
         # verify that the file names are as expected
         self.assertTrue(workdir + 
-            '/tag:planet.intertwingly.net,2006:testfeed1,1' in files)
+            '/planet.intertwingly.net,2006,testfeed1,1' in files)
 
         # verify that the file timestamps match atom:updated
         for file in files:
@@ -59,7 +63,7 @@ class SpiderTest(unittest.TestCase):
 
         # verify that the file names are as expected
         self.assertTrue(workdir + 
-            '/tag:planet.intertwingly.net,2006:testfeed1,1' in files)
+            '/planet.intertwingly.net,2006,testfeed1,1' in files)
         self.assertTrue(workdir + 
-            '/tag:planet.intertwingly.net,2006:testfeed2,1' in files)
+            '/planet.intertwingly.net,2006,testfeed2,1' in files)
 
