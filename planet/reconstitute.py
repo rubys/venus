@@ -18,6 +18,7 @@ from xml.sax.saxutils import escape
 from xml.dom import minidom
 from BeautifulSoup import BeautifulSoup
 from xml.parsers.expat import ExpatError
+import planet
 
 illegal_xml_chars = re.compile("[\x01-\x08\x0B\x0C\x0E-\x1F]")
 
@@ -141,10 +142,9 @@ def content(xentry, name, detail, bozo):
 
     xentry.appendChild(xcontent)
 
-def source(xentry, source, bozo):
+def source(xsource, source, bozo):
     """ copy source information to the entry """
-    xdoc = xentry.ownerDocument
-    xsource = xdoc.createElement('source')
+    xdoc = xsource.ownerDocument
 
     createTextElement(xsource, 'id', source.get('id', None))
     createTextElement(xsource, 'icon', source.get('icon', None))
@@ -164,16 +164,14 @@ def source(xentry, source, bozo):
 
     # propagate planet inserted information
     for key, value in source.items():
-        if key.startswith('planet:'):
-            createTextElement(xsource, key, value)
-
-    xentry.appendChild(xsource)
+        if key.startswith('planet_'):
+            createTextElement(xsource, key.replace('_',':',1), value)
 
 def reconstitute(feed, entry):
     """ create an entry document from a parsed feed """
     xdoc=minidom.parseString('<entry xmlns="http://www.w3.org/2005/Atom"/>\n')
     xentry=xdoc.documentElement
-    xentry.setAttribute('xmlns:planet','http://planet.intertwingly.net/')
+    xentry.setAttribute('xmlns:planet',planet.xmlns)
 
     id(xentry, entry)
     links(xentry, entry)
@@ -191,6 +189,8 @@ def reconstitute(feed, entry):
     for contributor in entry.get('contributors',[]):
         author(xentry, 'contributor', contributor)
 
-    source(xentry, entry.get('source', feed.feed), bozo)
+    xsource = xdoc.createElement('source')
+    source(xsource, entry.get('source', feed.feed), bozo)
+    xentry.appendChild(xsource)
 
     return xdoc

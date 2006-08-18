@@ -26,7 +26,7 @@ Todo:
   * error handling (example: no planet section)
 """
 
-import sys
+import os, sys
 from ConfigParser import ConfigParser
 
 parser = ConfigParser()
@@ -82,6 +82,12 @@ def load(file):
 def template_files():
     """ list the templates defined """
     return parser.get('Planet','template_files').split(' ')
+
+def cache_sources_directory():
+    if parser.has_option('Planet', 'cache_sources_directory'):
+        parser.get('Planet', 'cache_sources_directory')
+    else:
+        return os.path.join(cache_directory(), 'sources')
 
 def feeds():
     """ list the feeds defined """

@@ -1,8 +1,9 @@
 """ Splice together a planet from a cache of feed entries """
 import glob, os
 from xml.dom import minidom
-import config
+import planet, config, feedparser, reconstitute
 from reconstitute import createTextElement
+from spider import filename
 
 def splice(configFile):
     """ Splice together a planet from a cache of entries """
@@ -11,7 +12,8 @@ def splice(configFile):
     log = planet.getLogger(config.log_level())
 
     cache = config.cache_directory()
-    dir=[(os.stat(file).st_mtime,file) for file in glob.glob(cache+"/*")]
+    dir=[(os.stat(file).st_mtime,file) for file in glob.glob(cache+"/*")
+        if not os.path.isdir(file)]
     dir.sort()
     dir.reverse()
 
@@ -34,17 +36,14 @@ def splice(configFile):
         feed.appendChild(entry.documentElement)
 
     # insert subscription information
-    feed.setAttribute('xmlns:planet','http://planet.intertwingly.net/')
+    feed.setAttribute('xmlns:planet',planet.xmlns)
+    sources = config.cache_sources_directory()
     for sub in config.feeds():
-        name = config.feed_options(sub).get('name','')
-        xsub = doc.createElement('planet:subscription')
-        xlink = doc.createElement('link')
-        xlink.setAttribute('rel','self')
-        xlink.setAttribute('href',sub.decode('utf-8'))
-        xsub.appendChild(xlink)
-        xname = doc.createElement('planet:name')
-        xname.appendChild(doc.createTextNode(name.decode('utf-8')))
-        xsub.appendChild(xname)
-        feed.appendChild(xsub)
+        data=feedparser.parse(filename(sources,sub))
+        if not data.feed: continue
+        xdoc=minidom.parseString('''<planet:source xmlns:planet="%s"
+             xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
+        reconstitute.source(xdoc.documentElement, data.feed, data.bozo)
+        feed.appendChild(xdoc.documentElement)
 
     return doc

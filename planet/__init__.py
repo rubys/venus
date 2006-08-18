@@ -1,3 +1,5 @@
+xmlns = 'http://planet.intertwingly.net/'
+
 logger = None
 
 def getLogger(level):

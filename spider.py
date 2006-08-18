@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Main program to run just the spider portion of planet
 """

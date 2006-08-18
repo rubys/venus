@@ -19,13 +19,15 @@
 
           <h2>Subscriptions</h2>
           <ul>
-            <xsl:for-each select="planet:subscription">
+            <xsl:for-each select="planet:source">
               <xsl:sort select="planet:name"/>
               <li>
                 <a href="{atom:link[@rel='self']/@href}" title="subscribe">
                   <img src="images/feed-icon-10x10.png" alt="(feed)"/>
                 </a>
-                <xsl:value-of select="planet:name"/>
+                <a href="{atom:link[@rel='alternate']/@href}">
+                  <xsl:value-of select="planet:name"/>
+                </a>
               </li>
             </xsl:for-each>
           </ul>

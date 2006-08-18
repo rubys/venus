@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<entry xmlns='http://www.w3.org/2005/Atom' xmlns:planet='http://planet.intertwingly.net/'>
+  <id>tag:planet.intertwingly.net,2006:testfeed3/2</id>
+  <link href='http://example.com/2' type='text/html' rel='alternate'/>
+  <title>Venus</title>
+  <summary>the Morning Star</summary>
+  <updated>2006-08-18T18:30:50Z</updated>
+  <source>
+    <link href='http://intertwingly.net/code/venus/tests/data/spider/testfeed3.rss' type='text/html' rel='alternate'/>
+    <link href='tests/data/spider/testfeed3.rss' type='application/atom+xml' rel='self'/>
+    <subtitle>It’s just data</subtitle>
+    <title>Sam Ruby</title>
+    <planet:name>three</planet:name>
+  </source>
+</entry>

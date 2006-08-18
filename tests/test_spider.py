@@ -17,6 +17,10 @@ class SpiderTest(unittest.TestCase):
              os.makedirs(workdir)
     
     def tearDown(self):
+        for file in glob.glob(workdir+"/sources/*"):
+             os.unlink(file)
+        if os.path.exists(workdir+"/sources"):
+            os.rmdir(workdir+"/sources")
         for file in glob.glob(workdir+"/*"):
              os.unlink(file)
         os.removedirs(workdir)
@@ -36,8 +40,8 @@ class SpiderTest(unittest.TestCase):
         spiderFeed(testfeed % '1b')
         files = glob.glob(workdir+"/*")
 
-        # verify that exactly four files were produced
-        self.assertEqual(4, len(files))
+        # verify that exactly four files + one sources dir were produced
+        self.assertEqual(5, len(files))
 
         # verify that the file names are as expected
         self.assertTrue(workdir + 
@@ -45,6 +49,7 @@ class SpiderTest(unittest.TestCase):
 
         # verify that the file timestamps match atom:updated
         for file in files:
+            if file.endswith('/sources'): continue
             data = feedparser.parse(file)
             self.assertTrue(data.entries[0].source.planet_name)
             self.assertEqual(os.stat(file).st_mtime,
@@ -58,8 +63,8 @@ class SpiderTest(unittest.TestCase):
         spiderPlanet(configfile)
         files = glob.glob(workdir+"/*")
 
-        # verify that exactly eight files were produced
-        self.assertEqual(12, len(files))
+        # verify that exactly eight files + 1 source dir were produced
+        self.assertEqual(13, len(files))
 
         # verify that the file names are as expected
         self.assertTrue(workdir + 

@@ -5,8 +5,9 @@ and write each as a set of entries in a cache directory.
 
 # Standard library modules
 import time, calendar, re, os
+from xml.dom import minidom
 # Planet modules
-import config, feedparser, reconstitute
+import planet, config, feedparser, reconstitute
 
 try:
     from xml.dom.ext import PrettyPrint
@@ -40,15 +41,45 @@ def filename(directory, filename):
 
     return os.path.join(directory, filename)
 
+def write(xdoc, out):
+    """ write the document out to disk """
+    file = open(out,'w')
+    try:
+        PrettyPrint(xdoc, file)
+    except:
+        # known reasons for failure include no pretty printer installed,
+        # and absurdly high levels of markup nesting causing Python to
+        # declare infinite recursion.
+        file.seek(0)
+        file.write(xdoc.toxml('utf-8'))
+    file.close()
+    xdoc.unlink()
+
 def spiderFeed(feed):
     """ Spider (fetch) a single feed """
     data = feedparser.parse(feed)
-    cache = config.cache_directory()
+    if not data.feed: return
 
-    # capture data from the planet configuration file
+    # capture feed and data from the planet configuration file
+    if not data.feed.has_key('links'): data.feed['links'] = list()
+    for link in data.feed.links:
+        if link.rel == 'self': break
+    else:
+        data.feed.links.append(feedparser.FeedParserDict(
+            {'rel':'self', 'type':'application/atom+xml', 'href':feed}))
     for name, value in config.feed_options(feed).items():
-        data.feed['planet:'+name] = value
+        data.feed['planet_'+name] = value
     
+    # write the feed info to the cache
+    sources = config.cache_sources_directory()
+    if not os.path.exists(sources): os.makedirs(sources)
+    xdoc=minidom.parseString('''<feed xmlns:planet="%s"
+      xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
+    reconstitute.source(xdoc.documentElement, data.feed, data.bozo)
+    write(xdoc, filename(sources, feed))
+
+    # write each entry to the cache
+    cache = config.cache_directory()
     for entry in data.entries:
         if not entry.has_key('id'):
             entry['id'] = reconstitute.id(None, entry)
@@ -65,24 +96,11 @@ def spiderFeed(feed):
                 mtime = time.time()
             entry['updated_parsed'] = time.gmtime(mtime)
 
-        xml = reconstitute.reconstitute(data, entry)
-        
-        file = open(out,'w')
-        try:
-            PrettyPrint(reconstitute.reconstitute(data, entry), file)
-        except:
-            # known reasons for failure include no pretty printer installed,
-            # and absurdly high levels of markup nesting causing Python to
-            # declare infinite recursion.
-            file.seek(0)
-            file.write(reconstitute.reconstitute(data, entry).toxml('utf-8'))
-        file.close()
-
+        write(reconstitute.reconstitute(data, entry), out) 
         os.utime(out, (mtime, mtime))
 
 def spiderPlanet(configFile):
     """ Spider (fetch) an entire planet """
-    import planet
     config.load(configFile)
     log = planet.getLogger(config.log_level())
     planet.setTimeout(config.feed_timeout())
