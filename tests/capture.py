@@ -12,11 +12,11 @@ a major change in the contract between stages
 import shutil, os, sys
 
 # move up a directory
-sys.path.insert(1, os.path.split(sys.path[0])[0])
-os.chdir(sys.path[1])
+sys.path.insert(0, os.path.split(sys.path[0])[0])
+os.chdir(sys.path[0])
 
 # copy spider output to splice input
-from planet import spider
+from planet import spider, config
 spider.spiderPlanet('tests/data/spider/config.ini')
 if os.path.exists('tests/data/splice/cache'):
     shutil.rmtree('tests/data/splice/cache')
@@ -38,5 +38,15 @@ source.close()
 # copy splice output to apply input
 from planet import splice
 file=open('tests/data/apply/feed.xml', 'w')
-file.write(splice.splice('tests/data/splice/config.ini').toxml('utf-8'))
+data=splice.splice('tests/data/splice/config.ini').toxml('utf-8')
+file.write(data)
 file.close()
+
+# copy apply output to config/reading-list input
+config.load('tests/data/apply/config.ini')
+splice.apply(data)
+shutil.move('tests/work/apply/opml.xml', 'tests/data/config')
+
+shutil.rmtree('tests/work')
+
+import runtests

@@ -9,11 +9,6 @@ from xml.dom import minidom
 # Planet modules
 import planet, config, feedparser, reconstitute
 
-try:
-    from xml.dom.ext import PrettyPrint
-except:
-    PrettyPrint = None
-
 # Regular expressions to sanitise cache filenames
 re_url_scheme    = re.compile(r'^\w+:/*(\w+:|www\.)?')
 re_slash         = re.compile(r'[?/:]+')
@@ -44,14 +39,7 @@ def filename(directory, filename):
 def write(xdoc, out):
     """ write the document out to disk """
     file = open(out,'w')
-    try:
-        PrettyPrint(xdoc, file)
-    except:
-        # known reasons for failure include no pretty printer installed,
-        # and absurdly high levels of markup nesting causing Python to
-        # declare infinite recursion.
-        file.seek(0)
-        file.write(xdoc.toxml('utf-8'))
+    file.write(xdoc.toxml('utf-8'))
     file.close()
     xdoc.unlink()
 
