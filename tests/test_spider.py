@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import unittest, os, glob, calendar
+import unittest, os, glob, calendar, shutil
 from planet.spider import filename, spiderFeed, spiderPlanet
 from planet import feedparser, config
 
@@ -17,13 +17,8 @@ class SpiderTest(unittest.TestCase):
              os.makedirs(workdir)
     
     def tearDown(self):
-        for file in glob.glob(workdir+"/sources/*"):
-             os.unlink(file)
-        if os.path.exists(workdir+"/sources"):
-            os.rmdir(workdir+"/sources")
-        for file in glob.glob(workdir+"/*"):
-             os.unlink(file)
-        os.removedirs(workdir)
+        shutil.rmtree(workdir)
+        os.removedirs(os.path.split(workdir)[0])
 
     def test_filename(self):
         self.assertEqual('./example.com,index.html',

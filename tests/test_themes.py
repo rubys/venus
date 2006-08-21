@@ -2,16 +2,22 @@
 
 import unittest
 from planet import config
+from os.path import split
 
 class ConfigTest(unittest.TestCase):
     def setUp(self):
-        config.load('tests/data/config/basic.ini')
+        config.load('tests/data/config/themed.ini')
+
+    # template directories
+
+    def test_template_directories(self):
+        self.assertEqual(['foo', 'bar', 'asf', 'common'],
+            [split(dir)[1] for dir in config.template_directories()])
 
     # administrivia
 
     def test_template(self):
-        self.assertEqual(['index.html.tmpl', 'atom.xml.tmpl'], 
-            config.template_files())
+        self.assertTrue('index.html.xslt' in config.template_files())
 
     def test_feeds(self):
         feeds = config.feeds()
@@ -29,16 +35,16 @@ class ConfigTest(unittest.TestCase):
     # per template configuration
 
     def test_days_per_page(self):
-        self.assertEqual(7, config.days_per_page('index.html.tmpl'))
-        self.assertEqual(0, config.days_per_page('atom.xml.tmpl'))
+        self.assertEqual(7, config.days_per_page('index.html.xslt'))
+        self.assertEqual(0, config.days_per_page('atom.xml.xslt'))
 
     def test_items_per_page(self):
-        self.assertEqual(50, config.items_per_page('index.html.tmpl'))
-        self.assertEqual(50, config.items_per_page('atom.xml.tmpl'))
+        self.assertEqual(50, config.items_per_page('index.html.xslt'))
+        self.assertEqual(50, config.items_per_page('atom.xml.xslt'))
 
     def test_encoding(self):
-        self.assertEqual('utf-8', config.encoding('index.html.tmpl'))
-        self.assertEqual('utf-8', config.encoding('atom.xml.tmpl'))
+        self.assertEqual('utf-8', config.encoding('index.html.xslt'))
+        self.assertEqual('utf-8', config.encoding('atom.xml.xslt'))
 
     # dictionaries
 
@@ -47,6 +53,6 @@ class ConfigTest(unittest.TestCase):
         self.assertEqual('two', config.feed_options('feed2')['name'])
 
     def test_template_options(self):
-        option = config.template_options('index.html.tmpl')
+        option = config.template_options('index.html.xslt')
         self.assertEqual('7',  option['days_per_page'])
         self.assertEqual('50', option['items_per_page'])

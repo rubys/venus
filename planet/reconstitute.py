@@ -18,7 +18,7 @@ from xml.sax.saxutils import escape
 from xml.dom import minidom
 from BeautifulSoup import BeautifulSoup
 from xml.parsers.expat import ExpatError
-import planet
+import planet, config
 
 illegal_xml_chars = re.compile("[\x01-\x08\x0B\x0C\x0E-\x1F]")
 
@@ -29,6 +29,7 @@ def createTextElement(parent, name, value):
     xelement = xdoc.createElement(name)
     xelement.appendChild(xdoc.createTextNode(value))
     parent.appendChild(xelement)
+    return xelement
 
 def invalidate(c): 
     """ replace invalid characters """
@@ -98,7 +99,9 @@ def date(xentry, name, parsed):
     """ insert a date-formated element into the entry """
     if not parsed: return
     formatted = time.strftime("%Y-%m-%dT%H:%M:%SZ", parsed)
-    createTextElement(xentry, name, formatted)
+    xdate = createTextElement(xentry, name, formatted)
+    formatted = time.strftime(config.date_format(), parsed)
+    xdate.setAttribute('planet:format', formatted)
 
 def author(xentry, name, detail):
     """ insert an author-like element into the entry """

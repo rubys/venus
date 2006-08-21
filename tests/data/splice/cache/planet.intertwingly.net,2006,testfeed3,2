@@ -4,7 +4,7 @@
   <link href='http://example.com/2' type='text/html' rel='alternate'/>
   <title>Venus</title>
   <summary>the Morning Star</summary>
-  <updated>2006-08-18T18:30:50Z</updated>
+  <updated planet:format='August 21, 2006 12:54 PM'>2006-08-21T12:54:31Z</updated>
   <source>
     <link href='http://intertwingly.net/code/venus/tests/data/spider/testfeed3.rss' type='text/html' rel='alternate'/>
     <link href='tests/data/spider/testfeed3.rss' type='application/atom+xml' rel='self'/>

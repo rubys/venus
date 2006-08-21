@@ -1,0 +1,429 @@
+/*
+ * Written by Stefano Mazzocchi <stefano at apache dot org>
+ */
+
+/* ----------------------------- Global Definitions -------------------- */
+
+body {
+	margin: 0px;
+	padding: 0px;
+	color: #222;
+	background-color: #fff;
+	quotes: "\201C" "\201E" "\2018" "\2019";
+}
+
+a:link {
+	color: #222;
+}
+
+a:visited {
+	color: #555;
+}
+
+a:hover {
+	color: #000;
+}
+
+a:active {
+}
+
+a:focus {
+}
+
+h1 {
+	font-size: x-large;
+	text-transform: uppercase;
+	letter-spacing: 0.25em;
+	padding: 10px;
+	margin: 0px 0px 0px 0px;
+	color: #000;
+	font-weight: normal;
+	background-color: #eee;
+	border-bottom: 2px solid #bbb
+}
+
+/* ----------------------------- Sidebar --------------------------- */
+
+#sidebar {
+	float: right;
+	top: 150px;
+	right: 0px;
+	width: 210px;
+	background-color: white;
+
+	padding: 0px 0px 20px 0px;
+	margin: 0px 0px 20px 20px;
+	border-left: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+}
+
+#sidebar h2 {
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	font-size: x-small;
+	color: #666;
+	font-weight: normal;
+	padding: 2px 0px 2px 4px;
+	margin: 15px 0px 5px 10px;
+	border-top: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+}
+
+#sidebar p {
+	font-size: x-small;
+	padding-left: 20px;
+	padding-right: 5px;
+}
+
+#sidebar ul {
+	font-family: sans-serif;
+	margin-left: 5px;
+	padding-left: 25px;
+}
+
+#sidebar li {
+	margin-left: 0px;
+	text-indent: -15px;
+	list-style-type: none;
+	font-size: x-small;
+}
+
+#sidebar ul li a {
+	text-decoration: none;
+}
+
+#sidebar ul li a:hover {
+	text-decoration: underline;
+}
+
+#sidebar img {
+	border: 0;
+}
+
+#sidebar dl {
+	font-size: x-small;
+	padding-left: 1.0em;
+}
+
+#sidebar dl ul {
+	padding-left: 1em;
+}
+
+#sidebar dt {
+	margin-top: 1em;
+	font-weight: bold;
+	padding-left: 1.0em;
+}
+
+#sidebar dd {
+	margin-left: 2.5em;
+}
+
+#sidebar .message {
+	cursor: help;
+	border-bottom: 1px dashed red;
+}
+
+#sidebar a.message:hover {
+	cursor: help;
+	background-color: #ffD0D0;
+	border: 1px dashed red !important;
+	text-decoration: none !important;
+}
+
+/* ----------------------------- Body ---------------------------- */
+
+#body {
+	margin-top: 10px;
+}
+
+.admin {
+	text-align: right;
+}
+
+#body h2.date {
+	text-transform: none;
+	font-size: medium;
+	color: #333;
+	font-weight: bold;
+	text-align: right;
+	border-top: 1px solid #ccc;
+	background-color: #eee;
+	border-bottom: 1px solid #ccc;
+	padding: 1px 15px 1px 5px;
+	margin: 0;
+}
+
+/* ----------------------------- News ---------------------------- */
+
+.news {
+	margin: 30px 10px 30px 10px;
+	clear: left;
+}
+
+.news > h3 {
+	text-indent: -10px;
+	margin: 12px;
+	padding: 0px;
+	font-size: medium;
+}
+
+.news > h3 > a:first-child {
+	margin-left: 10px
+}
+
+.news > h3 > a:first-child:before {
+	content: '⌘';
+	color: #D70;
+	margin-left: -18px;
+	margin-right: 2px;
+	text-decoration: none;
+}
+
+img.icon {
+	height: 16px;
+	width: 16px;
+	margin-left: -8px;
+	margin-bottom: -2px;
+	margin-right: 3px;
+}
+
+.news .content {
+	margin: 5px 5px 5px 15px;
+	padding: 0px 5px 0px 5px;
+	border-left: 1px solid #ccc;
+	line-height: 1.2em;
+	font-size: small;
+	font-family: sans-serif;
+}
+
+.news .links {
+}
+
+.news .permalink {
+	text-align: right;
+}
+
+/* ----------------------------- News Content ---------------------------- */
+
+.news .content p {
+	line-height: 1.2em;
+}
+
+.news .content img {
+	margin: 5px;
+}
+
+.news .content blockquote {
+	margin: 10px 35px 10px 35px;
+	padding: 5px;
+}
+
+.news .content pre {
+	font-family: monospace;
+	font-size: medium;
+	font-weight: bold;
+	border: 1px solid #ddd;
+	padding: 10px;
+	margin: 10px 20px 10px 20px;
+	background-color: #f8f8f8;
+	overflow: auto;
+}
+
+.news .content ul, .news .content ol {
+	margin: 5px 35px 5px 35px;
+	padding: 5px;
+	counter-reset: item;
+}
+
+.news .content ul > ul, .news .content ul > ol, .news .content ol > ul, .news .content ol > ol {
+	margin: 0px 0px 0px 35px;
+	padding: 0px;
+}
+
+.news .content li {
+	padding: 1px;
+	line-height: 1.2em;
+}
+
+.news code {
+    font-family: monospace;
+    font-size: medium;
+    font-weight: bold;
+}
+
+.news .content a {
+	text-decoration: none;
+	color: #000;
+	border-bottom: 1px dotted #777;
+	margin: 0px 2px 0px 2px;
+	padding: 1px 1px 1px 1px;
+}
+
+.news .content a:hover {
+	border: 1px dotted #000;
+	background-color: #eee;
+	padding: 1px 2px 1px 2px;
+	margin: 0px;
+}
+
+.news .content a:active {
+	background-color: #ccc !important;
+	position: relative;
+	top: 1px;
+	left: 1px;
+	padding: 1px 2px 1px 2px;
+	margin: 0px;
+}
+
+.news .content a:focus {
+	border: 1px solid #fff !important;
+	background-color: #ccc !important;
+	padding: 1px 2px 1px 2px;
+	margin: 0px;
+}
+
+/* --------------------------- Accomodations ----------------------- */
+
+/* boing boing */
+br {
+	clear: none !important;
+}
+
+/* engadget */
+h6 {
+	clear: left !important;
+}
+
+/* cadenhead */
+p.sourcecode {
+	font-family: monospace;
+	font-size: medium;
+	font-weight: bold;
+	border: 1px solid #ddd;
+	padding: 10px;
+	margin: 10px 20px 10px 20px;
+	background-color: #f8f8f8;
+	overflow: auto;
+}
+
+/* cadenhead */
+span.sourcecode {
+	font-family: monospace;
+	font-size: medium;
+	font-weight: bold;
+	font-size: large;
+	background-color: #f8f8f8;
+}
+
+/* hsivonen */
+ul p, ol p {
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+}
+
+/* programmableweb */
+.imgRight {
+	float: right;
+}
+
+/* gizmodo */
+img.left {
+	float: left;
+}
+
+/* gizmodo */
+img.right {
+	float: right;
+}
+
+/* gizmodo */
+img.center {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* wikipedia */
+table {
+	width: auto !important;
+}
+
+/* del.icio.us */
+.delicious-tags {
+	font-size: x-small;
+	text-align: right;
+}
+
+/* musings */
+img.mathlogo, img.svglogo {
+	float: right;
+	border: 0;
+}
+
+math {
+	white-space: nowrap;
+}
+
+math[display=block] {
+	overflow: auto;
+}
+
+.eqno {
+	float: right;
+}
+
+/* sutor */
+img.post-img-right {
+	float:right;
+}
+
+/* niall */
+img.floatright {
+	float: right;
+}
+
+/* jason kolb */
+.FeaturedPost > li {
+	list-style-type: none;
+	background-color: #f8f8f8;
+}
+
+/* GigaOM */
+p img {
+	float: left;
+}
+
+/* Tantek */
+ul.tags,ul.tags li,h4.tags {
+	display:inline;
+	font-size: x-small
+}
+
+ul.tags a:link, ul.tags a:visited {
+	color:green
+}
+
+/* DiveIntoMark */
+.framed {
+	float: none;
+}
+
+/* ----------------------------- Footer ---------------------------- */
+
+#footer {
+	padding: 0px;
+	margin: 30px 0px 50px 50px;
+}
+
+#footer p {
+	padding: 2px 2px 2px 5px;
+	background-color: #ccc;
+	border-top: 1px solid #aaa;
+	border-bottom: 1px solid #aaa;
+	border-left: 1px solid #aaa;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	text-align: left;
+}

@@ -2,6 +2,9 @@ xmlns = 'http://planet.intertwingly.net/'
 
 logger = None
 
+import config
+config.__init__()
+
 def getLogger(level):
     """ get a logger with the specified log level """
     global logger

@@ -4,7 +4,7 @@
   <link href='http://example.com/3' type='text/html' rel='alternate'/>
   <title>Earth</title>
   <summary>the Blue Planet</summary>
-  <updated>2006-01-03T00:00:00Z</updated>
+  <updated planet:format='January 03, 2006 12:00 AM'>2006-01-03T00:00:00Z</updated>
   <source>
     <link href='http://intertwingly.net/code/venus/tests/data/spider/testfeed3.rss' type='text/html' rel='alternate'/>
     <link href='tests/data/spider/testfeed3.rss' type='application/atom+xml' rel='self'/>
