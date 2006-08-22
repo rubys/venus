@@ -25,6 +25,7 @@ illegal_xml_chars = re.compile("[\x01-\x08\x0B\x0C\x0E-\x1F]")
 def createTextElement(parent, name, value):
     """ utility function to create a child element with the specified text"""
     if not value: return
+    if isinstance(value,str): value=value.decode('utf-8')
     xdoc = parent.ownerDocument
     xelement = xdoc.createElement(name)
     xelement.appendChild(xdoc.createTextNode(value))
@@ -64,17 +65,18 @@ def normalize(text, bozo):
 def id(xentry, entry):
     """ copy or compute an id for the entry """
 
-    if entry.has_key("id"):
+    if entry.has_key("id") and entry.id:
         entry_id = entry.id
-    elif entry.has_key("link"):
+    elif entry.has_key("link") and entry.link:
         entry_id = entry.link
-    elif entry.has_key("title"):
-        entry_id = (entry.title_detail.base + "/" + 
+    elif entry.has_key("title") and entry.title:
+        entry_id = (entry.title_detail.base + "/" +
             md5.new(entry.title).hexdigest())
-    elif entry.has_key("summary"):
-        entry_id = (entry.summary_detail.base + "/" + 
+    elif entry.has_key("summary") and entry.summary:
+        entry_id = (entry.summary_detail.base + "/" +
             md5.new(entry.summary).hexdigest())
-    elif entry.has_key("content"):
+    elif entry.has_key("content") and entry.content:
+
         entry_id = (entry.content[0].base + "/" + 
             md5.new(entry.content[0].value).hexdigest())
     else:

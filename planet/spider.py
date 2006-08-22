@@ -69,7 +69,7 @@ def spiderFeed(feed):
     # write each entry to the cache
     cache = config.cache_directory()
     for entry in data.entries:
-        if not entry.has_key('id'):
+        if not entry.has_key('id') or not entry.id:
             entry['id'] = reconstitute.id(None, entry)
             if not entry['id']: continue
 

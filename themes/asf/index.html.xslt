@@ -1,13 +1,14 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
                 xmlns:atom="http://www.w3.org/2005/Atom"
+                xmlns:xhtml="http://www.w3.org/1999/xhtml"
                 xmlns:planet="http://planet.intertwingly.net/"
                 xmlns="http://www.w3.org/1999/xhtml">
  
-  <xsl:output indent="yes" method="html"/>
-
   <xsl:template match="atom:feed">
     <html xmlns="http://www.w3.org/1999/xhtml">
-      <xsl:text>&#10;</xsl:text>
+
+      <!-- head -->
+      <xsl:text>&#10;&#10;</xsl:text>
       <head>
         <link rel="stylesheet" href="default.css" type="text/css" />
         <title><xsl:value-of select="atom:title"/></title>
@@ -30,6 +31,7 @@
 
           <xsl:text>&#10;&#10;</xsl:text>
           <h2>Subscriptions</h2>
+          <xsl:text>&#10;</xsl:text>
           <ul>
             <xsl:for-each select="planet:source">
               <xsl:sort select="planet:name"/>
@@ -51,7 +53,7 @@
 
           <dl>
             <dt>Last updated:</dt>
-            <dd><span class="date" title="GMT"><xsl:value-of select="atom:updated"/></span></dd>
+            <dd><span class="date" title="GMT"><xsl:value-of select="atom:updated/@planet:format"/></span></dd>
             <dt>Powered by:</dt>
             <dd><a href="http://intertwingly.net/code/planet/"><img src="images/planet.png" width="80" height="15" alt="Planet" border="0" /></a></dd>
             <dt>Export:</dt>
@@ -65,7 +67,11 @@
 
         </div>
 
-        <xsl:apply-templates select="atom:entry"/>
+        <xsl:text>&#10;&#10;</xsl:text>
+        <div id="body">
+          <xsl:apply-templates select="atom:entry"/>
+          <xsl:text>&#10;&#10;</xsl:text>
+        </div>
       </body>
     </html>
   </xsl:template>
@@ -76,7 +82,11 @@
     <xsl:if test="not(preceding-sibling::atom:entry
       [substring(atom:updated,1,10) = $date])">
       <xsl:text>&#10;&#10;</xsl:text>
-      <h2 class="date"><xsl:value-of select="$date"/></h2>
+      <h2 class="date">
+        <xsl:value-of select="substring-before(atom:updated/@planet:format,', ')"/>
+        <xsl:text>, </xsl:text>
+        <xsl:value-of select="substring-before(substring-after(atom:updated/@planet:format,', '), ' ')"/>
+      </h2>
     </xsl:if>
 
     <xsl:text>&#10;&#10;</xsl:text>
@@ -109,22 +119,14 @@
 
       <!-- entry content -->
       <xsl:text>&#10;</xsl:text>
-      <div class="content">
-        <xsl:choose>
-          <xsl:when test="atom:content">
-            <xsl:if test="atom:content/@xml:lang != @xml:lang">
-              <xsl:attribute name="xml:lang" select="{atom:content/@xml:lang}"/>
-            </xsl:if>
-            <xsl:copy-of select="atom:content/*"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:if test="atom:summary/@xml:lang != @xml:lang">
-              <xsl:attribute name="xml:lang" select="{atom:summary/@xml:lang}"/>
-            </xsl:if>
-            <xsl:copy-of select="atom:summary/*"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </div>
+      <xsl:choose>
+        <xsl:when test="atom:content">
+          <xsl:apply-templates select="atom:content"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates select="atom:summary"/>
+        </xsl:otherwise>
+      </xsl:choose>
   
       <!-- entry footer -->
       <xsl:text>&#10;</xsl:text>
@@ -143,11 +145,32 @@
             </xsl:when>
           </xsl:choose>
           <span class="date" title="GMT">
-            <xsl:value-of select="atom:updated"/>
+            <xsl:value-of select="atom:updated/@planet:format"/>
           </span>
         </a>
       </div>
     </div>
 
+  </xsl:template>
+
+  <!-- xhtml content -->
+  <xsl:template match="atom:content/xhtml:div | atom:summary/xhtml:div">
+    <xsl:copy>
+      <xsl:if test="@xml:lang != ancestor::atom:entry/@xml:lang">
+        <xsl:attribute name="xml:lang" select="{atom:content/@xml:lang}"/>
+      </xsl:if>
+      <xsl:attribute name="class">content</xsl:attribute>
+      <xsl:copy-of select="@*|node()"/>
+    </xsl:copy>
+  </xsl:template>
+
+  <!-- plain text content -->
+  <xsl:template match="atom:content/text() | atom:summary/text()">
+    <div class="content" xmlns="http://www.w3.org/1999/xhtml">
+      <xsl:if test="@xml:lang != ancestor::atom:entry/@xml:lang">
+        <xsl:attribute name="xml:lang" select="{atom:summary/@xml:lang}"/>
+      </xsl:if>
+      <xsl:copy-of select="."/>
+    </div>
   </xsl:template>
 </xsl:stylesheet>

@@ -88,12 +88,13 @@ def __init__():
 
 def load(config_file):
     """ initialize and load a configuration"""
-    import config, planet
-    log = planet.getLogger(config.log_level())
-
     global parser
     parser = ConfigParser()
     parser.read(config_file)
+
+    import config, planet
+    from planet import opml
+    log = planet.getLogger(config.log_level())
 
     # Theme support
     theme = config.output_theme()
@@ -144,7 +145,7 @@ def load(config_file):
                 except:
                     log.exception("Unable to read %s readinglist", list)
                     continue
-        planet.opml.opml2config(data, parser)
+        opml.opml2config(data, parser)
         # planet.foaf.foaf2config(data, list, config)
 
 def cache_sources_directory():
