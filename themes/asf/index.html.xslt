@@ -55,7 +55,7 @@
             <dt>Last updated:</dt>
             <dd><span class="date" title="GMT"><xsl:value-of select="atom:updated/@planet:format"/></span></dd>
             <dt>Powered by:</dt>
-            <dd><a href="http://intertwingly.net/code/planet/"><img src="images/planet.png" width="80" height="15" alt="Planet" border="0" /></a></dd>
+            <dd><a href="http://intertwingly.net/code/venus/"><img src="images/planet.png" width="80" height="15" alt="Planet" border="0" /></a></dd>
             <dt>Export:</dt>
             <dd>
               <ul>

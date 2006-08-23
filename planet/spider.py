@@ -75,9 +75,11 @@ def spiderFeed(feed):
 
         out = filename(cache, entry.id)
 
+        mtime = None
         if entry.has_key('updated_parsed'):
             mtime = calendar.timegm(entry.updated_parsed)
-        else:
+            if mtime > time.time(): mtime = None
+        if not mtime:
             try:
                 mtime = os.stat(out).st_mtime
             except:
