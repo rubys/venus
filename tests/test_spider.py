@@ -3,6 +3,7 @@
 import unittest, os, glob, calendar, shutil
 from planet.spider import filename, spiderFeed, spiderPlanet
 from planet import feedparser, config
+import planet
 
 workdir = 'tests/work/spider/cache'
 testfeed = 'tests/data/spider/testfeed%s.atom'
@@ -10,6 +11,10 @@ configfile = 'tests/data/spider/config.ini'
 
 class SpiderTest(unittest.TestCase):
     def setUp(self):
+        # silence errors
+        planet.logger = None
+        planet.getLogger('CRITICAL')
+
         try:
              os.makedirs(workdir)
         except:
