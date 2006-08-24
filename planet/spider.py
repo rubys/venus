@@ -45,8 +45,61 @@ def write(xdoc, out):
 
 def spiderFeed(feed):
     """ Spider (fetch) a single feed """
-    data = feedparser.parse(feed)
-    if not data.feed: return
+
+    # read cached feed info
+    sources = config.cache_sources_directory()
+    feed_source = filename(sources, feed)
+    feed_info = feedparser.parse(feed_source)
+    if feed_info.feed.get('planet_http_status',None) == '410': return
+
+    # read feed itself
+    modified = None
+    try:
+        modified=time.strptime(
+            feed_info.feed.get('planet_http_last_modified', None))
+    except:
+        pass
+    data = feedparser.parse(feed_info.feed.get('planet_http_location',feed),
+        etag=feed_info.feed.get('planet_http_etag',None), modified=modified)
+
+    # capture http status
+    if not data.has_key("status"):
+        if data.has_key("entries") and len(data.entries)>0:
+            data.status = 200
+        elif data.bozo and data.bozo_exception.__class__.__name__=='Timeout':
+            data.status = 408
+        else:
+            data.status = 500
+    data.feed['planet_http_status'] = str(data.status)
+
+    # process based on the HTTP status code
+    log = planet.logger
+    if data.status == 301 and data.has_key("entries") and len(data.entries)>0:
+        log.warning("Feed has moved from <%s> to <%s>", feed, data.url)
+        data.feed['planet_http_location'] = data.url
+    elif data.status == 304:
+        return log.info("Feed %s unchanged", feed)
+    elif data.status >= 400:
+        feed_info.update(data.feed)
+        data.feed = feed_info
+        if data.status == 410:
+            log.info("Feed %s gone", feed)
+        elif data.status == 408:
+            log.warning("Feed %s timed out", feed)
+        else:
+            log.error("Error %d while updating feed %s", data.status, feed)
+    else:
+        log.info("Updating feed %s", feed)
+
+    # capture etag and last-modified information
+    if data.has_key('headers'):
+        if data.has_key('etag') and data.etag:
+            data.feed['planet_http_etag'] = data.etag
+            log.debug("E-Tag: %s", data.etag)
+        if data.has_key('modified') and data.modified:
+            data.feed['planet_http_last_modified'] = time.asctime(data.modified)
+            log.debug("Last Modified: %s",
+                data.feed['planet_http_last_modified'])
 
     # capture feed and data from the planet configuration file
     if not data.feed.has_key('links'): data.feed['links'] = list()
@@ -59,7 +112,6 @@ def spiderFeed(feed):
         data.feed['planet_'+name] = value
     
     # write the feed info to the cache
-    sources = config.cache_sources_directory()
     if not os.path.exists(sources): os.makedirs(sources)
     xdoc=minidom.parseString('''<feed xmlns:planet="%s"
       xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
@@ -96,5 +148,4 @@ def spiderPlanet(configFile):
     planet.setTimeout(config.feed_timeout())
 
     for feed in config.feeds():
-        log.info("Updating feed %s", feed)
         spiderFeed(feed)
