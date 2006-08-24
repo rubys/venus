@@ -11,7 +11,7 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 1.132 $"[11:16] + "-cvs"
+__version__ = "4.2-pre-" + "$Revision: 1.134 $"[11:16] + "-cvs"
 __license__ = """Copyright (c) 2002-2006, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -1110,23 +1110,26 @@ class _FeedParserMixin:
             elif email:
                 context[key] = email
         else:
-            author = context.get(key)
+            author, email = context.get(key), None
             if not author: return
             emailmatch = re.search(r'''(([a-zA-Z0-9\_\-\.\+]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?))''', author)
-            if not emailmatch: return
-            email = emailmatch.group(0)
-            # probably a better way to do the following, but it passes all the tests
-            author = author.replace(email, '')
-            author = author.replace('()', '')
-            author = author.strip()
-            if author and (author[0] == '('):
-                author = author[1:]
-            if author and (author[-1] == ')'):
-                author = author[:-1]
-            author = author.strip()
-            context.setdefault('%s_detail' % key, FeedParserDict())
-            context['%s_detail' % key]['name'] = author
-            context['%s_detail' % key]['email'] = email
+            if emailmatch:
+                email = emailmatch.group(0)
+                # probably a better way to do the following, but it passes all the tests
+                author = author.replace(email, '')
+                author = author.replace('()', '')
+                author = author.strip()
+                if author and (author[0] == '('):
+                    author = author[1:]
+                if author and (author[-1] == ')'):
+                    author = author[:-1]
+                author = author.strip()
+            if author or email:
+                context.setdefault('%s_detail' % key, FeedParserDict())
+            if author:
+                context['%s_detail' % key]['name'] = author
+            if email:
+                context['%s_detail' % key]['email'] = email
 
     def _start_subtitle(self, attrsD):
         self.pushContent('subtitle', attrsD, 'text/plain', 1)
@@ -2231,10 +2234,10 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
       'white-space', 'width']
 
     # survey of common keywords found in feeds
-    acceptable_css_keywords = ['aqua', 'black', 'block', 'blue', 'bold',
-      'both', 'bottom', 'brown', 'center', 'collapse', 'dashed', 'dotted',
-      'fuchsia', 'gray', 'green', '!important', 'italic', 'left', 'lime',
-      'maroon', 'medium', 'none', 'navy', 'normal', 'nowrap', 'olive',
+    acceptable_css_keywords = ['auto', 'aqua', 'black', 'block', 'blue',
+      'bold', 'both', 'bottom', 'brown', 'center', 'collapse', 'dashed',
+      'dotted', 'fuchsia', 'gray', 'green', '!important', 'italic', 'left',
+      'lime', 'maroon', 'medium', 'none', 'navy', 'normal', 'nowrap', 'olive',
       'pointer', 'purple', 'red', 'right', 'solid', 'silver', 'teal', 'top',
       'transparent', 'underline', 'white', 'yellow']
 
