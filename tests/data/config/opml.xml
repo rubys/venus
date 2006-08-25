@@ -2,11 +2,12 @@
 <opml xmlns="http://www.w3.org/1999/xhtml" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:planet="http://planet.intertwingly.net/" version="1.1">
   <head>
     <title>test planet</title>
-    <dateModified>August 21, 2006 09:40 PM</dateModified>
+    <dateModified>August 25, 2006 01:41 PM</dateModified>
     <ownerName>Anonymous Coward</ownerName>
     <ownerEmail></ownerEmail>
   </head>
   <body>
+    <outline type="rss" text="not found" title="" xmlUrl="tests/data/spider/testfeed0.atom"/>
     <outline type="rss" text="two" title="Sam Ruby" xmlUrl="http://intertwingly.net/code/venus/tests/data/spider/testfeed2.atom"/>
     <outline type="rss" text="three" title="Sam Ruby" xmlUrl="tests/data/spider/testfeed3.rss"/>
     <outline type="rss" text="one" title="Sam Ruby" xmlUrl="http://intertwingly.net/code/venus/tests/data/spider/testfeed1a.atom"/>

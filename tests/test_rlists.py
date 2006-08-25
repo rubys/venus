@@ -21,8 +21,8 @@ class ReadingListTest(unittest.TestCase):
     def test_feeds(self):
         feeds = [split(feed)[1] for feed in config.feeds()]
         feeds.sort()
-        self.assertEqual(['testfeed1a.atom', 'testfeed2.atom', 'testfeed3.rss'],
-            feeds)
+        self.assertEqual(['testfeed0.atom', 'testfeed1a.atom',
+            'testfeed2.atom', 'testfeed3.rss'], feeds)
 
     # dictionaries
 
@@ -49,5 +49,5 @@ class ReadingListTest(unittest.TestCase):
 
         feeds = [split(feed)[1] for feed in parser.sections()]
         feeds.sort()
-        self.assertEqual(['testfeed1a.atom', 'testfeed2.atom', 'testfeed3.rss'],
-            feeds)
+        self.assertEqual(['testfeed0.atom', 'testfeed1a.atom',
+            'testfeed2.atom', 'testfeed3.rss'], feeds)

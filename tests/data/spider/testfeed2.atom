@@ -13,7 +13,7 @@
   <updated>2006-06-16T20:15:18-04:00</updated>
   <link href="http://www.intertwingly.net/blog/"/>
 
-  <entry>
+  <entry xml:lang="en-us">
     <id>tag:planet.intertwingly.net,2006:testfeed2/1</id>
     <link href="http://example.com/1"/>
     <title>Mercury</title>
@@ -21,11 +21,11 @@
     <updated>2006-01-01T00:00:00Z</updated>
   </entry>
 
-  <entry>
+  <entry xml:lang="en-us">
     <id>tag:planet.intertwingly.net,2006:testfeed2/2</id>
     <link href="http://example.com/2"/>
     <title>Venus</title>
-    <content>the Morning Star</content>
+    <content xml:lang="en-us">the Morning Star</content>
     <updated>2006-01-02T00:00:00Z</updated>
   </entry>
 
@@ -33,7 +33,7 @@
     <id>tag:planet.intertwingly.net,2006:testfeed2/3</id>
     <link href="http://example.com/3"/>
     <title>Earth</title>
-    <content>the Blue Planet</content>
+    <content xml:lang="en-us">the Blue Planet</content>
     <updated>2006-01-03T00:00:00Z</updated>
   </entry>
 

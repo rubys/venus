@@ -16,7 +16,10 @@ sys.path.insert(0, os.path.split(sys.path[0])[0])
 os.chdir(sys.path[0])
 
 # copy spider output to splice input
+import planet
 from planet import spider, config
+planet.getLogger('CRITICAL')
+
 spider.spiderPlanet('tests/data/spider/config.ini')
 if os.path.exists('tests/data/splice/cache'):
     shutil.rmtree('tests/data/splice/cache')
