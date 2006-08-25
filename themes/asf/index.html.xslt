@@ -93,7 +93,9 @@
     <div class="news">
 
       <xsl:if test="@xml:lang">
-        <xsl:attribute name="xml:lang" select="{@xml:lang}"/>
+        <xsl:attribute name="xml:lang">
+          <xsl:value-of select="@xml:lang"/>
+        </xsl:attribute>
       </xsl:if>
 
       <!-- entry title -->
@@ -156,8 +158,10 @@
   <!-- xhtml content -->
   <xsl:template match="atom:content/xhtml:div | atom:summary/xhtml:div">
     <xsl:copy>
-      <xsl:if test="@xml:lang != ancestor::atom:entry/@xml:lang">
-        <xsl:attribute name="xml:lang" select="{atom:content/@xml:lang}"/>
+      <xsl:if test="../@xml:lang and not(../@xml:lang = ../../@xml:lang)">
+        <xsl:attribute name="xml:lang">
+          <xsl:value-of select="../@xml:lang"/>
+        </xsl:attribute>
       </xsl:if>
       <xsl:attribute name="class">content</xsl:attribute>
       <xsl:copy-of select="@*|node()"/>
@@ -167,8 +171,10 @@
   <!-- plain text content -->
   <xsl:template match="atom:content/text() | atom:summary/text()">
     <div class="content" xmlns="http://www.w3.org/1999/xhtml">
-      <xsl:if test="@xml:lang != ancestor::atom:entry/@xml:lang">
-        <xsl:attribute name="xml:lang" select="{atom:summary/@xml:lang}"/>
+      <xsl:if test="../@xml:lang and not(../@xml:lang = ../../@xml:lang)">
+        <xsl:attribute name="xml:lang">
+          <xsl:value-of select="../@xml:lang"/>
+        </xsl:attribute>
       </xsl:if>
       <xsl:copy-of select="."/>
     </div>
