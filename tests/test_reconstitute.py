@@ -8,6 +8,7 @@ testfiles = 'tests/data/reconstitute/%s.xml'
 
 class ReconstituteTest(unittest.TestCase):
     desc_re = re.compile("Description:\s*(.*?)\s*Expect:\s*(.*)\s*-->")
+    simple_re = re.compile("^(\S+) == (u?'[^']*'|\([0-9, ]+\))$")
 
     def eval(self, name):
         # read the test case
@@ -27,7 +28,11 @@ class ReconstituteTest(unittest.TestCase):
         # verify the results
         results = feedparser.parse(work.getvalue().encode('utf-8'))
         self.assertFalse(results.bozo, 'xml is well formed')
-        self.assertTrue(eval(expect, results.entries[0]), expect)
+        if not self.simple_re.match(expect):
+            self.assertTrue(eval(expect, results.entries[0]), expect)
+        else:
+            lhs, rhs = self.simple_re.match(expect).groups()
+            self.assertEqual(eval(rhs), eval(lhs, results.entries[0]))
 
 # build a test method for each test file
 for testcase in glob.glob(testfiles % '*'):
