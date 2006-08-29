@@ -1,5 +1,5 @@
 from xml.sax.saxutils import escape
-import sgmllib, time, os, sys
+import sgmllib, time, os, sys, new, urlparse
 from planet import config, feedparser, htmltmpl
 
 class stripHtml(sgmllib.SGMLParser):
@@ -54,6 +54,9 @@ def Plain(value):
 def PlanetDate(value):
     return time.strftime(config.date_format(), value)
 
+def NewDate(value):
+    return time.strftime(config.new_date_format(), value)
+
 def Rfc822(value):
     return time.strftime("%a, %d %b %Y %H:%M:%S +0000", value)
 
@@ -64,7 +67,6 @@ def Rfc3399(value):
 Base = [
     ['author', String, 'author'],
     ['author_name', String, 'author_detail', 'name'],
-    ['feed', String, 'links', {'rel':'self'}, 'href'],
     ['generator', String, 'generator'],
     ['id', String, 'id'],
     ['icon', String, 'icon'],
@@ -76,9 +78,9 @@ Base = [
     ['subtitle', String, 'subtitle_detail', 'value'],
     ['title', String, 'title_detail', 'value'],
     ['title_plain', Plain, 'title_detail', 'value'],
+    ['url', String, 'links', {'rel':'self'}, 'href'],
 ]
 
-# ? new_date, new_channel
 Items = [
     ['author', String, 'author'],
     ['author_email', String, 'author_detail', 'email'],
@@ -95,6 +97,9 @@ Items = [
     ['date_iso', Rfc3399, 'updated_parsed'],
     ['id', String, 'id'],
     ['link', String, 'links', {'rel': 'alternate'}, 'href'],
+    ['new_channel', String, 'id'],
+    ['new_date', NewDate, 'published_parsed'],
+    ['new_date', NewDate, 'updated_parsed'],
     ['rights', String, 'rights_detail', 'value'],
     ['title_language', String, 'title_detail', 'language'],
     ['title_plain', Plain, 'title_detail', 'value'],
@@ -106,14 +111,6 @@ Items = [
     ['published', PlanetDate, 'published_parsed'],
     ['published_822', Rfc822, 'published_parsed'],
     ['published_iso', Rfc3399, 'published_parsed'],
-]
-
-Channels = [
-    ['url', None],
-    ['link', None],
-    ['message', None],
-    ['title_plain', None],
-    ['name', None],
 ]
 
 # Add additional rules for source information
@@ -161,13 +158,67 @@ def tmpl_mapper(source, rules):
 
     return output
 
+def _end_planet_source(self):
+    self._end_source()
+    context = self._getContext()
+    if not context.has_key('sources'): context['sources'] = []
+    context.sources.append(context.source)
+    del context['source']
+
 def template_info(source):
     """ get template information from a feedparser output """
+
+    # wire in support for planet:source, call feedparser, unplug planet:source
+    mixin=feedparser._FeedParserMixin
+    mixin._start_planet_source = mixin._start_source
+    mixin._end_planet_source = \
+        new.instancemethod(_end_planet_source, None, mixin)
     data=feedparser.parse(source)
+    del mixin._start_planet_source
+    del mixin._end_planet_source
+
+    # apply rules to convert feed parser output to htmltmpl input
     output = {'Channels': [], 'Items': []}
-    output['Channels'].append(tmpl_mapper(data.feed, Base))
+    output.update(tmpl_mapper(data.feed, Base))
+    sources = [(source.get('planet_name',None),source)
+        for source in data.feed.get('sources',[])]
+    sources.sort()
+    for name, feed in sources:
+        output['Channels'].append(tmpl_mapper(feed, Base))
     for entry in data.entries:
         output['Items'].append(tmpl_mapper(entry, Items))
+
+    # feed level information
+    output['generator'] = config.generator_uri()
+    output['name'] = config.name()
+    output['link'] = config.link()
+    output['owner_name'] = config.owner_name()
+    output['owner_email'] = config.owner_email()
+    if config.feed():
+        output['feed'] = config.feed()
+        output['feedtype'] = config.feed().find('rss')>=0 and 'rss' or 'atom'
+
+    # date/time information
+    date = time.gmtime()
+    output['date'] = PlanetDate(date)
+    output['date_iso'] = Rfc3399(date)
+    output['date_822'] = Rfc822(date)
+
+    # remove new_dates and new_channels that aren't "new"
+    date = channel = None
+    for item in output['Items']:
+        if item.has_key('new_date'):
+            if item['new_date'] == date:
+                del item['new_date']
+            else:
+                date = item['new_date']
+
+        if item.has_key('new_channel'):
+            if item['new_channel'] == channel:
+                del item['new_channel']
+            else:
+                channel = item['new_channel']
+
     return output
 
 def run(script, doc, output_file=None):
@@ -177,6 +228,10 @@ def run(script, doc, output_file=None):
     tp = htmltmpl.TemplateProcessor(html_escape=0)
     for key,value in template_info(doc).items():
         tp.set(key, value)
+
+    reluri = os.path.splitext(os.path.basename(output_file))[0]
+    tp.set('url', urlparse.urljoin(config.link(),reluri))
+
     output = open(output_file, "w")
     output.write(tp.process(template))
     output.close()

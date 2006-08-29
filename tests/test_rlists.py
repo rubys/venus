@@ -19,7 +19,7 @@ class ReadingListTest(unittest.TestCase):
     # administrivia
 
     def test_feeds(self):
-        feeds = [split(feed)[1] for feed in config.feeds()]
+        feeds = [split(feed)[1] for feed in config.subscriptions()]
         feeds.sort()
         self.assertEqual(['testfeed0.atom', 'testfeed1a.atom',
             'testfeed2.atom', 'testfeed3.rss'], feeds)
@@ -27,7 +27,7 @@ class ReadingListTest(unittest.TestCase):
     # dictionaries
 
     def test_feed_options(self):
-        feeds = dict([(split(feed)[1],feed) for feed in config.feeds()])
+        feeds = dict([(split(feed)[1],feed) for feed in config.subscriptions()])
         feed1 = feeds['testfeed1a.atom']
         self.assertEqual('one', config.feed_options(feed1)['name'])
 

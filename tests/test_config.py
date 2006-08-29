@@ -14,7 +14,7 @@ class ConfigTest(unittest.TestCase):
             config.template_files())
 
     def test_feeds(self):
-        feeds = config.feeds()
+        feeds = config.subscriptions()
         feeds.sort()
         self.assertEqual(['feed1', 'feed2'], feeds)
 
@@ -24,7 +24,7 @@ class ConfigTest(unittest.TestCase):
         self.assertEqual('Test Configuration', config.name())
 
     def test_link(self):
-        self.assertEqual('Unconfigured Planet', config.link())
+        self.assertEqual('', config.link())
 
     # per template configuration
 

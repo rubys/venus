@@ -4,9 +4,6 @@ Expect:       Channels[0]['author'] == 'John Doe' and Channels[0]['author_name']
 -->
 
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <author>
-    <name>John Doe</name>
-  </author>
   <entry>
     <source>
       <author>
@@ -14,5 +11,10 @@ Expect:       Channels[0]['author'] == 'John Doe' and Channels[0]['author_name']
       </author>
     </source>
   </entry>
+  <planet:source xmlns:planet='http://planet.intertwingly.net/'>
+    <author>
+      <name>John Doe</name>
+    </author>
+  </planet:source>
 </feed>
 

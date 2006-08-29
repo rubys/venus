@@ -64,17 +64,19 @@ def __init__():
 
     # planet wide options
     define_planet('name', "Unconfigured Planet")
-    define_planet('link', "Unconfigured Planet")
+    define_planet('link', '')
     define_planet('cache_directory', "cache")
     define_planet('log_level', "WARNING")
     define_planet('feed_timeout', 20)
     define_planet('date_format', "%B %d, %Y %I:%M %p")
+    define_planet('new_date_format', "%B %d, %Y")
     define_planet('generator', 'Venus')
     define_planet('generator_uri', 'http://intertwingly.net/code/venus/')
     define_planet('owner_name', 'Anonymous Coward')
     define_planet('owner_email', '')
     define_planet('output_theme', '')
     define_planet('output_dir', 'output')
+    define_planet('feed', None)
 
     define_planet_list('template_files')
     define_planet_list('bill_of_materials')
@@ -160,8 +162,25 @@ def cache_lists_directory():
     else:
         return os.path.join(cache_directory(), 'lists')
 
-def feeds():
-    """ list the feeds defined """
+def feed():
+    if parser.has_option('Planet', 'feed'):
+        parser.get('Planet', 'feed')
+    elif link():
+        for template_file in template_files:
+            name = os.path.splitext(os.path.basename(template_file))[0]
+            if name.find('atom')>=0 or name.find('rss')>=0:
+                return urlparse.urljoin(link(), name)
+
+def feedtype():
+    if parser.has_option('Planet', 'feedtype'):
+        parser.get('Planet', 'feedtype')
+    elif feed() and feed().find('atom')>=0:
+        return 'atom'
+    elif feed() and feed().find('rss')>=0:
+        return 'rss'
+
+def subscriptions():
+    """ list the feed subscriptions """
     return filter(lambda feed: feed!='Planet' and feed not in template_files(),
        parser.sections())
 

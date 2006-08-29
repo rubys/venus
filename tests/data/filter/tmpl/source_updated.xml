@@ -4,11 +4,13 @@ Expect:       Channels[0]['last_updated_iso'] == '2004-02-29T02:14:55+00:00' and
 -->
 
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <updated>2004-02-28T18:14:55-08:00</updated>
   <entry>
     <source>
       <updated>2004-02-28T18:14:55-08:00</updated>
     </source>
   </entry>
+  <planet:source xmlns:planet='http://planet.intertwingly.net/'>
+    <updated>2004-02-28T18:14:55-08:00</updated>
+  </planet:source>
 </feed>
 

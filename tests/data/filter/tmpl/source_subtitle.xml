@@ -4,11 +4,13 @@ Expect:       Channels[0]['subtitle'] == 'snarky phrase' and Items[0]['channel_s
 -->
 
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <subtitle>snarky phrase</subtitle>
   <entry>
     <source>
       <subtitle>snarky phrase</subtitle>
     </source>
   </entry>
+  <planet:source xmlns:planet='http://planet.intertwingly.net/'>
+    <subtitle>snarky phrase</subtitle>
+  </planet:source>
 </feed>
 

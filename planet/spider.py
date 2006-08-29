@@ -147,5 +147,5 @@ def spiderPlanet(configFile):
     log = planet.getLogger(config.log_level())
     planet.setTimeout(config.feed_timeout())
 
-    for feed in config.feeds():
+    for feed in config.subscriptions():
         spiderFeed(feed)

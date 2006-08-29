@@ -42,7 +42,7 @@ def splice(configFile):
     # insert subscription information
     feed.setAttribute('xmlns:planet',planet.xmlns)
     sources = config.cache_sources_directory()
-    for sub in config.feeds():
+    for sub in config.subscriptions():
         data=feedparser.parse(filename(sources,sub))
         if not data.feed: continue
         xdoc=minidom.parseString('''<planet:source xmlns:planet="%s"

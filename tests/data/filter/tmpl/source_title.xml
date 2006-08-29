@@ -4,11 +4,13 @@ Expect:       Channels[0]['title'] == 'visible name' and Channels[0]['title_plai
 -->
 
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>visible name</title>
   <entry>
     <source>
       <title>visible name</title>
     </source>
   </entry>
+  <planet:source xmlns:planet='http://planet.intertwingly.net/'>
+    <title>visible name</title>
+  </planet:source>
 </feed>
 

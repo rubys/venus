@@ -4,11 +4,13 @@ Expect:       Channels[0]['logo'] == 'http://www.example.com/logo.jpg' and Items
 -->
 
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <logo>http://www.example.com/logo.jpg</logo>
   <entry>
     <source>
       <logo>http://www.example.com/logo.jpg</logo>
     </source>
   </entry>
+  <planet:source xmlns:planet='http://planet.intertwingly.net/'>
+    <logo>http://www.example.com/logo.jpg</logo>
+  </planet:source>
 </feed>
 

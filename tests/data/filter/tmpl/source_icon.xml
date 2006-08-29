@@ -4,11 +4,13 @@ Expect:       Channels[0]['icon'] == 'http://www.example.com/favicon.ico' and It
 -->
 
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <icon>http://www.example.com/favicon.ico</icon>
   <entry>
     <source>
       <icon>http://www.example.com/favicon.ico</icon>
     </source>
   </entry>
+  <planet:source xmlns:planet='http://planet.intertwingly.net/'>
+    <icon>http://www.example.com/favicon.ico</icon>
+  </planet:source>
 </feed>
 
