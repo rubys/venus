@@ -16,9 +16,9 @@ def run(template_file, doc):
         module_path = os.path.join('planet', 'shell', ext[1:])
         module = __import__(module_path)
     except:
-        return log.error("Skipping template %s", module_path)
+        return log.error("Skipping template '%s' after failing to load '%s'", template_resolved, module_path)
 
     log.info("Processing template %s", template_resolved)
     output_dir = planet.config.output_dir()
     output_file = os.path.join(output_dir, base)
-    module.run(template_resolved, doc, output_file)
+    template.run(template_resolved, doc, output_file)
