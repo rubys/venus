@@ -1,5 +1,6 @@
 import planet
 import os
+import sys
 
 def run(template_file, doc):
     """ select a template module based on file extension and execute it """
@@ -11,14 +12,14 @@ def run(template_file, doc):
     else:
         return log.error("Unable to locate template %s", template_file)
 
+    sys.path.append(os.path.join('planet','shell'))
+
     base,ext = os.path.splitext(os.path.basename(template_resolved))
     try:
-        template_module_name = os.path.join('planet', 'shell', ext[1:])
+        template_module_name = ext[1:]
         template_module = __import__(template_module_name)
-    except ImportError, inst:
-        return log.error("Skipping template '%s' after failing to load '%s': %s", template_resolved, template_module_name, inst)
     except Exception, inst:
-        return log.error("Unknown exception: %s", inst)
+        return log.error("Skipping template '%s' after failing to load '%s': %s", template_resolved, template_module_name, inst)
 
     log.info("Processing template %s from %s", template_resolved, template_module_name)
     output_dir = planet.config.output_dir()
