@@ -1,0 +1,10 @@
+<!--
+Description:  plain text content
+Expect:       Items[0]['content'] == 'AT&amp;T'
+-->
+
+<feed xmns="http://www.w3.org/2005/Atom">
+  <entry>
+    <content type="text">AT&amp;T</content>
+  </entry>
+</feed>

@@ -1,0 +1,14 @@
+<!--
+Description:  source icon
+Expect:       Channels[0]['icon'] == 'http://www.example.com/favicon.ico' and Items[0]['channel_icon'] == 'http://www.example.com/favicon.ico'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <icon>http://www.example.com/favicon.ico</icon>
+  <entry>
+    <source>
+      <icon>http://www.example.com/favicon.ico</icon>
+    </source>
+  </entry>
+</feed>
+

@@ -1,0 +1,11 @@
+<!--
+Description:  updated, rollover past midnight on feb 28 in leap year
+Expect:       Items[0]['updated_822'] == 'Sun, 29 Feb 2004 02:14:55 +0000' and Items[0]['updated_iso'] == '2004-02-29T02:14:55+00:00' and Items[0]['updated'] == 'February 29, 2004 02:14 AM'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <updated>2004-02-28T18:14:55-08:00</updated>
+  </entry>
+</feed>
+

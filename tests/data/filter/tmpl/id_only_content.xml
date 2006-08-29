@@ -1,0 +1,13 @@
+<!--
+Description:  id generated from content
+Expect:       Items[0]['content'] == 'content'
+-->
+
+<rss xml:base="http://example.com/">
+  <channel>
+    <item xmlns:content="http://purl.org/rss/1.0/modules/content/">
+      <content:encoded>content</content>
+    </item>
+  </channel>
+</rss>
+

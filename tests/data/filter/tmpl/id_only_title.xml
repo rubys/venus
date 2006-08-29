@@ -1,0 +1,13 @@
+<!--
+Description:  id generated from title
+Expect:       Items[0]['title'] == 'title' and Items[0]['title_plain'] == 'title'
+-->
+
+<rss xml:base="http://example.com/">
+  <channel>
+    <item>
+      <title>title</title>
+    </item>
+  </channel>
+</rss>
+

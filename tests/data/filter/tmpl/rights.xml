@@ -1,0 +1,11 @@
+<!--
+Description:  rights
+Expect:       Items[0]['rights'] == '&copy; 2006'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <rights type="html">&amp;copy; 2006</rights>
+  </entry>
+</feed>
+

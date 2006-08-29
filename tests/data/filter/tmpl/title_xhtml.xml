@@ -1,0 +1,13 @@
+<!--
+Description:  xhtml title
+Expect:       Items[0]['title'] == 'A <b>very</b> bad day' and Items[0]['title_plain'] == 'A very bad day'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <title type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">A <b>very</b> bad day</div>
+    </title>
+  </entry>
+</feed>
+

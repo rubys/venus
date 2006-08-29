@@ -1,0 +1,14 @@
+<!--
+Description:  source updated, rollover past midnight on feb 28 in leap year
+Expect:       Channels[0]['last_updated_iso'] == '2004-02-29T02:14:55+00:00' and Channels[0]['last_updated_822'] == 'Sun, 29 Feb 2004 02:14:55 +0000' and Items[0]['channel_last_updated_iso'] == '2004-02-29T02:14:55+00:00' and Items[0]['channel_last_updated_822'] == 'Sun, 29 Feb 2004 02:14:55 +0000'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <updated>2004-02-28T18:14:55-08:00</updated>
+  <entry>
+    <source>
+      <updated>2004-02-28T18:14:55-08:00</updated>
+    </source>
+  </entry>
+</feed>
+

@@ -1,0 +1,10 @@
+<!--
+Description:  plain text title
+Expect:       Items[0]['title'] == 'AT&amp;T' and Items[0]['title_plain'] == 'AT&T'
+-->
+
+<feed xmns="http://www.w3.org/2005/Atom">
+  <entry>
+    <title type="text">AT&amp;T</title>
+  </entry>
+</feed>

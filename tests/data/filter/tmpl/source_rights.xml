@@ -1,0 +1,14 @@
+<!--
+Description:  source rights
+Expect:       Channels[0]['rights'] == '&copy; 2006' and Items[0]['channel_rights'] == '&copy; 2006'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <rights type="html">&amp;copy; 2006</rights>
+  <entry>
+    <source>
+      <rights type="html">&amp;copy; 2006</rights>
+    </source>
+  </entry>
+</feed>
+

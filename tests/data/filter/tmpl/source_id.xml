@@ -1,0 +1,14 @@
+<!--
+Description:  source id
+Expect:       Channels[0]['id'] == 'http://example.com/' and Items[0]['channel_id'] == 'http://example.com/'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>http://example.com/</id>
+  <entry>
+    <source>
+      <id>http://example.com/</id>
+    </source>
+  </entry>
+</feed>
+

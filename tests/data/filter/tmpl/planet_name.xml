@@ -1,0 +1,14 @@
+<!--
+Description:  id
+Expect:       Channels[0]['name'] == 'foo'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <planet:name>foo</planet:name>
+  <entry>
+    <source>
+      <planet:name>foo</planet:name>
+    </source>
+  </entry>
+</feed>
+

@@ -1,0 +1,10 @@
+<!--
+Description:  entity encoded html title
+Expect:       Items[0]['title'] == 'D&eacute;tente' and Items[0]['title_plain'] == 'D\xc3\xa9tente'
+-->
+
+<feed xmns="http://www.w3.org/2005/Atom">
+  <entry>
+    <title type="html">D&amp;eacute;tente</title>
+  </entry>
+</feed>

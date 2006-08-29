@@ -1,0 +1,13 @@
+<!--
+Description:  author name
+Expect:       Items[0]['author'] == 'john@example.com' and Items[0]['author_email'] == 'john@example.com'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <author>
+      <email>john@example.com</email>
+    </author>
+  </entry>
+</feed>
+

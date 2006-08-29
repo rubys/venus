@@ -1,0 +1,10 @@
+<!--
+Description:  title value
+Expect:       Items[0]['title'] == 'foo' and Items[0]['title_language'] == 'en-us' and Items[0]['title_plain'] == 'foo'
+-->
+
+<feed xmns="http://www.w3.org/2005/Atom">
+  <entry>
+    <title xml:lang="en-us">foo</title>
+  </entry>
+</feed>

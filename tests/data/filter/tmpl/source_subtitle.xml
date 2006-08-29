@@ -1,0 +1,14 @@
+<!--
+Description:  source subtitle
+Expect:       Channels[0]['subtitle'] == 'snarky phrase' and Items[0]['channel_subtitle'] == 'snarky phrase'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <subtitle>snarky phrase</subtitle>
+  <entry>
+    <source>
+      <subtitle>snarky phrase</subtitle>
+    </source>
+  </entry>
+</feed>
+

@@ -1,0 +1,14 @@
+<!--
+Description:  source title
+Expect:       Channels[0]['title'] == 'visible name' and Channels[0]['title_plain'] == 'visible name' and Items[0]['channel_title_plain'] == 'visible name' and Items[0]['channel_title'] == 'visible name'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>visible name</title>
+  <entry>
+    <source>
+      <title>visible name</title>
+    </source>
+  </entry>
+</feed>
+

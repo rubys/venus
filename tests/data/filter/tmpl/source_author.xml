@@ -1,0 +1,18 @@
+<!--
+Description:  source author
+Expect:       Channels[0]['author'] == 'John Doe' and Channels[0]['author_name'] == 'John Doe' and Items[0]['channel_author'] == 'John Doe' and Items[0]['channel_author_name'] == 'John Doe'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <author>
+    <name>John Doe</name>
+  </author>
+  <entry>
+    <source>
+      <author>
+        <name>John Doe</name>
+      </author>
+    </source>
+  </entry>
+</feed>
+

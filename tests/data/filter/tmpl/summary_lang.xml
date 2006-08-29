@@ -1,0 +1,10 @@
+<!--
+Description:  summary value
+Expect:       Items[0]['content'] == 'foo' and Items[0]['summary_language'] == 'en-us'
+-->
+
+<feed xmns="http://www.w3.org/2005/Atom">
+  <entry>
+    <summary xml:lang="en-us">foo</summary>
+  </entry>
+</feed>

@@ -1,0 +1,14 @@
+<!--
+Description:  source logo
+Expect:       Channels[0]['logo'] == 'http://www.example.com/logo.jpg' and Items[0]['channel_logo'] == 'http://www.example.com/logo.jpg'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <logo>http://www.example.com/logo.jpg</logo>
+  <entry>
+    <source>
+      <logo>http://www.example.com/logo.jpg</logo>
+    </source>
+  </entry>
+</feed>
+

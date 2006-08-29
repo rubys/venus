@@ -1,0 +1,13 @@
+<!--
+Description:  id generated from description
+Expect:       Items[0]['content'] == 'description'
+-->
+
+<rss xml:base="http://example.com/">
+  <channel>
+    <item>
+      <description>description</description>
+    </item>
+  </channel>
+</rss>
+

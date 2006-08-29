@@ -1,7 +1,7 @@
 """ Splice together a planet from a cache of feed entries """
 import glob, os, time, shutil
 from xml.dom import minidom
-import planet, config, feedparser, reconstitute
+import planet, config, feedparser, reconstitute, shell
 from reconstitute import createTextElement, date
 from spider import filename
 
@@ -57,53 +57,9 @@ def apply(doc):
     if not os.path.exists(output_dir): os.makedirs(output_dir)
     log = planet.getLogger(config.log_level())
 
-    try:
-        # if available, use the python interface to libxslt
-        import libxml2
-        import libxslt
-        dom = libxml2.parseDoc(doc)
-        docfile = None
-    except:
-        # otherwise, use the command line interface
-        dom = None
-        import warnings
-        warnings.simplefilter('ignore', RuntimeWarning)
-        docfile = os.tmpnam()
-        file = open(docfile,'w')
-        file.write(doc)
-        file.close()
-
     # Go-go-gadget-template
     for template_file in config.template_files():
-        for template_dir in config.template_directories():
-            template_resolved = os.path.join(template_dir, template_file)
-            if os.path.exists(template_resolved): break
-        else:
-            log.error("Unable to locate template %s", template_file)
-            continue
-
-        base,ext = os.path.splitext(os.path.basename(template_resolved))
-        if ext != '.xslt':
-            log.warning("Skipping template %s", template_resolved)
-            continue
-
-        log.info("Processing template %s", template_resolved)
-        output_file = os.path.join(output_dir, base)
-        if dom:
-            styledoc = libxml2.parseFile(template_resolved)
-            style = libxslt.parseStylesheetDoc(styledoc)
-            result = style.applyStylesheet(dom, None)
-            log.info("Writing %s", output_file)
-            style.saveResultToFilename(output_file, result, 0)
-            style.freeStylesheet()
-            result.freeDoc()
-        else:
-            log.info("Writing %s", output_file)
-            os.system('xsltproc %s %s > %s' %
-                (template_resolved, docfile, output_file))
-
-    if dom: dom.freeDoc()
-    if docfile: os.unlink(docfile)
+        shell.run(template_file, doc)
 
     # Process bill of materials
     for copy_file in config.bill_of_materials():

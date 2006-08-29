@@ -1,0 +1,13 @@
+<!--
+Description:  xhtml content
+Expect:       Items[0]['content'] == 'A <b>very</b> bad day'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">A <b>very</b> bad day</div>
+    </content>
+  </entry>
+</feed>
+
