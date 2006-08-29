@@ -13,12 +13,14 @@ def run(template_file, doc):
 
     base,ext = os.path.splitext(os.path.basename(template_resolved))
     try:
-        module_path = os.path.join('planet', 'shell', ext[1:])
-        module = __import__(module_path)
-    except:
-        return log.error("Skipping template '%s' after failing to load '%s'", template_resolved, module_path)
+        template_module_name = os.path.join('planet', 'shell', ext[1:])
+        template_module = __import__(template_module_name)
+    except ImportError, inst:
+        return log.error("Skipping template '%s' after failing to load '%s': %s", template_resolved, template_module_name, inst)
+    except Exception, inst:
+        return log.error("Unknown exception: %s", inst)
 
-    log.info("Processing template %s", template_resolved)
+    log.info("Processing template %s from %s", template_resolved, template_module_name)
     output_dir = planet.config.output_dir()
     output_file = os.path.join(output_dir, base)
-    template.run(template_resolved, doc, output_file)
+    template_module.run(template_resolved, doc, output_file)
