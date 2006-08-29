@@ -13,9 +13,10 @@ def run(template_file, doc):
 
     base,ext = os.path.splitext(os.path.basename(template_resolved))
     try:
-        module = __import__('planet/shell/' + ext[1:])
+        module_path = os.path.join('planet', 'shell', ext[1:])
+        module = __import__(module_path)
     except:
-        return log.error("Skipping template %s", template_resolved)
+        return log.error("Skipping template %s", module_path)
 
     log.info("Processing template %s", template_resolved)
     output_dir = planet.config.output_dir()
