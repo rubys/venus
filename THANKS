@@ -1,0 +1,24 @@
+DeWitt Clinton - Mac OSX
+Mary Gardiner - PythonPath
+
+This codebase represents a radical refactoring of Planet 2.0, which lists
+the following contributors:
+
+Patches and Bug Fixes
+---------------------
+
+Chris Dolan - fixes, exclude filtering, duplicate culling
+David Edmondson - filtering
+Lucas Nussbaum - locale configuration
+David Pashley - cache code profiling and recursion fixing
+Gediminas Paulauskas - days per page
+
+
+Spycyroll Maintainers
+---------------------
+
+Vattekkat Satheesh Babu
+Richard Jones
+Garth Kidd
+Eliot Landrum
+Bryan Richard
