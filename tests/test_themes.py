@@ -11,7 +11,7 @@ class ConfigTest(unittest.TestCase):
     # template directories
 
     def test_template_directories(self):
-        self.assertEqual(['foo', 'bar', 'asf', 'common'],
+        self.assertEqual(['foo', 'bar', 'asf', 'config', 'common'],
             [split(dir)[1] for dir in config.template_directories()])
 
     # administrivia
