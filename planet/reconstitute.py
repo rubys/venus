@@ -35,7 +35,7 @@ def createTextElement(parent, name, value):
 def invalidate(c): 
     """ replace invalid characters """
     return '<acronym title="U+%s">\xef\xbf\xbd</acronym>' % \
-        hex(ord(c.group(0)))[2:].rjust(4,'0')
+        ('000' + hex(ord(c.group(0)))[2:])[-4:]
 
 def ncr2c(value):
     """ convert numeric character references to characters """

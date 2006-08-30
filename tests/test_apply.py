@@ -44,8 +44,8 @@ class ApplyTest(unittest.TestCase):
             content += 1
             if div.getAttribute('xml:lang') == 'en-us': lang += 1
         html.close()
-        self.assertEqual(3, lang)
         self.assertEqual(12, content)
+        self.assertEqual(3, lang)
 
     def test_apply_fancy(self):
         config.load(configfile % 'fancy')
@@ -59,6 +59,6 @@ class ApplyTest(unittest.TestCase):
 
         # verify that index.html is well formed, has content, and xml:lang
         html = open(os.path.join(workdir, 'index.html')).read()
-        self.assertTrue('<h1>test planet</h1>' in html)
-        self.assertTrue('<h4><a href="http://example.com/2">Venus</a></h4>'
-            in html)
+        self.assertTrue(html.find('<h1>test planet</h1>')>=0)
+        self.assertTrue(html.find(
+          '<h4><a href="http://example.com/2">Venus</a></h4>')>=0)

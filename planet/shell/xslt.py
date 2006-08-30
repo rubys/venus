@@ -13,7 +13,8 @@ def run(script, doc, output_file=None):
         # otherwise, use the command line interface
         dom = None
         import warnings
-        warnings.simplefilter('ignore', RuntimeWarning)
+        if hasattr(warnings, 'simplefilter'):
+            warnings.simplefilter('ignore', RuntimeWarning)
         docfile = os.tmpnam()
         file = open(docfile,'w')
         file.write(doc)
