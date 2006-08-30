@@ -26,7 +26,7 @@ Todo:
   * error handling (example: no planet section)
 """
 
-import os, sys
+import os, sys, re
 from ConfigParser import ConfigParser
 
 parser = ConfigParser()
@@ -37,7 +37,7 @@ def __init__():
     """define the struture of an ini file"""
     import config
 
-    # underlying implementation
+    # get an option from a section
     def get(section, option, default):
         if section and parser.has_option(section, option):
             return parser.get(section, option)
@@ -46,18 +46,38 @@ def __init__():
         else:
             return default
 
+    # expand %(var) in lists
+    def expand(list):
+        output = []
+        wild = re.compile('^(.*)#{(\w+)}(.*)$')
+        for file in list.split():
+            match = wild.match(file)
+            if match:
+                pre,var,post = match.groups()
+                for sub in subscriptions():
+                    value = feed_options(sub).get(var,None)
+                    if value:
+                        output.append(pre+value+post)
+            else:
+                output.append(file)
+        return output
+
+    # define a string planet-level variable
     def define_planet(name, default):
         setattr(config, name, lambda default=default: get(None,name,default))
         planet_predefined_options.append(name)
 
+    # define a list planet-level variable
     def define_planet_list(name):
-        setattr(config, name, lambda : get(None,name,'').split())
+        setattr(config, name, lambda : expand(get(None,name,'')))
         planet_predefined_options.append(name)
 
+    # define a string template-level variable
     def define_tmpl(name, default):
         setattr(config, name, lambda section, default=default:
             get(section,name,default))
 
+    # define an int template-level variable
     def define_tmpl_int(name, default):
         setattr(config, name, lambda section, default=default:
             int(get(section,name,default)))
@@ -106,11 +126,16 @@ def load(config_file):
             theme_file = os.path.join(theme_dir,'config.ini')
             if os.path.exists(theme_file):
                 # initial search list for theme directories
-                dirs = config.template_directories() + [theme_dir]
+                dirs = config.template_directories()
+                if theme_dir not in dirs:
+                    dirs.append(theme_dir)
+                if os.path.dirname(config_file) not in dirs:
+                    dirs.append(os.path.dirname(config_file))
 
                 # read in the theme
                 parser = ConfigParser()
                 parser.read(theme_file)
+                bom = config.bill_of_materials()
 
                 # complete search list for theme directories
                 dirs += [os.path.join(theme_dir,dir) for dir in 
@@ -118,6 +143,9 @@ def load(config_file):
 
                 # merge configurations, allowing current one to override theme
                 parser.read(config_file)
+                for file in config.bill_of_materials():
+                    if not file in bom: bom.append(file)
+                parser.set('Planet', 'bill_of_materials', ' '.join(bom))
                 parser.set('Planet', 'template_directories', ' '.join(dirs))
                 break
         else:
