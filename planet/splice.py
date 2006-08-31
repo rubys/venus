@@ -36,8 +36,11 @@ def splice(configFile):
 
     # insert entry information
     for mtime,file in dir[:items]:
-        entry=minidom.parse(file)
-        feed.appendChild(entry.documentElement)
+        try:
+            entry=minidom.parse(file)
+            feed.appendChild(entry.documentElement)
+        except:
+            log.error("Error parsing %s", file)
 
     # insert subscription information
     feed.setAttribute('xmlns:planet',planet.xmlns)

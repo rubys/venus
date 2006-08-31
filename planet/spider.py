@@ -148,6 +148,7 @@ def spiderFeed(feed):
         xdoc.unlink()
         for filter in config.filters():
             output = shell.run(filter, output, mode="filter")
+            if not output: return
 
         # write out and timestamp the results
         write(output, cache_file) 
