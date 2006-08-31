@@ -19,10 +19,10 @@ distribution.
 
         python runtests.py
 
-   This should take anywhere from a half a second to ten seconds to execute.
-   No network connection is required, and it cleans up after itself.  If it
-   completes with an "OK", you are good to go.  Otherwise stopping here and
-   inquiring on the mailing list is a good idea as it can save you lots of
+   This should take anywhere from a one to ten seconds to execute.  No network
+   connection is required, and the script cleans up after itself.  If the
+   script completes with an "OK", you are good to go.  Otherwise stopping here
+   and inquiring on the mailing list is a good idea as it can save you lots of
    frustration down the road.
 
  iii.

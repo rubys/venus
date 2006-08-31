@@ -29,18 +29,18 @@ def run(template_file, doc, mode='template'):
     try:
         module = __import__(module_name)
     except Exception, inst:
-        print module_name
         return log.error("Skipping %s '%s' after failing to load '%s': %s", 
             mode, template_resolved, module_name, inst)
 
     # Execute the shell module
+    options = planet.config.template_options(template_file)
     if mode == 'filter':
         log.debug("Processing filer %s using %s", template_resolved,
             module_name)
-        return module.run(template_resolved, doc, None)
+        return module.run(template_resolved, doc, None, options)
     else:
         log.info("Processing template %s using %s", template_resolved,
             module_name)
         output_dir = planet.config.output_dir()
         output_file = os.path.join(output_dir, base)
-        module.run(template_resolved, doc, output_file)
+        module.run(template_resolved, doc, output_file, options)

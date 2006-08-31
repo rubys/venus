@@ -1,6 +1,6 @@
 import os
 
-def run(script, doc, output_file=None):
+def run(script, doc, output_file=None, options={}):
     """ process an XSLT stylesheet """
 
     try:

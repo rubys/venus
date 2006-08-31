@@ -221,7 +221,7 @@ def template_info(source):
 
     return output
 
-def run(script, doc, output_file=None):
+def run(script, doc, output_file=None, options={}):
     """ process an HTMLTMPL file """
     manager = htmltmpl.TemplateManager()
     template = manager.prepare(script)

@@ -1,6 +1,6 @@
 from subprocess import Popen, PIPE
 
-def run(script, doc, output_file=None):
+def run(script, doc, output_file=None, options={}):
     """ process an Python script """
 
     if output_file:
@@ -8,9 +8,14 @@ def run(script, doc, output_file=None):
     else:
         out = PIPE
 
-    proc = Popen(['python', script], stdin=PIPE, stdout=out, stderr=PIPE)
+    options = sum([['--'+key, value] for key,value in options.items()], [])
+
+    proc = Popen(['python', script] + options,
+        stdin=PIPE, stdout=out, stderr=PIPE)
+
     stdout, stderr = proc.communicate(doc)
     if stderr:
-        print stderr
+        import planet
+        planet.logger.error(stderr)
 
     return stdout

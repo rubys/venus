@@ -1,0 +1,10 @@
+<entry xmlns="http://www.w3.org/2005/Atom">
+  <summary><div xmlns="http://wwww.w3.org/1999/xhtml">before
+
+<img src="inner" alt="bar"/>
+<a href="outer1"><img src="foo" alt="bar"/></a>
+<a href="outer2"><img src="foo"/></a>
+
+after</div></summary>
+</entry>
+
