@@ -17,7 +17,7 @@ import sys, xml.dom.minidom, textwrap
 from xml.dom import Node, minidom
 
 atomNS = 'http://www.w3.org/2005/Atom'
-planetNS = 'http://planet.intertwingly.net'
+planetNS = 'http://planet.intertwingly.net/'
 
 args = dict(zip([name.lstrip('-') for name in sys.argv[1::2]], sys.argv[2::2]))
 
