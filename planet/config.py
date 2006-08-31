@@ -168,22 +168,30 @@ def load(config_file):
         for list in reading_lists:
             cache_filename = filename(config.cache_lists_directory(), list)
             try:
-                import urllib
-                data=urllib.urlopen(list).read()
+                import urllib, StringIO
+
+                # read once to verify
+                data=StringIO.StringIO(urllib.urlopen(list).read())
+                cached_config = ConfigParser()
+                opml.opml2config(data, cached_config)
+                if not cached_config.sections(): raise Exception
+
+                # write to cache
                 cache = open(cache_filename, 'w')
-                cache.write(data)
+                cached_config.write(cache)
                 cache.close()
+
+                # re-parse and proceed
                 log.debug("Using %s readinglist", list) 
+                data.seek(0)
+                opml.opml2config(data, parser)
             except:
                 try:
-                    cache = open(cache_filename)
-                    data = cache.read()
-                    cache.close()
+                    parser.read(cache_filename)
                     log.info("Using cached %s readinglist", list)
                 except:
                     log.exception("Unable to read %s readinglist", list)
                     continue
-        opml.opml2config(data, parser)
         # planet.foaf.foaf2config(data, list, config)
 
 def cache_sources_directory():

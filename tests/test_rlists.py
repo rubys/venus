@@ -40,12 +40,8 @@ class ReadingListTest(unittest.TestCase):
         cache = glob(os.path.join(workdir,'lists','*'))
         self.assertTrue(1,len(cache))
 
-        file = open(cache[0])
-        data = file.read()
-        file.close()
-
         parser = ConfigParser()
-        opml.opml2config(data, parser)
+        parser.read(cache[0])
 
         feeds = [split(feed)[1] for feed in parser.sections()]
         feeds.sort()
