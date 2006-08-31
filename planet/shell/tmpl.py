@@ -73,6 +73,7 @@ Base = [
     ['last_updated_822', Rfc822, 'updated_parsed'],
     ['last_updated_iso', Rfc3399, 'updated_parsed'],
     ['last_updated', PlanetDate, 'updated_parsed'],
+    ['link', String, 'link'],
     ['logo', String, 'logo'],
     ['rights', String, 'rights_detail', 'value'],
     ['subtitle', String, 'subtitle_detail', 'value'],
