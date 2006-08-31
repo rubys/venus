@@ -101,6 +101,8 @@ def __init__():
     define_planet_list('template_files')
     define_planet_list('bill_of_materials')
     define_planet_list('template_directories')
+    define_planet_list('filters')
+    define_planet_list('filter_directories')
     define_planet_list('reading_lists')
 
     # template options
@@ -150,6 +152,12 @@ def load(config_file):
                 break
         else:
             log.error('Unable to find theme %s', theme)
+
+    # Filter support
+    dirs = config.filter_directories()
+    filter_dir = os.path.join(sys.path[0],'filters')
+    if filter_dir not in dirs and os.path.exists(filter_dir):
+        parser.set('Planet', 'filter_directories', ' '.join(dirs+[filter_dir]))
 
     # Reading list support
     reading_lists = config.reading_lists()
@@ -209,8 +217,8 @@ def feedtype():
 
 def subscriptions():
     """ list the feed subscriptions """
-    return filter(lambda feed: feed!='Planet' and feed not in template_files(),
-       parser.sections())
+    return filter(lambda feed: feed!='Planet' and 
+        feed not in template_files()+filters(), parser.sections())
 
 def planet_options():
     """ dictionary of planet wide options"""

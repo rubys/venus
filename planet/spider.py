@@ -7,7 +7,7 @@ and write each as a set of entries in a cache directory.
 import time, calendar, re, os
 from xml.dom import minidom
 # Planet modules
-import planet, config, feedparser, reconstitute
+import planet, config, feedparser, reconstitute, shell
 
 # Regular expressions to sanitise cache filenames
 re_url_scheme    = re.compile(r'^\w+:/*(\w+:|www\.)?')
@@ -39,9 +39,8 @@ def filename(directory, filename):
 def write(xdoc, out):
     """ write the document out to disk """
     file = open(out,'w')
-    file.write(xdoc.toxml('utf-8'))
+    file.write(xdoc)
     file.close()
-    xdoc.unlink()
 
 def spiderFeed(feed):
     """ Spider (fetch) a single feed """
@@ -116,30 +115,43 @@ def spiderFeed(feed):
     xdoc=minidom.parseString('''<feed xmlns:planet="%s"
       xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
     reconstitute.source(xdoc.documentElement, data.feed, data.bozo)
-    write(xdoc, filename(sources, feed))
+    write(xdoc.toxml('utf-8'), filename(sources, feed))
+    xdoc.unlink()
 
     # write each entry to the cache
     cache = config.cache_directory()
     for entry in data.entries:
+
+        # generate an id, if none is present
         if not entry.has_key('id') or not entry.id:
             entry['id'] = reconstitute.id(None, entry)
             if not entry['id']: continue
 
-        out = filename(cache, entry.id)
+        # compute cache file name based on the id
+        cache_file = filename(cache, entry.id)
 
+        # get updated-date either from the entry or the cache (default to now)
         mtime = None
         if entry.has_key('updated_parsed'):
             mtime = calendar.timegm(entry.updated_parsed)
             if mtime > time.time(): mtime = None
         if not mtime:
             try:
-                mtime = os.stat(out).st_mtime
+                mtime = os.stat(cache_file).st_mtime
             except:
                 mtime = time.time()
             entry['updated_parsed'] = time.gmtime(mtime)
 
-        write(reconstitute.reconstitute(data, entry), out) 
-        os.utime(out, (mtime, mtime))
+        # apply any filters
+        xdoc = reconstitute.reconstitute(data, entry)
+        output = xdoc.toxml('utf-8')
+        xdoc.unlink()
+        for filter in config.filters():
+            output = shell.run(filter, output, mode="filter")
+
+        # write out and timestamp the results
+        write(output, cache_file) 
+        os.utime(cache_file, (mtime, mtime))
 
 def spiderPlanet(configFile):
     """ Spider (fetch) an entire planet """
