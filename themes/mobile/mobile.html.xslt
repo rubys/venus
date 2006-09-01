@@ -26,27 +26,17 @@
         <xsl:text>&#10;</xsl:text>
         <h1><xsl:value-of select="atom:title"/></h1>
 
+        <xsl:text>&#10;&#10;</xsl:text>
+        <div id="body">
+          <xsl:apply-templates select="atom:entry"/>
+          <xsl:text>&#10;&#10;</xsl:text>
+        </div>
+
+        <xsl:text>&#10;&#10;</xsl:text>
+        <h1>Subscriptions</h1>
+
         <xsl:text>&#10;</xsl:text>
         <div id="sidebar">
-
-          <xsl:text>&#10;&#10;</xsl:text>
-          <h2>Subscriptions</h2>
-          <xsl:text>&#10;</xsl:text>
-          <ul>
-            <xsl:for-each select="planet:source">
-              <xsl:sort select="planet:name"/>
-              <xsl:text>&#10;</xsl:text>
-              <li>
-                <a href="{atom:link[@rel='self']/@href}" title="subscribe">
-                  <img src="images/feed-icon-10x10.png" alt="(feed)"/>
-                </a>
-                <a href="{atom:link[@rel='alternate']/@href}">
-                  <xsl:value-of select="planet:name"/>
-                </a>
-              </li>
-            </xsl:for-each>
-            <xsl:text>&#10;</xsl:text>
-          </ul>
 
           <xsl:text>&#10;&#10;</xsl:text>
           <h2>Info</h2>
@@ -84,11 +74,25 @@
 
         </div>
 
-        <xsl:text>&#10;&#10;</xsl:text>
-        <div id="body">
-          <xsl:apply-templates select="atom:entry"/>
+        <xsl:text>&#10;</xsl:text>
+        <div id="footer">
+
           <xsl:text>&#10;&#10;</xsl:text>
+          <xsl:text>&#10;</xsl:text>
+          <ul>
+            <xsl:for-each select="planet:source">
+              <xsl:sort select="planet:name"/>
+              <xsl:text>&#10;</xsl:text>
+              <li>
+                <a href="{atom:link[@rel='alternate']/@href}">
+                  <xsl:value-of select="planet:name"/>
+                </a>
+              </li>
+            </xsl:for-each>
+            <xsl:text>&#10;</xsl:text>
+          </ul>
         </div>
+
       </body>
     </html>
   </xsl:template>
@@ -138,14 +142,7 @@
 
       <!-- entry content -->
       <xsl:text>&#10;</xsl:text>
-      <xsl:choose>
-        <xsl:when test="atom:content">
-          <xsl:apply-templates select="atom:content"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:apply-templates select="atom:summary"/>
-        </xsl:otherwise>
-      </xsl:choose>
+      <xsl:apply-templates select="planet:excerpt"/>
   
       <!-- entry footer -->
       <xsl:text>&#10;</xsl:text>
@@ -173,7 +170,7 @@
   </xsl:template>
 
   <!-- xhtml content -->
-  <xsl:template match="atom:content/xhtml:div | atom:summary/xhtml:div">
+  <xsl:template match="planet:excerpt/xhtml:div">
     <xsl:copy>
       <xsl:if test="../@xml:lang and not(../@xml:lang = ../../@xml:lang)">
         <xsl:attribute name="xml:lang">
@@ -186,7 +183,7 @@
   </xsl:template>
 
   <!-- plain text content -->
-  <xsl:template match="atom:content/text() | atom:summary/text()">
+  <xsl:template match="planet:excerpt/text()">
     <div class="content" xmlns="http://www.w3.org/1999/xhtml">
       <xsl:if test="../@xml:lang and not(../@xml:lang = ../../@xml:lang)">
         <xsl:attribute name="xml:lang">

@@ -132,6 +132,20 @@ h1 {
 	text-decoration: none !important;
 }
 
+/* ---------------------------- Footer --------------------------- */
+
+#footer ul {
+        margin: 0 20px 0 -25px;
+        padding: 0;
+}
+
+#footer li {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: inline;
+}
+
 /* ----------------------------- Body ---------------------------- */
 
 #body {

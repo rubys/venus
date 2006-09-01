@@ -4,8 +4,11 @@ Installing Planet
 You'll need at least Python 2.2 installed on your system, we recommend
 Python 2.4 though as there may be bugs with the earlier libraries.
 
-Everything Pythonesque Planet needs should be included in the
-distribution.
+Everything Pythonesque Planet need to provide basic operation should be
+included in the distribution.  Usage of XSLT requires either xsltproc
+or python-libxslt.  The current interface to filters written in
+non-templating languages (e.g., python) uses the subprocess module
+which was introduced in Python 2.4.
 
  i.
     First you'll need to extract the files into a folder somewhere.
