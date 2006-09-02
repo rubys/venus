@@ -103,12 +103,12 @@ def __init__():
     define_planet_list('template_directories')
     define_planet_list('filters')
     define_planet_list('filter_directories')
-    define_planet_list('reading_lists')
 
     # template options
     define_tmpl_int('days_per_page', 0)
     define_tmpl_int('items_per_page', 60)
     define_tmpl('encoding', 'utf-8')
+    define_tmpl('content_type', 'utf-8')
 
 def load(config_file):
     """ initialize and load a configuration"""
@@ -117,7 +117,7 @@ def load(config_file):
     parser.read(config_file)
 
     import config, planet
-    from planet import opml
+    from planet import opml, foaf
     log = planet.getLogger(config.log_level())
 
     # Theme support
@@ -173,7 +173,10 @@ def load(config_file):
                 # read once to verify
                 data=StringIO.StringIO(urllib.urlopen(list).read())
                 cached_config = ConfigParser()
-                opml.opml2config(data, cached_config)
+                if content_type(list).find('opml')>=0:
+                    opml.opml2config(data, cached_config)
+                elif content_type(list).find('foaf')>=0:
+                    foaf.foaf2config(data, cached_config)
                 if not cached_config.sections(): raise Exception
 
                 # write to cache
@@ -184,7 +187,7 @@ def load(config_file):
                 # re-parse and proceed
                 log.debug("Using %s readinglist", list) 
                 data.seek(0)
-                opml.opml2config(data, parser)
+                parser.read(cache_filename)
             except:
                 try:
                     parser.read(cache_filename)
@@ -226,7 +229,18 @@ def feedtype():
 def subscriptions():
     """ list the feed subscriptions """
     return filter(lambda feed: feed!='Planet' and 
-        feed not in template_files()+filters(), parser.sections())
+        feed not in template_files()+filters()+reading_lists(),
+        parser.sections())
+
+def reading_lists():
+    """ list of lists of feed subscriptions """
+    result = []
+    for section in parser.sections():
+        if parser.has_option(section, 'content_type'):
+            type = parser.get(section, 'content_type')
+            if type.find('opml')>=0 or type.find('foaf')>=0:
+                result.append(section)
+    return result
 
 def planet_options():
     """ dictionary of planet wide options"""

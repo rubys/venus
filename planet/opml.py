@@ -140,3 +140,11 @@ cp1252 = {
   unichr(156): unichr( 339), # latin small ligature oe
   unichr(158): unichr( 382), # latin small letter z with caron
   unichr(159): unichr( 376)} # latin capital letter y with diaeresis
+
+if __name__ == "__main__":
+    # small main program which converts OPML into config.ini format
+    import sys, urllib
+    config = ConfigParser()
+    for opml in sys.argv[1:]:
+        opml2config(urllib.urlopen(opml), config)
+    config.write(sys.stdout)
