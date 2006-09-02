@@ -81,7 +81,7 @@ class copy:
         if len(lines) == 1:
             target.appendChild(self.dom.createTextNode(source))
             self.textlen = len(lines[0])
-        else:
+        elif lines:
             excerpt = source[:len(lines[0])-self.textlen] + u' \u2026'
             target.appendChild(dom.createTextNode(excerpt))
             self.full = True
