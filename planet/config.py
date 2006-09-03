@@ -107,6 +107,7 @@ def __init__():
     # template options
     define_tmpl_int('days_per_page', 0)
     define_tmpl_int('items_per_page', 60)
+    define_tmpl_int('activity_threshold', 0)
     define_tmpl('encoding', 'utf-8')
     define_tmpl('content_type', 'utf-8')
 

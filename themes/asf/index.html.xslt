@@ -41,6 +41,19 @@
                   <img src="images/feed-icon-10x10.png" alt="(feed)"/>
                 </a>
                 <a href="{atom:link[@rel='alternate']/@href}">
+                  <xsl:choose>
+                    <xsl:when test="planet:message">
+                      <xsl:attribute name="class">message</xsl:attribute>
+                      <xsl:attribute name="title">
+                        <xsl:value-of select="planet:message"/>
+                      </xsl:attribute>
+                    </xsl:when>
+                    <xsl:when test="atom:title">
+                      <xsl:attribute name="title">
+                        <xsl:value-of select="atom:title"/>
+                      </xsl:attribute>
+                    </xsl:when>
+                  </xsl:choose>
                   <xsl:value-of select="planet:name"/>
                 </a>
               </li>
