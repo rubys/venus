@@ -8,12 +8,13 @@ from planet import spider, config
 
 if __name__ == '__main__':
 
+    config.load(sys.argv[1])
+
     if len(sys.argv) == 2:
         # spider all feeds 
-        spider.spiderPlanet(sys.argv[1])
+        spider.spiderPlanet()
     elif len(sys.argv) > 2:
         # spider selected feeds 
-        config.load(sys.argv[1])
         for feed in sys.argv[2:]:
             spider.spiderFeed(feed)
     else:

@@ -180,9 +180,8 @@ def spiderFeed(feed):
         write(output, cache_file) 
         os.utime(cache_file, (mtime, mtime))
 
-def spiderPlanet(configFile):
+def spiderPlanet():
     """ Spider (fetch) an entire planet """
-    config.load(configFile)
     log = planet.getLogger(config.log_level())
     planet.setTimeout(config.feed_timeout())
 

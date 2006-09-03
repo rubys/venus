@@ -66,7 +66,8 @@ class SpiderTest(unittest.TestCase):
         self.test_spiderFeed()
 
     def test_spiderPlanet(self):
-        spiderPlanet(configfile)
+        config.load(configfile)
+        spiderPlanet()
         files = glob.glob(workdir+"/*")
 
         # verify that exactly eight files + 1 source dir were produced

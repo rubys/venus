@@ -5,10 +5,9 @@ import planet, config, feedparser, reconstitute, shell
 from reconstitute import createTextElement, date
 from spider import filename
 
-def splice(configFile):
+def splice():
     """ Splice together a planet from a cache of entries """
     import planet
-    config.load(configFile)
     log = planet.getLogger(config.log_level())
 
     log.info("Loading cached data")

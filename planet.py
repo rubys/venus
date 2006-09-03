@@ -41,14 +41,17 @@ if __name__ == "__main__":
         else:
             config_file = arg
 
+    from planet import config
+    config.load(config_file)
+
     if verbose:
         import planet
         planet.getLogger('DEBUG')
 
     if not offline:
         from planet import spider
-        spider.spiderPlanet(config_file)
+        spider.spiderPlanet()
 
     from planet import splice
-    doc = splice.splice(config_file)
+    doc = splice.splice()
     splice.apply(doc.toxml('utf-8'))
