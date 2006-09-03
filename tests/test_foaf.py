@@ -73,5 +73,12 @@ class FoafTest(unittest.TestCase):
         foaf2config(test, blogroll, self.config)
         self.assertEqual('Danny Ayers', self.config.get(testfeed, 'name'))
 
+# these tests only make sense if libRDF is installed
+try:
+    import RDF
+except:
+    for key in FoafTest.__dict__.keys():
+        if key.startswith('test_'): delattr(FoafTest, key)
+
 if __name__ == '__main__':
     unittest.main()
