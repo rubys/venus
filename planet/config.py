@@ -28,6 +28,7 @@ Todo:
 
 import os, sys, re
 from ConfigParser import ConfigParser
+from urlparse import urljoin
 
 parser = ConfigParser()
 
@@ -169,16 +170,44 @@ def load(config_file):
         for list in reading_lists:
             cache_filename = filename(config.cache_lists_directory(), list)
             try:
-                import urllib, StringIO
+                import urllib2, StringIO
 
-                # read once to verify
-                data=StringIO.StringIO(urllib.urlopen(list).read())
+                # retrieve list options (e.g., etag, last-modified) from cache
+                options = {}
+                try:
+                    cached_config = ConfigParser()
+                    cached_config.read(cache_filename)
+                    for option in cached_config.options(list):
+                         options[option] = cached_config.get(list,option)
+                except:
+                    pass
                 cached_config = ConfigParser()
+                cached_config.add_section(list)
+                for key, value in options.items():
+                    cached_config.set(list, key, value)
+
+                # read list
+                base = urljoin('file:', os.path.abspath(os.path.curdir))
+                request = urllib2.Request(urljoin(base + '/', list))
+                if options.has_key("etag"):
+                    request.add_header('If-None-Match', options['etag'])
+                if options.has_key("last-modified"):
+                    request.add_header('If-Modified-Since',
+                        options['last-modified'])
+                response = urllib2.urlopen(request)
+                if response.headers.has_key('etag'):
+                    cached_config.set(list, 'etag', response.headers['etag'])
+                if response.headers.has_key('last-modified'):
+                    cached_config.set(list, 'last-modified',
+                        response.headers['last-modified'])
+
+                # convert to config.ini
+                data=StringIO.StringIO(response.read())
                 if content_type(list).find('opml')>=0:
                     opml.opml2config(data, cached_config)
                 elif content_type(list).find('foaf')>=0:
                     foaf.foaf2config(data, cached_config)
-                if not cached_config.sections(): raise Exception
+                if cached_config.sections() in [[], [list]]: raise Exception
 
                 # write to cache
                 cache = open(cache_filename, 'w')
@@ -196,7 +225,6 @@ def load(config_file):
                 except:
                     log.exception("Unable to read %s readinglist", list)
                     continue
-        # planet.foaf.foaf2config(data, list, config)
 
 def cache_sources_directory():
     if parser.has_option('Planet', 'cache_sources_directory'):
@@ -217,7 +245,7 @@ def feed():
         for template_file in template_files:
             name = os.path.splitext(os.path.basename(template_file))[0]
             if name.find('atom')>=0 or name.find('rss')>=0:
-                return urlparse.urljoin(link(), name)
+                return urljoin(link(), name)
 
 def feedtype():
     if parser.has_option('Planet', 'feedtype'):

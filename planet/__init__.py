@@ -39,12 +39,12 @@ def setTimeout(timeout):
         try:
             from planet import timeoutsocket
             timeoutsocket.setDefaultSocketTimeout(timeout)
-            logger.debug("Socket timeout set to %d seconds", timeout)
+            logger.info("Socket timeout set to %d seconds", timeout)
         except ImportError:
             import socket
             if hasattr(socket, 'setdefaulttimeout'):
                 logger.debug("timeoutsocket not found, using python function")
                 socket.setdefaulttimeout(timeout)
-                logger.debug("Socket timeout set to %d seconds", timeout)
+                logger.info("Socket timeout set to %d seconds", timeout)
             else:
                 logger.error("Unable to set timeout to %d seconds", timeout)

@@ -45,5 +45,5 @@ class ReadingListTest(unittest.TestCase):
 
         feeds = [split(feed)[1] for feed in parser.sections()]
         feeds.sort()
-        self.assertEqual(['testfeed0.atom', 'testfeed1a.atom',
+        self.assertEqual(['opml.xml', 'testfeed0.atom', 'testfeed1a.atom',
             'testfeed2.atom', 'testfeed3.rss'], feeds)
