@@ -80,6 +80,7 @@ Base = [
     ['title', String, 'title_detail', 'value'],
     ['title_plain', Plain, 'title_detail', 'value'],
     ['url', String, 'links', {'rel':'self'}, 'href'],
+    ['url', String, 'planet_http_location'],
 ]
 
 Items = [

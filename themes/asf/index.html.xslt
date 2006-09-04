@@ -37,9 +37,24 @@
               <xsl:sort select="planet:name"/>
               <xsl:text>&#10;</xsl:text>
               <li>
-                <a href="{atom:link[@rel='self']/@href}" title="subscribe">
+                <!-- icon -->
+                <a title="subscribe">
+                  <xsl:choose>
+                    <xsl:when test="planet:http_location">
+                      <xsl:attribute name="href">
+                        <xsl:value-of select="planet:http_location"/>
+                      </xsl:attribute>
+                    </xsl:when>
+                    <xsl:when test="atom:link[@rel='self']/@href">
+                      <xsl:attribute name="href">
+                        <xsl:value-of select="atom:link[@rel='self']/@href"/>
+                      </xsl:attribute>
+                    </xsl:when>
+                  </xsl:choose>
                   <img src="images/feed-icon-10x10.png" alt="(feed)"/>
                 </a>
+
+                <!-- name -->
                 <a href="{atom:link[@rel='alternate']/@href}">
                   <xsl:choose>
                     <xsl:when test="planet:message">

@@ -128,7 +128,9 @@ def spiderFeed(feed):
 
     # process based on the HTTP status code
     log = planet.logger
-    if data.status == 301 and data.has_key("entries") and len(data.entries)>0:
+    if data.status == 200 and data.has_key("url"):
+        data.feed['planet_http_location'] = data.url
+    elif data.status == 301 and data.has_key("entries") and len(data.entries)>0:
         log.warning("Feed has moved from <%s> to <%s>", feed, data.url)
         data.feed['planet_http_location'] = data.url
     elif data.status == 304:
@@ -194,14 +196,6 @@ def spiderFeed(feed):
     # perform user configured scrub operations on the data
     scrub(feed, data)
 
-    # write the feed info to the cache
-    if not os.path.exists(sources): os.makedirs(sources)
-    xdoc=minidom.parseString('''<feed xmlns:planet="%s"
-      xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
-    reconstitute.source(xdoc.documentElement, data.feed, data.bozo)
-    write(xdoc.toxml('utf-8'), filename(sources, feed))
-    xdoc.unlink()
-
     # write each entry to the cache
     cache = config.cache_directory()
     for entry in data.entries:
@@ -239,6 +233,14 @@ def spiderFeed(feed):
         # write out and timestamp the results
         write(output, cache_file) 
         os.utime(cache_file, (mtime, mtime))
+
+    # write the feed info to the cache
+    if not os.path.exists(sources): os.makedirs(sources)
+    xdoc=minidom.parseString('''<feed xmlns:planet="%s"
+      xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
+    reconstitute.source(xdoc.documentElement, data.feed, data.bozo)
+    write(xdoc.toxml('utf-8'), filename(sources, feed))
+    xdoc.unlink()
 
 def spiderPlanet():
     """ Spider (fetch) an entire planet """
