@@ -44,3 +44,25 @@ class FilterTests(unittest.TestCase):
         self.assertEqual(u'Lorem ipsum dolor sit amet, consectetuer ' +
             u'adipiscing elit. Nullam velit. Vivamus tincidunt, erat ' +
             u'in \u2026', excerpt.firstChild.firstChild.nodeValue)
+
+    def test_stripAd_yahoo(self):
+        testfile = 'tests/data/filter/stripAd-yahoo.xml'
+        config.load('tests/data/filter/stripAd-yahoo.ini')
+
+        output = open(testfile).read()
+        for filter in config.filters():
+            output = shell.run(filter, output, mode="filter")
+
+        dom = xml.dom.minidom.parseString(output)
+        excerpt = dom.getElementsByTagName('content')[0]
+        self.assertEqual(u'before--after',
+            excerpt.firstChild.firstChild.nodeValue)
+
+try:
+    from subprocess import Popen, PIPE
+    sed=Popen(['sed','--version'],stdout=PIPE,stderr=PIPE)
+    sed.communicate()
+    if sed.returncode != 0: raise Exception
+except:
+    # sed is not available
+    del FilterTests.test_stripAd_yahoo

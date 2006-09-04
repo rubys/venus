@@ -50,3 +50,7 @@ class ConfigTest(unittest.TestCase):
         option = config.template_options('index.html.tmpl')
         self.assertEqual('7',  option['days_per_page'])
         self.assertEqual('50', option['items_per_page'])
+
+    def test_filters(self):
+        self.assertEqual(['foo','bar'], config.filters('feed2'))
+        self.assertEqual(['foo'], config.filters('feed1'))

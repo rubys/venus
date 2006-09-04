@@ -102,7 +102,6 @@ def __init__():
     define_planet_list('template_files')
     define_planet_list('bill_of_materials')
     define_planet_list('template_directories')
-    define_planet_list('filters')
     define_planet_list('filter_directories')
 
     # template options
@@ -111,6 +110,11 @@ def __init__():
     define_tmpl_int('activity_threshold', 0)
     define_tmpl('encoding', 'utf-8')
     define_tmpl('content_type', 'utf-8')
+    define_tmpl('ignore_in_feed', '')
+    define_tmpl('name_type', '')
+    define_tmpl('title_type', '')
+    define_tmpl('summary_type', '')
+    define_tmpl('content_type', '')
 
 def load(config_file):
     """ initialize and load a configuration"""
@@ -270,6 +274,14 @@ def reading_lists():
             if type.find('opml')>=0 or type.find('foaf')>=0:
                 result.append(section)
     return result
+
+def filters(section=None):
+    filters = []
+    if parser.has_option('Planet', 'filters'):
+        filters += parser.get('Planet', 'filters').split()
+    if section and parser.has_option(section, 'filters'):
+        filters += parser.get(section, 'filters').split()
+    return filters
 
 def planet_options():
     """ dictionary of planet wide options"""
