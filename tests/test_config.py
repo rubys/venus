@@ -18,13 +18,17 @@ class ConfigTest(unittest.TestCase):
         feeds.sort()
         self.assertEqual(['feed1', 'feed2'], feeds)
 
+    def test_feed(self):
+        self.assertEqual('http://example.com/atom.xml', config.feed())
+        self.assertEqual('atom', config.feedtype())
+
     # planet wide configuration
 
     def test_name(self):
         self.assertEqual('Test Configuration', config.name())
 
     def test_link(self):
-        self.assertEqual('', config.link())
+        self.assertEqual('http://example.com/', config.link())
 
     # per template configuration
 

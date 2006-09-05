@@ -28,10 +28,17 @@ def splice():
     date(feed, 'updated', time.gmtime())    
     gen = createTextElement(feed, 'generator', config.generator())
     gen.setAttribute('uri', config.generator_uri())
+
     author = doc.createElement('author')
     createTextElement(author, 'name', config.owner_name())
     createTextElement(author, 'email', config.owner_email())
     feed.appendChild(author)
+
+    createTextElement(feed, 'id', config.feed())
+    link = doc.createElement('link')
+    link.setAttribute('rel', 'self')
+    link.setAttribute('href', config.feed())
+    feed.appendChild(link)
 
     # insert entry information
     for mtime,file in dir[:items]:

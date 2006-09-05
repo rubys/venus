@@ -97,7 +97,6 @@ def __init__():
     define_planet('owner_email', '')
     define_planet('output_theme', '')
     define_planet('output_dir', 'output')
-    define_planet('feed', None)
 
     define_planet_list('template_files')
     define_planet_list('bill_of_materials')
@@ -244,9 +243,9 @@ def cache_lists_directory():
 
 def feed():
     if parser.has_option('Planet', 'feed'):
-        parser.get('Planet', 'feed')
+        return parser.get('Planet', 'feed')
     elif link():
-        for template_file in template_files:
+        for template_file in template_files():
             name = os.path.splitext(os.path.basename(template_file))[0]
             if name.find('atom')>=0 or name.find('rss')>=0:
                 return urljoin(link(), name)
