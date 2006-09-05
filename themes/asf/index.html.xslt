@@ -12,6 +12,7 @@
       <head>
         <link rel="stylesheet" href="default.css" type="text/css" />
         <title><xsl:value-of select="atom:title"/></title>
+        <meta name="robots" content="noindex,nofollow" />
         <meta name="generator" content="{atom:generator}" />
         <xsl:if test="atom:link[@rel='self']">
           <link rel="alternate" href="{atom:link[@rel='self']/@uri}"
