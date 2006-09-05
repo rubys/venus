@@ -177,6 +177,11 @@ def load(config_file):
 
                 # retrieve list options (e.g., etag, last-modified) from cache
                 options = {}
+
+                # add original options
+                for key, value in parser.items(list):
+                    options[key] = value
+                    
                 try:
                     cached_config = ConfigParser()
                     cached_config.read(cache_filename)

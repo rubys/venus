@@ -43,34 +43,35 @@ class FoafTest(unittest.TestCase):
 
     def setUp(self):
         self.config = ConfigParser()
+        self.config.add_section(blogroll)
 
     #
     # Tests
     #
 
     def test_foaf_document(self):
-        foaf2config(test_foaf_document, blogroll, self.config)
+        foaf2config(test_foaf_document, self.config)
         self.assertEqual('Danny Ayers', self.config.get(testfeed, 'name'))
 
     def test_no_foaf_name(self):
         test = test_foaf_document.replace('foaf:name','foaf:title')
-        foaf2config(test, blogroll, self.config)
+        foaf2config(test, self.config)
         self.assertEqual('Raw Blog by Danny Ayers',
            self.config.get(testfeed, 'name'))
 
     def test_no_weblog(self):
         test = test_foaf_document.replace('rdfs:seeAlso','rdfs:seealso')
-        foaf2config(test, blogroll, self.config)
+        foaf2config(test, self.config)
         self.assertFalse(self.config.has_section(testfeed))
 
     def test_invalid_xml_before(self):
         test = '\n<?xml version="1.0" encoding="UTF-8"?>' + test_foaf_document
-        foaf2config(test, blogroll, self.config)
+        foaf2config(test, self.config)
         self.assertFalse(self.config.has_section(testfeed))
 
     def test_invalid_xml_after(self):
         test = test_foaf_document.strip()[:-1]
-        foaf2config(test, blogroll, self.config)
+        foaf2config(test, self.config)
         self.assertEqual('Danny Ayers', self.config.get(testfeed, 'name'))
 
 # these tests only make sense if libRDF is installed
