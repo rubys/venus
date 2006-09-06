@@ -87,14 +87,19 @@ def id(xentry, entry):
 
 def links(xentry, entry):
     """ copy links to the entry """
-    if not entry.has_key('links'): return
+    if not entry.has_key('links'):
+       entry['links'] = []
+       if entry.has_key('link'):
+         entry['links'].append({'rel':'alternate', 'href':entry.link}) 
     xdoc = xentry.ownerDocument
     for link in entry.links:
         if not 'href' in link.keys(): continue
         xlink = xdoc.createElement('link')
-        xlink.setAttribute('type', link.get('type',None))
-        xlink.setAttribute('href', link.href)
-        xlink.setAttribute('rel', link.get('rel',None))
+        xlink.setAttribute('href', link.get('href'))
+        if link.has_key('type'):
+            xlink.setAttribute('type', link.get('type'))
+        if link.has_key('rel'):
+            xlink.setAttribute('rel', link.get('rel',None))
         xentry.appendChild(xlink)
 
 def date(xentry, name, parsed):
@@ -165,7 +170,7 @@ def source(xsource, source, bozo):
     content(xsource, 'subtitle', source.get('subtitle_detail',None), bozo)
     content(xsource, 'title', source.get('title_detail',None), bozo)
 
-    date(xsource, 'updated', source.get('updated_parsed',None))
+    date(xsource, 'updated', source.get('updated_parsed',time.gmtime()))
 
     # propagate planet inserted information
     for key, value in source.items():
@@ -182,6 +187,9 @@ def reconstitute(feed, entry):
     links(xentry, entry)
 
     bozo = feed.bozo
+    if not entry.has_key('title'):
+        xentry.appendChild(xdoc.createElement('title'))
+
     content(xentry, 'title', entry.get('title_detail',None), bozo)
     content(xentry, 'summary', entry.get('summary_detail',None), bozo)
     content(xentry, 'content', entry.get('content',[None])[0], bozo)

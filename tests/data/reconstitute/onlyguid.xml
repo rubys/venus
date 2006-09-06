@@ -1,0 +1,13 @@
+<!--
+Description:  link relationship
+Expect:       links[0].href == 'http://example.com/1' 
+-->
+
+<rss version="2.0">
+  <channel>
+    <item>
+      <guid>http://example.com/1</guid>
+    </item>
+  </channel>
+</rss>
+
