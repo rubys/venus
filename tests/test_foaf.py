@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
-import unittest
+import unittest, os, shutil
 from planet.foaf import foaf2config
 from ConfigParser import ConfigParser
+from planet import config
+
+workdir = 'tests/work/config/cache'
 
 blogroll = 'http://journal.dajobe.org/journal/2003/07/semblogs/bloggers.rdf'
 testfeed = "http://dannyayers.com/feed/rdf"
@@ -45,6 +48,11 @@ class FoafTest(unittest.TestCase):
         self.config = ConfigParser()
         self.config.add_section(blogroll)
 
+    def tearDown(self):
+        if os.path.exists(workdir):
+            shutil.rmtree(workdir)
+            os.removedirs(os.path.split(workdir)[0])
+
     #
     # Tests
     #
@@ -73,6 +81,15 @@ class FoafTest(unittest.TestCase):
         test = test_foaf_document.strip()[:-1]
         foaf2config(test, self.config)
         self.assertEqual('Danny Ayers', self.config.get(testfeed, 'name'))
+
+    def test_online_accounts(self):
+        config.load('tests/data/config/foaf.ini')
+        feeds = config.subscriptions()
+        feeds.sort()
+        self.assertEqual(['http://api.flickr.com/services/feeds/' +
+            'photos_public.gne?id=77366516@N00',
+            'http://del.icio.us/rss/eliast',
+            'http://torrez.us/feed/rdf'], feeds)
 
 # these tests only make sense if libRDF is installed
 try:

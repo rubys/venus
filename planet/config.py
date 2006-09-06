@@ -12,7 +12,7 @@ Usage:
 
   # administrative / structural information
   print config.template_files()
-  print config.feeds()
+  print config.subscriptions()
 
   # planet wide configuration
   print config.name()
