@@ -151,7 +151,7 @@ def source(xsource, source, bozo):
     """ copy source information to the entry """
     xdoc = xsource.ownerDocument
 
-    createTextElement(xsource, 'id', source.get('id', None))
+    createTextElement(xsource, 'id', source.get('id', source.get('link',None)))
     createTextElement(xsource, 'icon', source.get('icon', None))
     createTextElement(xsource, 'logo', source.get('logo', None))
 

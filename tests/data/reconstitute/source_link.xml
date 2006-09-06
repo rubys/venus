@@ -1,10 +1,11 @@
 <!--
 Description:  source link
-Expect:       source.links[0].href == 'http://example.com/atom.xml'
+Expect:       source.links[0].href == 'http://example.com/atom.xml' and source.id == 'http://example.com/'
 -->
 
 <feed xmlns="http://www.w3.org/2005/Atom">
   <link rel='self' href='http://example.com/atom.xml'/>
+  <link href='http://example.com/'/>
   <entry/>
 </feed>
 
