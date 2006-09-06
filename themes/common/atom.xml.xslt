@@ -7,6 +7,10 @@
   <!-- strip planet elements and attributes -->
   <xsl:template match="planet:*|@planet:*"/>
 
+  <!-- strip obsolete link relationships -->
+  <xsl:template match="atom:link[@rel='service.edit']"/>
+  <xsl:template match="atom:link[@rel='service.post']"/>
+
   <!-- add Google/LiveJournal-esque noindex directive -->
   <xsl:template match="atom:feed">
     <xsl:copy>
