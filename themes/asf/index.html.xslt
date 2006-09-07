@@ -15,7 +15,7 @@
         <meta name="robots" content="noindex,nofollow" />
         <meta name="generator" content="{atom:generator}" />
         <xsl:if test="atom:link[@rel='self']">
-          <link rel="alternate" href="{atom:link[@rel='self']/@uri}"
+          <link rel="alternate" href="{atom:link[@rel='self']/@href}"
             title="{atom:title}" type="{atom:link[@rel='self']/@type}" />
         </xsl:if>
         <link rel="shortcut icon" href="/favicon.ico" />
@@ -92,8 +92,8 @@
             <dt>Powered by:</dt>
             <dd>
               <a href="http://intertwingly.net/code/venus/">
-                <img src="images/planet.png" width="80" height="15"
-                  alt="Planet" border="0"/>
+                <img src="images/venus.png" width="80" height="15"
+                  alt="Venus" border="0"/>
               </a>
             </dd>
             <dt>Export:</dt>
@@ -212,7 +212,7 @@
         </xsl:attribute>
       </xsl:if>
       <xsl:attribute name="class">content</xsl:attribute>
-      <xsl:copy-of select="@*|node()"/>
+      <xsl:apply-templates select="@*|node()"/>
     </xsl:copy>
   </xsl:template>
 
@@ -227,4 +227,15 @@
       <xsl:copy-of select="."/>
     </div>
   </xsl:template>
+
+  <!-- Feedburner detritus -->
+  <xsl:template match="xhtml:div[@class='feedflare']"/>
+
+  <!-- pass through everything else -->
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+  </xsl:template>
+
 </xsl:stylesheet>

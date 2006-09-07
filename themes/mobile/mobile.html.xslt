@@ -54,8 +54,8 @@
             <dt>Powered by:</dt>
             <dd>
               <a href="http://intertwingly.net/code/venus/">
-                <img src="images/planet.png" width="80" height="15"
-                  alt="Planet" border="0"/>
+                <img src="images/venus.png" width="80" height="15"
+                  alt="Venus" border="0"/>
               </a>
             </dd>
             <dt>Export:</dt>

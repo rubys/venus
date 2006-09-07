@@ -1,6 +1,8 @@
-DeWitt Clinton - Mac OSX
-Mary Gardiner - PythonPath
-Elias Torres - FOAF OnlineAccounts
+DeWitt Clinton  - Mac OSX
+Mary Gardiner   - PythonPath
+Elias Torres    - FOAF OnlineAccounts
+Jacques Distler - Template patches
+Michael Koziarski - HTTP Auth fix
 
 This codebase represents a radical refactoring of Planet 2.0, which lists
 the following contributors:

@@ -34,11 +34,20 @@ def splice():
     createTextElement(author, 'email', config.owner_email())
     feed.appendChild(author)
 
-    createTextElement(feed, 'id', config.feed())
-    link = doc.createElement('link')
-    link.setAttribute('rel', 'self')
-    link.setAttribute('href', config.feed())
-    feed.appendChild(link)
+    if config.feed():
+        createTextElement(feed, 'id', config.feed())
+        link = doc.createElement('link')
+        link.setAttribute('rel', 'self')
+        link.setAttribute('href', config.feed())
+        if config.feedtype():
+            link.setAttribute('type', "application/%s+xml" % config.feedtype())
+        feed.appendChild(link)
+
+    if config.link():
+        link = doc.createElement('link')
+        link.setAttribute('rel', 'alternate')
+        link.setAttribute('href', config.link())
+        feed.appendChild(link)
 
     # insert entry information
     for mtime,file in dir[:items]:

@@ -191,7 +191,7 @@ def spiderFeed(feed):
     elif data.status == 500:
        data.feed['planet_message'] = "internal server error"
     elif data.status >= 400:
-       data.feed['planet_message'] = "http status %s" % status
+       data.feed['planet_message'] = "http status %s" % data.status
 
     # perform user configured scrub operations on the data
     scrub(feed, data)
