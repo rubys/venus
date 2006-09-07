@@ -105,6 +105,13 @@ class FoafTest(unittest.TestCase):
             'http://del.icio.us/rss/eliast',
             'http://torrez.us/feed/rdf'], feeds)
 
+    def test_recursive(self):
+        config.load('tests/data/config/foaf-deep.ini')
+        feeds = config.subscriptions()
+        feeds.sort()
+        self.assertEqual(['http://intertwingly.net/blog/atom.xml',
+        'http://thefigtrees.net/lee/life/atom.xml',
+        'http://torrez.us/feed/rdf'], feeds)
 
 # these tests only make sense if libRDF is installed
 try:
