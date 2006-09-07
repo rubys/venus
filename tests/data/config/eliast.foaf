@@ -12,167 +12,44 @@
 </foaf:PersonalProfileDocument>
 <foaf:Person rdf:about="http://torrez.us/who#elias">
 	<foaf:name>Elias Torres</foaf:name>
-	<foaf:givenname>Elias</foaf:givenname>
-	<foaf:family_name>Torres</foaf:family_name>
-	<foaf:nick>EliasT</foaf:nick>
-	<foaf:mbox_sha1sum>171e69034f0c1563ed13d66d4abaa8b5d70e4e57</foaf:mbox_sha1sum>
-	<foaf:homepage rdf:resource="http://torrez.us/"/>
-	<foaf:workplaceHomepage rdf:resource="http://www.ibm.com/"/>
-	<foaf:schoolHomepage rdf:resource="http://www.usf.edu/"/>
-	<foaf:schoolHomepage rdf:resource="http://www.harvard.edu/"/>
-	<foaf:aimChatID>rico811</foaf:aimChatID>
-	<foaf:msnChatID>elias_torres@hotmail.com</foaf:msnChatID>
 	
-	<foaf:knows>
-		<foaf:Person>
-			<foaf:name>Dan Smith</foaf:name>
-			<rdfs:seeAlso rdf:resource="http://www.sirpheon.com/foaf.rdf"/>
-			<foaf:mbox_sha1sum>bd4506f3e280442e626b7123d65dc6d7af348906</foaf:mbox_sha1sum>
-		</foaf:Person>
-	</foaf:knows>
 	<foaf:knows>
 		<foaf:Person rdf:about="http://thefigtrees.net/lee/ldf-card#LDF"> 
 			<foaf:name>Lee Feigenbaum</foaf:name>
 			<foaf:homepage rdf:resource="http://thefigtrees.net/"/>
 			<foaf:mbox_sha1sum>15b51eca0082d66bee850ce4774ff2d9921c1f08</foaf:mbox_sha1sum>
-			<rdfs:seeAlso rdf:resource="http://thefigtrees.net/lee/ldf-card"/>
-		</foaf:Person>
-	</foaf:knows>
-	<foaf:knows>
-		<foaf:Person>
-			<foaf:name>Dan Connolly</foaf:name>
-			<foaf:homepage rdf:resource="http://www.w3.org/People/Connolly/"/>
-			<foaf:mbox rdf:resource="mailto:connolly@w3.org" />
-			<rdfs:seeAlso>
-				<ical:Vcalendar rdf:about="http://www.w3.org/People/Connolly/home-smart.rdf"/>
-			</rdfs:seeAlso>
-		</foaf:Person>
-	</foaf:knows>
-	<foaf:knows>
-		<foaf:Person>
-			<foaf:name>James Snell</foaf:name>
-			<foaf:homepage rdf:resource="http://snellspace.com/"/>
-			<foaf:mbox rdf:resource="mailto:jasnell@us.ibm.com" />
+			<rdfs:seeAlso rdf:resource="ldf-card.foaf"/>
 		</foaf:Person>
 	</foaf:knows>
 	<foaf:knows>
 		<foaf:Person>
 			<foaf:name>Sam Ruby</foaf:name>
 			<foaf:mbox_sha1sum>703471c6f39094d88665d24ce72c42fdc5f20585</foaf:mbox_sha1sum>
+			<rdfs:seeAlso rdf:resource="rubys-card.foaf"/>
 		</foaf:Person>
 	</foaf:knows>
-	<foaf:knows>
-		<foaf:Person>
-			<foaf:name>Mark Pilgrim</foaf:name>
-			<foaf:mbox_sha1sum>85d089d9dc87139d5542aa4ee2822bf65e56b55e</foaf:mbox_sha1sum>
-		</foaf:Person>
-	</foaf:knows>
-	<foaf:knows>
-		<foaf:Person>
-		      <foaf:name>Eric Miller</foaf:name>
-		      <foaf:mbox_sha1sum>fd1c7fa497930b8b24e3998927fcebe63509ef20</foaf:mbox_sha1sum>
-		      <foaf:homepage rdf:resource="http://purl.org/net/eric/"/>
-		      <foaf:workplaceHomepage rdf:resource="http://www.w3.org/People/EM/"/>
-		</foaf:Person>
-	</foaf:knows>
-	<foaf:knows>
-		<foaf:Person>
-			<foaf:name>Libby Miller</foaf:name>
-			<foaf:mbox_sha1sum>80f78952ba7c71bc9a0a38de415692922a3f6024</foaf:mbox_sha1sum>
-			<foaf:mbox_sha1sum>289d4d44325d0b0218edc856c8c3904fa3fd2875</foaf:mbox_sha1sum>
-		</foaf:Person>
-	</foaf:knows>
-	<foaf:knows>
-		<foaf:Person>
-			<foaf:name>Dave Beckett</foaf:name>
-			<foaf:mbox_sha1sum>970987f991961f2553a1bf2574166fa29befbccb</foaf:mbox_sha1sum>
-			<rdfs:seeAlso rdf:resource="http://www.dajobe.org/foaf.rdf"/>
-		</foaf:Person>
-	</foaf:knows>
-	<foaf:knows>
-		<foaf:Person>
-			<foaf:name>Kendall Grant Clark</foaf:name>
-			<foaf:mbox rdf:resource="mailto:kendall@monkeyfist.com"/>
-			<foaf:mbox rdf:resource="mailto:kclark@ntlug.org"/>
-			<rdfs:seeAlso rdf:resource="http://clark.dallas.tx.us/kendall/foaf.rdf"/>
-		</foaf:Person>
-	</foaf:knows>
-	<foaf:knows>
-		<foaf:Person>
-			<foaf:name>Bijan Parsia</foaf:name>
-			<foaf:mbox_sha1sum>f49a6854842c5fa76dc0edb8e82f8fe04fd56bc9</foaf:mbox_sha1sum>
-		</foaf:Person>
-	</foaf:knows>
-	
-	<foaf:interest>
-		<rdf:Description rdf:about="http://dublincore.org/" 
-			dc:title="Dublin Core Metadata Initiative" />
-	</foaf:interest>
-	<foaf:interest>
-		<rdf:Description rdf:about="http://www.w3.org/RDF/" 
-			dc:title="Resource Description Framework (RDF)" /> 
-	</foaf:interest>
-	<foaf:interest>
-		<rdf:Description rdf:about="http://purl.org/rss/" 
-			dc:title="RDF Site Summary (RSS 1.0)" />
-	</foaf:interest>
-	<foaf:interest>
-		<rdf:Description rdf:about="http://www.w3.org/2000/01/sw/" 
-			dc:title="Semantic Web" /> 
-	</foaf:interest>
-	<foaf:interest>
-		<rdf:Description rdf:about="http://www.atomenabled.org/"
-			dc:title="Atom" /> 
-	</foaf:interest>
 
-	<rdfs:seeAlso>
-		<ical:Vcalendar rdf:about="http://torrez.us/elias/school.ics" />
-	</rdfs:seeAlso>
+    <foaf:weblog>
+        <foaf:Document rdf:about="http://torrez.us/">
+            <dc:title>Elias Torres</dc:title>
+            <rdfs:seeAlso>
+                <rss:channel rdf:about="http://torrez.us/feed/rdf" />
+            </rdfs:seeAlso>
+        </foaf:Document>
+    </foaf:weblog>
 
-  <foaf:weblog> 
-    <foaf:Document rdf:about="http://torrez.us/"> 
-      <dc:title>Elias Torres</dc:title> 
-      <rdfs:seeAlso> 
-        <rss:channel rdf:about="http://torrez.us/feed/rdf"> 
-          <foaf:maker rdf:resource="http://torrez.us/who#elias"/> 
-          <foaf:topic rdf:resource="http://www.w3.org/2001/sw/"/> 
-          <foaf:topic rdf:resource="http://www.w3.org/RDF/"/> 
-        </rss:channel> 
-      </rdfs:seeAlso> 
-    </foaf:Document> 
-  </foaf:weblog> 
+    <foaf:holdsAccount>
+        <foaf:OnlineAccount>
+              <foaf:accountServiceHomepage rdf:resource="http://del.icio.us/"/>
+              <foaf:accountName>eliast</foaf:accountName>
+        </foaf:OnlineAccount>
+    </foaf:holdsAccount>
+    <foaf:holdsAccount>
+        <foaf:OnlineAccount>
+              <foaf:accountServiceHomepage rdf:resource="http://flickr.com/"/>
+              <foaf:accountName>77366516@N00</foaf:accountName>
+        </foaf:OnlineAccount>
+    </foaf:holdsAccount>
 
-  <foaf:holdsAccount> 
-    <foaf:OnlineAccount> 
-      <foaf:accountServiceHomepage rdf:resource="http://del.icio.us/"/> 
-      <foaf:accountName>eliast</foaf:accountName> 
-    </foaf:OnlineAccount> 
-  </foaf:holdsAccount> 
-  <foaf:holdsAccount> 
-    <foaf:OnlineAccount> 
-      <foaf:accountServiceHomepage rdf:resource="http://flickr.com/"/> 
-      <foaf:accountName>77366516@N00</foaf:accountName> 
-    </foaf:OnlineAccount> 
-  </foaf:holdsAccount> 
-  
 </foaf:Person>
-<rdf:Description rdf:about="http://rdflib.net#">
-  <doap:developer rdf:resource="http://torrez.us/who#elias"/>
-</rdf:Description>
-
-<!--
-<foaf:Person rdf:about="http://torrez.us/who#alejandra">
-	<foaf:name>Alejandra Torres</foaf:name>
-	<foaf:mbox_sha1sum>9cb53a79c6290901979a1887ccfb422b399c530f</foaf:mbox_sha1sum>
-</foaf:Person>
-<foaf:Person rdf:about="http://torrez.us/who#briana">
-	<foaf:name>Briana Torres</foaf:name>
-	<foaf:mbox_sha1sum>0848c584116ae83e03e89f85698ae63151e6dc84</foaf:mbox_sha1sum>
-</foaf:Person>
-<foaf:Person rdf:about="http://torrez.us/who#noah">
-	<foaf:name>Noah Torres</foaf:name>
-	<foaf:mbox_sha1sum>0e2b5e875c7646a20199d751760c354b4f7cfa2b</foaf:mbox_sha1sum>
-</foaf:Person>
--->
-
 </rdf:RDF>

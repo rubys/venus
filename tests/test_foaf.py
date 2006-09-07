@@ -91,6 +91,28 @@ class FoafTest(unittest.TestCase):
             'http://del.icio.us/rss/eliast',
             'http://torrez.us/feed/rdf'], feeds)
 
+    def test_multiple_subscriptions(self):
+        config.load('tests/data/config/foaf-multiple.ini')
+        self.assertEqual(2,len(config.reading_lists()))
+        feeds = config.subscriptions()
+        feeds.sort()
+        self.assertEqual(5,len(feeds))
+        self.assertEqual(['http://api.flickr.com/services/feeds/' +
+            'photos_public.gne?id=77366516@N00',
+            'http://api.flickr.com/services/feeds/' +
+            'photos_public.gne?id=SOMEID',
+            'http://del.icio.us/rss/SOMEID',
+            'http://del.icio.us/rss/eliast',
+            'http://torrez.us/feed/rdf'], feeds)
+
+    def test_recursive(self):
+        config.load('tests/data/config/foaf-deep.ini')
+        feeds = config.subscriptions()
+        feeds.sort()
+        self.assertEqual(['http://intertwingly.net/blog/atom.xml',
+        'http://thefigtrees.net/lee/life/atom.xml',
+        'http://torrez.us/feed/rdf'], feeds)
+
 # these tests only make sense if libRDF is installed
 try:
     import RDF

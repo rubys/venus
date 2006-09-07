@@ -169,70 +169,17 @@ def load(config_file):
     if reading_lists:
         if not os.path.exists(config.cache_lists_directory()):
             os.makedirs(config.cache_lists_directory())
-        from planet.spider import filename
-        for list in reading_lists:
-            cache_filename = filename(config.cache_lists_directory(), list)
-            try:
-                import urllib2, StringIO
 
-                # retrieve list options (e.g., etag, last-modified) from cache
-                options = {}
-
-                # add original options
-                for key, value in parser.items(list):
-                    options[key] = value
-                    
-                try:
-                    cached_config = ConfigParser()
-                    cached_config.read(cache_filename)
-                    for option in cached_config.options(list):
-                         options[option] = cached_config.get(list,option)
-                except:
-                    pass
-                cached_config = ConfigParser()
-                cached_config.add_section(list)
-                for key, value in options.items():
-                    cached_config.set(list, key, value)
-
-                # read list
-                base = urljoin('file:', os.path.abspath(os.path.curdir))
-                request = urllib2.Request(urljoin(base + '/', list))
-                if options.has_key("etag"):
-                    request.add_header('If-None-Match', options['etag'])
-                if options.has_key("last-modified"):
-                    request.add_header('If-Modified-Since',
-                        options['last-modified'])
-                response = urllib2.urlopen(request)
-                if response.headers.has_key('etag'):
-                    cached_config.set(list, 'etag', response.headers['etag'])
-                if response.headers.has_key('last-modified'):
-                    cached_config.set(list, 'last-modified',
-                        response.headers['last-modified'])
-
-                # convert to config.ini
-                data=StringIO.StringIO(response.read())
+        def data2config(data, cached_config):
                 if content_type(list).find('opml')>=0:
                     opml.opml2config(data, cached_config)
                 elif content_type(list).find('foaf')>=0:
                     foaf.foaf2config(data, cached_config)
-                if cached_config.sections() in [[], [list]]: raise Exception
+                if cached_config.sections() in [[], [list]]: 
+                    raise Exception
 
-                # write to cache
-                cache = open(cache_filename, 'w')
-                cached_config.write(cache)
-                cache.close()
-
-                # re-parse and proceed
-                log.debug("Using %s readinglist", list) 
-                data.seek(0)
-                parser.read(cache_filename)
-            except:
-                try:
-                    parser.read(cache_filename)
-                    log.info("Using cached %s readinglist", list)
-                except:
-                    log.exception("Unable to read %s readinglist", list)
-                    continue
+        for list in reading_lists:
+            planet.downloadReadingList(list, parser, data2config)
 
 def cache_sources_directory():
     if parser.has_option('Planet', 'cache_sources_directory'):

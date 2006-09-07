@@ -1,0 +1,33 @@
+<rdf:RDF
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:doap="http://usefulinc.com/ns/doap#"
+      xmlns:ical="http://www.w3.org/2002/12/cal/icaltzd#"
+      xmlns:rss="http://purl.org/rss/1.0/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+<foaf:PersonalProfileDocument rdf:about="http://torrez.us/who">
+	<foaf:primaryTopic rdf:resource="http://thefigtrees.net/lee/ldf-card#LDF"/>
+</foaf:PersonalProfileDocument>
+<foaf:Person rdf:about="http://thefigtrees.net/lee/ldf-card#LDF"> 
+	<foaf:name>Lee Feigenbaum</foaf:name>
+    <foaf:mbox_sha1sum>15b51eca0082d66bee850ce4774ff2d9921c1f08</foaf:mbox_sha1sum>
+	
+    <foaf:weblog>
+        <foaf:Document rdf:about="http://thefigtrees.net/">
+            <dc:title>Lee Feigenbaum</dc:title>
+            <rdfs:seeAlso>
+                <rss:channel rdf:about="http://thefigtrees.net/lee/life/atom.xml" />
+            </rdfs:seeAlso>
+        </foaf:Document>
+    </foaf:weblog>
+
+    <foaf:holdsAccount>
+        <foaf:OnlineAccount>
+              <foaf:accountServiceHomepage rdf:resource="http://del.icio.us/"/>
+              <foaf:accountName>leef</foaf:accountName>
+        </foaf:OnlineAccount>
+    </foaf:holdsAccount>
+
+</foaf:Person>
+</rdf:RDF>
