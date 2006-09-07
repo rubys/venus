@@ -1,0 +1,38 @@
+<rdf:RDF
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:rss="http://purl.org/rss/1.0/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+<foaf:PersonalProfileDocument rdf:about="http://torrez.us/who">
+	<foaf:maker rdf:resource="http://torrez.us/who#elias"/>
+	<foaf:primaryTopic rdf:resource="http://torrez.us/who#elias"/>
+</foaf:PersonalProfileDocument>
+<foaf:Person rdf:about="http://torrez.us/who#anotherelias">
+	<foaf:name>Another Elias Torres</foaf:name>
+
+  <foaf:weblog> 
+    <foaf:Document rdf:about="http://torrez.us/"> 
+      <dc:title>Elias Torres</dc:title> 
+      <rdfs:seeAlso> 
+        <rss:channel rdf:about="http://torrez.us/feed/rdf" /> 
+      </rdfs:seeAlso> 
+    </foaf:Document> 
+  </foaf:weblog> 
+
+	
+  <foaf:holdsAccount> 
+    <foaf:OnlineAccount> 
+      <foaf:accountServiceHomepage rdf:resource="http://del.icio.us/"/> 
+      <foaf:accountName>SOMEID</foaf:accountName> 
+    </foaf:OnlineAccount> 
+  </foaf:holdsAccount> 
+  <foaf:holdsAccount> 
+    <foaf:OnlineAccount> 
+      <foaf:accountServiceHomepage rdf:resource="http://flickr.com/"/> 
+      <foaf:accountName>SOMEID</foaf:accountName> 
+    </foaf:OnlineAccount> 
+  </foaf:holdsAccount> 
+  
+</foaf:Person>
+</rdf:RDF>

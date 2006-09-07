@@ -1,17 +1,18 @@
 from ConfigParser import ConfigParser
 
 # input = foaf, output = ConfigParser
-def foaf2config(rdf, config=None):
+def foaf2config(rdf, config):
 
     if not config or not config.sections():
-        config = ConfigParser()
+        return
 
+    # there should be only be 1 section
     section = config.sections().pop()
 
     try:
         from RDF import Model, NS, Parser, Statement
     except:
-        return config
+        return
 
     if hasattr(rdf, 'read'):
         rdf = rdf.read()
@@ -84,7 +85,7 @@ def foaf2config(rdf, config=None):
                 config.add_section(feed)
                 config.set(feed, 'name', "%s (%s)" % (title, servicetitle))
 
-    return config
+    return
 
 if __name__ == "__main__":
     import sys, urllib
