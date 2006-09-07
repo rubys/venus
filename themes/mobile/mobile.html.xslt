@@ -12,13 +12,16 @@
       <head>
         <link rel="stylesheet" href="default.css" type="text/css" />
         <title><xsl:value-of select="atom:title"/></title>
+        <meta name="robots" content="noindex,nofollow" />
         <meta name="generator" content="{atom:generator}" />
         <xsl:if test="atom:link[@rel='self']">
           <link rel="alternate" href="{atom:link[@rel='self']/@uri}"
             title="{atom:title}" type="{atom:link[@rel='self']/@type}" />
         </xsl:if>
         <link rel="shortcut icon" href="/favicon.ico" />
-        <script type="text/javascript" src="personalize.js"></script>
+        <script type="text/javascript" src="personalize.js">
+          <xsl:comment>HTML Compatibility</xsl:comment>
+        </script>
       </head>
 
       <xsl:text>&#10;&#10;</xsl:text>
@@ -129,7 +132,7 @@
           <xsl:attribute name="title" select="{atom:source/atom:title}"/>
           <xsl:value-of select="atom:source/planet:name"/>
         </a>
-        <xsl:if test="atom:title">
+        <xsl:if test="string-length(atom:title) &gt; 0">
           <xsl:text>&#x2014;</xsl:text>
           <a href="{atom:link[@rel='alternate']/@href}">
             <xsl:if test="atom:title/@xml:lang != @xml:lang">
