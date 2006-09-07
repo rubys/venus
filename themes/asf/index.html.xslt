@@ -19,7 +19,9 @@
             title="{atom:title}" type="{atom:link[@rel='self']/@type}" />
         </xsl:if>
         <link rel="shortcut icon" href="/favicon.ico" />
-        <script type="text/javascript" src="personalize.js"></script>
+        <script type="text/javascript" src="personalize.js">
+          <xsl:comment>HTML Compatibility</xsl:comment>
+        </script>
       </head>
 
       <xsl:text>&#10;&#10;</xsl:text>
