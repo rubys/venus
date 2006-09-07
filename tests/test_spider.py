@@ -45,6 +45,7 @@ class SpiderTest(unittest.TestCase):
         config.load(configfile)
         spiderFeed(testfeed % '1b')
         files = glob.glob(workdir+"/*")
+        files.sort()
 
         # verify that exactly four files + one sources dir were produced
         self.assertEqual(5, len(files))
@@ -54,12 +55,10 @@ class SpiderTest(unittest.TestCase):
             '/planet.intertwingly.net,2006,testfeed1,1' in files)
 
         # verify that the file timestamps match atom:updated
-        for file in files:
-            if file.endswith('/sources'): continue
-            data = feedparser.parse(file)
-            self.assertTrue(data.entries[0].source.planet_name)
-            self.assertEqual(os.stat(file).st_mtime,
-                calendar.timegm(data.entries[0].updated_parsed))
+        data = feedparser.parse(files[2])
+        self.assertEqual('one', data.entries[0].source.planet_name)
+        self.assertEqual(os.stat(files[2]).st_mtime,
+            calendar.timegm(data.entries[0].updated_parsed))
 
     def test_spiderUpdate(self):
         spiderFeed(testfeed % '1a')
@@ -78,4 +77,8 @@ class SpiderTest(unittest.TestCase):
             '/planet.intertwingly.net,2006,testfeed1,1' in files)
         self.assertTrue(workdir + 
             '/planet.intertwingly.net,2006,testfeed2,1' in files)
+
+        data = feedparser.parse(workdir + 
+            '/planet.intertwingly.net,2006,testfeed3,1')
+        self.assertEqual('three', data.entries[0].source.author_detail.name)
 

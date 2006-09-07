@@ -160,7 +160,10 @@ def source(xsource, source, bozo):
     createTextElement(xsource, 'icon', source.get('icon', None))
     createTextElement(xsource, 'logo', source.get('logo', None))
 
-    author(xsource, 'author', source.get('author_detail',None))
+    author_detail = source.get('author_detail',{})
+    if not author_detail.has_key('name') and source.has_key('planet_name'):
+        author_detail['name'] = source['planet_name']
+    author(xsource, 'author', author_detail)
     for contributor in source.get('contributors',[]):
         author(xsource, 'contributor', contributor)
 
