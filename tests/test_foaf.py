@@ -109,7 +109,9 @@ class FoafTest(unittest.TestCase):
         config.load('tests/data/config/foaf-deep.ini')
         feeds = config.subscriptions()
         feeds.sort()
-        self.assertEqual(['http://intertwingly.net/blog/atom.xml',
+        self.assertEqual(['http://api.flickr.com/services/feeds/photos_public.gne?id=77366516@N00',
+        'http://del.icio.us/rss/eliast', 'http://del.icio.us/rss/leef',
+        'http://del.icio.us/rss/rubys', 'http://intertwingly.net/blog/atom.xml',
         'http://thefigtrees.net/lee/life/atom.xml',
         'http://torrez.us/feed/rdf'], feeds)
 

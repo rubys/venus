@@ -1,5 +1,7 @@
 from ConfigParser import ConfigParser
 
+inheritable_options = [ 'online_accounts' ]
+
 def load_accounts(config, section):
     accounts = {}
     if(config.has_option(section, 'online_accounts')):
@@ -61,6 +63,8 @@ def foaf2config(rdf, config, subject=None):
     dc   = NS('http://purl.org/dc/elements/1.1/')
     foaf = NS('http://xmlns.com/foaf/0.1/')
     rdfs = NS('http://www.w3.org/2000/01/rdf-schema#')
+    rdf = NS('http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+    rss = NS('http://purl.org/rss/1.0/')
 
     for statement in model.find_statements(Statement(subject,foaf.weblog,None)):
 
@@ -74,9 +78,8 @@ def foaf2config(rdf, config, subject=None):
             continue
 
         # blog is optional
-        # TODO: check for rdf:type rss:channel
         feed = model.get_target(statement.object,rdfs.seeAlso)
-        if feed:
+        if feed and rss.channel == model.get_target(feed, rdf.type):
             feed = str(feed.uri)
             if not config.has_section(feed):
                 config.add_section(feed)
@@ -126,9 +129,9 @@ def foaf2config(rdf, config, subject=None):
 
                 if not config.has_section(seeAlso):
                     config.add_section(seeAlso)
-                    config.set(seeAlso, 'content_type', 'foaf')
-                    config.set(seeAlso, 'depth', str(depth - 1))
-
+                    copy_options(config, section, seeAlso, 
+                            { 'content_type' : 'foaf', 
+                              'depth' : str(depth - 1) })
                 try:
                     import planet
                     planet.downloadReadingList(seeAlso, config,
@@ -138,6 +141,16 @@ def foaf2config(rdf, config, subject=None):
                     pass
 
     return
+
+def copy_options(config, parent_section, child_section, overrides = {}):
+    global inheritable_options
+    for option in [x for x in config.options(parent_section) if x in inheritable_options]:
+        if not overrides.has_key(option):
+            config.set(child_section, option, config.get(parent_section, option))
+
+    for option, value in overrides.items():
+        config.set(child_section, option, value)
+
 
 def friend2config(friend_model, friend, seeAlso, subconfig, data):
 
@@ -162,9 +175,9 @@ def friend2config(friend_model, friend, seeAlso, subconfig, data):
         samefriend = statement.subject
         
         # maybe they have the same uri
-        if friend.is_resource() and samefriend.is_resource():
-            # TODO
-            pass
+        if friend.is_resource() and samefriend.is_resource() and friend == samefriend:
+            foaf2config(model, subconfig, samefriend)
+            return
 
         for ifp in ifps:
             object = model.get_target(samefriend,ifp)
