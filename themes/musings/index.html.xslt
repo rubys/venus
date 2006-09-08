@@ -150,7 +150,7 @@
       <!-- entry title -->
       <xsl:text>&#10;</xsl:text>
       <h3>
-        <a href="{atom:source/atom:link['alternate']/@href}" class="icon">
+        <a href="{atom:source/atom:link[@rel='alternate']/@href}" class="icon">
           <xsl:attribute name="title" select="{atom:source/atom:title}"/>
           <xsl:value-of select="atom:source/planet:name"/>
         </a>
