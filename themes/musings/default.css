@@ -1,0 +1,382 @@
+/*
+ * Written by Stefano Mazzocchi <stefano at apache dot org>
+ */
+
+/* ----------------------------- Global Definitions -------------------- */
+
+body {
+	margin: 0px;
+	padding: 0px;
+	color: #222;
+	background-color: #fff;
+	quotes: "\201C" "\201E" "\2018" "\2019";
+}
+
+a:link {
+	color: #222;
+}
+
+a:visited {
+	color: #555;
+}
+
+h1 {
+	font-size: 1.75em;
+	text-transform: uppercase;
+	letter-spacing: 0.25em;
+	padding: 10px;
+	margin: 0px 0px 0px 0px;
+	color: #FFF;
+	font-weight: normal;
+	background-color: #036;
+	border-bottom: 2px solid #bbb
+}
+
+/* ----------------------------- Sidebar --------------------------- */
+
+#sidebar {
+	float: right;
+	top: 150px;
+	right: 0px;
+	width: 11em;
+	background-color: white;
+	padding: 0px 10px 20px 0px;
+	margin: 0px 0px 20px 20px;
+	border-left: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+}
+
+#sidebar h2 {
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	font-size: .9em;
+	background-color: #BCD;
+	color: #222;
+	font-weight: bold;
+	padding: 3px 0px 2px 4px;
+	margin: 15px 0px 5px 10px;
+	border: 1px solid #ccc;
+}
+
+#sidebar p {
+	font-size: .8em;
+	padding-left: 20px;
+	padding-right: 5px;
+}
+
+#sidebar ul {
+	font-family: sans-serif;
+	margin-left: 5px;
+	padding-left: 25px;
+}
+
+#sidebar li {
+	margin-left: 0px;
+	text-indent: -15px;
+	list-style-type: none;
+	font-size: .8em;
+        line-height: 1.2em;
+}
+
+#sidebar ul li a {
+	text-decoration: none;
+}
+
+#sidebar ul li a:hover {
+	text-decoration: underline;
+}
+
+#sidebar img {
+	border: 0;
+}
+
+#sidebar dl {
+	font-size: .8em;
+	padding-left: 1.0em;
+}
+
+#sidebar dl ul {
+	padding-left: 1em;
+}
+
+#sidebar dt {
+	margin-top: 1em;
+	font-weight: bold;
+	padding-left: 1.0em;
+}
+
+#sidebar dd {
+	margin-left: 2.5em;
+}
+
+#sidebar .message {
+	cursor: help;
+	border-bottom: 1px dashed red;
+}
+
+#sidebar a:active,
+#sidebar a:hover {
+        color: #FFCC66;
+}
+
+#sidebar a.message:hover {
+	cursor: help;
+	background-color: #ffD0D0;
+        color:#000;
+	border: 1px dashed red !important;
+	text-decoration: none !important;
+}
+#sidebar dl a {
+    text-decoration:none;
+}
+
+/* ----------------------------- Body ---------------------------- */
+
+#body {
+	margin-top: 10px;
+}
+
+.admin {
+	text-align: right;
+}
+
+#body h2.date {
+	text-transform: none;
+	font-size: 1em;
+	color: #222;
+	font-weight: bold;
+	text-align: right;
+	border-top: 1px solid #ccc;
+	background-color: #BCD;
+	border-bottom: 1px solid #ccc;
+	padding: 3px 15px 2px 5px;
+        max-width:43em;
+	margin: 0;
+}
+
+/* ----------------------------- News ---------------------------- */
+
+.news {
+	margin: 30px 10px 30px 10px;
+	clear: left;
+}
+
+.news h3 {
+	margin: 0 0 .5em 0;
+	padding: 0px;
+	font-size: 1.5em;
+}
+.news h3 a {
+        color:#036;
+        text-decoration:none;
+}
+
+.news .content {
+	margin: 5px 5px 5px 15px;
+	padding: 0px 1em 1em 1em;
+	border-left: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+	line-height: 1.5em;
+	font-size: 1em;
+	font-family: sans-serif;
+        max-width:40em;
+}
+
+.news .links {
+
+}
+
+.news .permalink {
+	text-align: right;
+}
+
+.news .icon {
+	height: 1em;
+	width: 1em;
+	border: 0;
+	bottom: 0;
+}
+
+/* ----------------------------- News Content ---------------------------- */
+
+.news .content p {
+	line-height: 1.2em;
+}
+
+.news .content img {
+	margin: 5px;
+}
+
+.news .content blockquote {
+	margin: 10px 35px 10px 35px;
+	padding: 5px;
+}
+
+.news .content pre {
+	font-family: monospace;
+	border: 1px solid #ddd;
+	padding: 10px;
+	margin: 10px 20px 10px 20px;
+	background-color: #f8f8f8;
+	overflow: auto;
+}
+.news .content code {
+       font-family: monospace;
+}
+
+.news .content ul, .news .content ol {
+	margin: 5px 35px 5px 35px;
+	padding: 5px;
+	counter-reset: item;
+}
+
+.news .content ul > ul, .news .content ul > ol, .news .content ol > ul, .news .content ol > ol {
+	margin: 0px 0px 0px 35px;
+	padding: 0px;
+}
+
+.news .content li {
+	padding: 1px;
+	line-height: 1.2em;
+}
+
+.news code {
+	font-family: large;
+}
+
+.news .content :link,
+.news .content :visited {
+	text-decoration: none;
+	font-weight:bold;
+	color:#036;
+}
+.news .content p:hover a,
+.news .content dt:hover a,
+.news .content dd:hover a,
+.news .content li:hover a {
+        text-decoration: underline;
+}
+ 
+.news :link:active,
+.news :visited:active,
+.news :link:hover,
+.news :visited:hover {
+	color: #FFCC66;
+}
+
+/* --------------------------- Accomodations ----------------------- */
+
+/*  Cosmic Variance */
+.alignright {
+       float:right;
+}
+.alignleft {
+       float:left;
+}
+img.alignright {
+	padding: 4px;
+	margin: 0 0 2px 7px;
+	display: inline;
+}
+img.centered {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+/* Backreaction */
+div.content:hover a,
+div.permalink:hover a {
+       text-decoration:underline;
+}
+
+/* Musings/String Coffee Table */
+math[display=block] {overflow:auto;}
+math { white-space: nowrap }
+.eqno {float:right}
+merror {display:inline;font-size:1em;}
+img.mathlogo, img.svglogo {
+	float:right;
+	border:0
+}
+.footnote {font-size: .9em}
+.update h4 {
+        display:inline;
+        font-size:1em;
+        font-weight:bold;
+}
+
+/* Bosker Blog */
+p.center {text-align:center}
+
+/* boing boing */
+br {
+	clear: none !important;
+}
+
+/* engadget */
+h6 {
+	clear: left !important;
+}
+
+/* cadenhead */
+p.sourcecode {
+	font-family: monospace;
+	border: 1px solid #ddd;
+	padding: 10px;
+	margin: 10px 20px 10px 20px;
+	background-color: #f8f8f8;
+	overflow: auto;
+}
+
+/* programmableweb */
+.imgRight {
+	float: right;
+}
+
+/* gizmodo */
+img.left {
+	float: left;
+}
+
+/* gizmodo */
+img.right {
+	float: right;
+}
+
+/* gizmodo */
+img.center {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* wikipedia */
+table {
+        width: auto !important;
+}
+
+/* del.icio.us */
+.delicious-tags {
+    font-size: .8em;
+    text-align: right;
+}
+
+/* ----------------------------- Footer ---------------------------- */
+
+#footer {
+	padding: 0px;
+	margin: 30px 0px 50px 50px;
+}
+
+#footer p {
+	padding: 2px 2px 2px 5px;
+	background-color: #ccc;
+	border-top: 1px solid #aaa;
+	border-bottom: 1px solid #aaa;
+	border-left: 1px solid #aaa;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	text-align: left;
+}
+
