@@ -228,6 +228,11 @@
     </div>
   </xsl:template>
 
+  <!-- Remove stray atom elements -->
+  <xsl:template match="atom:*">
+    <xsl:apply-templates/>
+  </xsl:template>
+
   <!-- Feedburner detritus -->
   <xsl:template match="xhtml:div[@class='feedflare']"/>
 
