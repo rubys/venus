@@ -239,6 +239,11 @@
   <!-- Feedburner detritus -->
   <xsl:template match="xhtml:div[@class='feedflare']"/>
 
+  <!-- Remove stray atom elements -->
+  <xsl:template match="atom:*">
+    <xsl:apply-templates/>
+  </xsl:template>
+
   <!-- pass through everything else -->
   <xsl:template match="@*|node()">
     <xsl:copy>
