@@ -2,7 +2,9 @@
                 xmlns:atom="http://www.w3.org/2005/Atom"
                 xmlns:indexing="urn:atom-extension:indexing"
                 xmlns:planet="http://planet.intertwingly.net/"
-                xmlns="http://www.w3.org/1999/xhtml">
+                xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+		exclude-result-prefixes="planet xhtml">
 
   <!-- strip planet elements and attributes -->
   <xsl:template match="planet:*|@planet:*"/>
@@ -10,6 +12,10 @@
   <!-- strip obsolete link relationships -->
   <xsl:template match="atom:link[@rel='service.edit']"/>
   <xsl:template match="atom:link[@rel='service.post']"/>
+  <xsl:template match="atom:link[@rel='service.feed']"/>
+
+   <!-- Feedburner detritus -->
+   <xsl:template match="xhtml:div[@class='feedflare']"/>
 
   <!-- add Google/LiveJournal-esque noindex directive -->
   <xsl:template match="atom:feed">
