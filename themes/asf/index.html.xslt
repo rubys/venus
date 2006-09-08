@@ -152,7 +152,7 @@
         <xsl:if test="atom:source/atom:icon">
           <img src="{atom:source/atom:icon}" class="icon"/>
         </xsl:if>
-        <a href="{atom:source/atom:link['alternate']/@href}" class="icon">
+        <a href="{atom:source/atom:link[@rel='alternate']/@href}">
           <xsl:attribute name="title" select="{atom:source/atom:title}"/>
           <xsl:value-of select="atom:source/planet:name"/>
         </a>
@@ -226,6 +226,11 @@
       </xsl:if>
       <xsl:copy-of select="."/>
     </div>
+  </xsl:template>
+
+  <!-- Remove stray atom elements -->
+  <xsl:template match="atom:*">
+    <xsl:apply-templates/>
   </xsl:template>
 
   <!-- Feedburner detritus -->

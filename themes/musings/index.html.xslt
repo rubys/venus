@@ -3,7 +3,7 @@
                 xmlns:xhtml="http://www.w3.org/1999/xhtml"
                 xmlns:planet="http://planet.intertwingly.net/"
                 xmlns="http://www.w3.org/1999/xhtml"
-		exclude-result-prefixes="atom planet">
+		exclude-result-prefixes="atom planet xhtml">
  
 <xsl:output method="xml" doctype-system="http://www.w3.org/Math/DTD/mathml2/xhtml-math11-f.dtd" doctype-public="-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN"/>
 
@@ -150,7 +150,7 @@
       <!-- entry title -->
       <xsl:text>&#10;</xsl:text>
       <h3>
-        <a href="{atom:source/atom:link[@rel='alternate']/@href}" class="icon">
+        <a href="{atom:source/atom:link[@rel='alternate']/@href}">
           <xsl:attribute name="title" select="{atom:source/atom:title}"/>
           <xsl:value-of select="atom:source/planet:name"/>
         </a>
@@ -158,7 +158,7 @@
 	  <xsl:text>&#x20;</xsl:text>
           <xsl:choose>
 	    <xsl:when test="atom:source/atom:icon">
-              <img src="{atom:source/atom:icon}" class="icon"/>
+              <img src="{atom:source/atom:icon}" class="icon" alt="" />
 	    </xsl:when>
 	    <xsl:otherwise>
               <xsl:text>&#x2014;</xsl:text>
@@ -226,7 +226,7 @@
 
   <!-- plain text content -->
   <xsl:template match="atom:content/text() | atom:summary/text()">
-    <div class="content" xmlns="http://www.w3.org/1999/xhtml">
+    <div>
       <xsl:if test="../@xml:lang and not(../@xml:lang = ../../@xml:lang)">
         <xsl:attribute name="xml:lang">
           <xsl:value-of select="../@xml:lang"/>
