@@ -1,7 +1,8 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
                 xmlns:atom="http://www.w3.org/2005/Atom"
                 xmlns:planet="http://planet.intertwingly.net/"
-                xmlns="http://www.w3.org/1999/xhtml">
+                xmlns="http://opml.scripting.com"
+                exclude-result-prefixes="atom planet">
  
   <xsl:output indent="yes" method="xml"/>
 

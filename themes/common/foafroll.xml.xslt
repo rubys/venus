@@ -6,7 +6,7 @@
 	        xmlns:dc="http://purl.org/dc/elements/1.1/"
                 xmlns:atom="http://www.w3.org/2005/Atom"
                 xmlns:planet="http://planet.intertwingly.net/"
-                xmlns="http://www.w3.org/1999/xhtml">
+                exclude-result-prefixes="atom planet">
  
   <xsl:output indent="yes" method="xml"/>
 
