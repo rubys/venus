@@ -159,6 +159,7 @@ h1 {
 .news {
 	margin: 30px 10px 30px 10px;
 	clear: left;
+        max-width: 50em;
 }
 
 .news h3 {
