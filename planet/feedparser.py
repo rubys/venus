@@ -11,7 +11,7 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 1.135 $"[11:16] + "-cvs"
+__version__ = "4.2-pre-" + "$Revision: 1.139 $"[11:16] + "-cvs"
 __license__ = """Copyright (c) 2002-2006, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -569,7 +569,7 @@ class _FeedParserMixin:
         if _debug: sys.stderr.write('entering handle_entityref with %s\n' % ref)
         if ref in ('lt', 'gt', 'quot', 'amp', 'apos'):
             text = '&%s;' % ref
-        elif ref in self.entities:
+        elif ref in self.entities.keys():
             text = self.entities[ref]
             if text.startswith('&#') and text.endswith(';'):
                 return self.handle_entityref(text)
@@ -765,7 +765,7 @@ class _FeedParserMixin:
 
         # map win-1252 extensions to the proper code points
         if type(output) == type(u''):
-            output = u''.join([c in _cp1252 and _cp1252[c] or c for c in output])
+            output = u''.join([c in _cp1252.keys() and _cp1252[c] or c for c in output])
 
         # categories/tags/keywords/whatever are handled in _end_category
         if element == 'category':
@@ -839,7 +839,7 @@ class _FeedParserMixin:
         if filter(lambda e: e not in entitydefs.keys(),
             re.findall(r'&(\w+);',str)): return
 
-        return True
+        return 1
 
     def _mapToStandardPrefix(self, name):
         colonpos = name.find(':')
@@ -1649,7 +1649,7 @@ class _BaseHTMLProcessor(sgmllib.SGMLParser):
         else:
             value = unichr(int(ref))
 
-        if value in _cp1252:
+        if value in _cp1252.keys():
             self.pieces.append('&#%s;' % hex(ord(_cp1252[value]))[1:])
         else:
             self.pieces.append('&#%(ref)s;' % locals())
@@ -2284,7 +2284,7 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
        'overline-thickness', 'panose-1', 'path', 'pathLength', 'points',
        'preserveAspectRatio', 'r', 'repeatCount', 'repeatDur',
        'requiredExtensions', 'requiredFeatures', 'restart', 'rotate', 'rx',
-       'ry', 'slope', 'stemh', 'stemv', 'stop-color',
+       'ry', 'slope', 'stemh', 'stemv', 'stop-color', 'stop-opacity',
        'strikethrough-position', 'strikethrough-thickness', 'stroke',
        'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap',
        'stroke-linejoin', 'stroke-miterlimit', 'stroke-width',
@@ -2514,10 +2514,12 @@ def _open_resource(url_file_stream_or_string, etag, modified, agent, referrer, h
     If the etag argument is supplied, it will be used as the value of an
     If-None-Match request header.
 
-    If the modified argument is supplied, it must be a tuple of 9 integers
-    as returned by gmtime() in the standard Python time module. This MUST
-    be in GMT (Greenwich Mean Time). The formatted date/time will be used
-    as the value of an If-Modified-Since request header.
+    If the modified argument is supplied, it can be a tuple of 9 integers
+    (as returned by gmtime() in the standard Python time module) or a date
+    string in any format supported by feedparser. Regardless, it MUST
+    be in GMT (Greenwich Mean Time). It will be reformatted into an
+    RFC 1123-compliant date and used as the value of an If-Modified-Since
+    request header.
 
     If the agent argument is supplied, it will be used as the value of a
     User-Agent request header.
@@ -2563,6 +2565,8 @@ def _open_resource(url_file_stream_or_string, etag, modified, agent, referrer, h
         request.add_header('User-Agent', agent)
         if etag:
             request.add_header('If-None-Match', etag)
+        if type(modified) == type(''):
+            modified = _parse_date(modified)
         if modified:
             # format into an RFC 1123-compliant timestamp. We can't use
             # time.strftime() since the %a and %b directives can be affected
@@ -3414,20 +3418,86 @@ def parse(url_file_stream_or_string, etag=None, modified=None, agent=None, refer
     result['namespaces'] = feedparser.namespacesInUse
     return result
 
+class Serializer:
+    def __init__(self, results):
+        self.results = results
+
+class TextSerializer(Serializer):
+    def write(self, stream=sys.stdout):
+        self._writer(stream, self.results, '')
+
+    def _writer(self, stream, node, prefix):
+        if not node: return
+        if hasattr(node, 'keys'):
+            keys = node.keys()
+            keys.sort()
+            for k in keys:
+                if k in ('description', 'link'): continue
+                if node.has_key(k + '_detail'): continue
+                if node.has_key(k + '_parsed'): continue
+                self._writer(stream, node[k], prefix + k + '.')
+        elif type(node) == types.ListType:
+            index = 0
+            for n in node:
+                self._writer(stream, n, prefix[:-1] + '[' + str(index) + '].')
+                index += 1
+        else:
+            try:
+                s = str(node).encode('utf-8')
+                s = s.replace('\\', '\\\\')
+                s = s.replace('\r', '')
+                s = s.replace('\n', r'\n')
+                stream.write(prefix[:-1])
+                stream.write('=')
+                stream.write(s)
+                stream.write('\n')
+            except:
+                pass
+        
+class PprintSerializer(Serializer):
+    def write(self, stream=sys.stdout):
+        stream.write(self.results['href'] + '\n\n')
+        from pprint import pprint
+        pprint(self.results, stream)
+        stream.write('\n')
+        
 if __name__ == '__main__':
-    if not sys.argv[1:]:
-        print __doc__
-        sys.exit(0)
+    try:
+        from optparse import OptionParser
+    except:
+        OptionParser = None
+
+    if OptionParser:
+        optionParser = OptionParser(version=__version__, usage="%prog [options] url_or_filename_or_-")
+        optionParser.set_defaults(format="pprint")
+        optionParser.add_option("-A", "--user-agent", dest="agent", metavar="AGENT", help="User-Agent for HTTP URLs")
+        optionParser.add_option("-e", "--referer", "--referrer", dest="referrer", metavar="URL", help="Referrer for HTTP URLs")
+        optionParser.add_option("-t", "--etag", dest="etag", metavar="TAG", help="ETag/If-None-Match for HTTP URLs")
+        optionParser.add_option("-m", "--last-modified", dest="modified", metavar="DATE", help="Last-modified/If-Modified-Since for HTTP URLs (any supported date format)")
+        optionParser.add_option("-f", "--format", dest="format", metavar="FORMAT", help="output results in FORMAT (text, pprint)")
+        optionParser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="write debugging information to stderr")
+        (options, urls) = optionParser.parse_args()
+        if options.verbose:
+            _debug = 1
+        if not urls:
+            optionParser.print_help()
+            sys.exit(0)
     else:
+        if not sys.argv[1:]:
+            print __doc__
+            sys.exit(0)
+        class _Options:
+            etag = modified = agent = referrer = None
+            format = 'pprint'
+        options = _Options()
         urls = sys.argv[1:]
+
     zopeCompatibilityHack()
-    from pprint import pprint
+
+    serializer = globals().get(options.format.capitalize() + 'Serializer', Serializer)
     for url in urls:
-        print url
-        print
-        result = parse(url)
-        pprint(result)
-        print
+        results = parse(url, etag=options.etag, modified=options.modified, agent=options.agent, referrer=options.referrer)
+        serializer(results).write(sys.stdout)
 
 #REVISION HISTORY
 #1.0 - 9/27/2002 - MAP - fixed namespace processing on prefixed RSS 2.0 elements,
