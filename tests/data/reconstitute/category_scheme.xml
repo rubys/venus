@@ -1,0 +1,11 @@
+<!--
+Description:  category scheme
+Expect:       tags[0].scheme == 'http://example.com/categories'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <category scheme="http://example.com/categories"/>
+  </entry>
+</feed>
+

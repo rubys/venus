@@ -306,8 +306,8 @@ br {
 }
 
 /* engadget */
-h6 {
-	clear: left !important;
+p {
+	clear: none !important;
 }
 
 /* cadenhead */

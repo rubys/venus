@@ -110,6 +110,16 @@ def date(xentry, name, parsed):
     formatted = time.strftime(config.date_format(), parsed)
     xdate.setAttribute('planet:format', formatted)
 
+def category(xentry, tag):
+    xtag = xentry.ownerDocument.createElement('category')
+    if tag.has_key('term') and tag.term:
+        xtag.setAttribute('term', tag.get('term'))
+    if tag.has_key('scheme') and tag.scheme:
+        xtag.setAttribute('scheme', tag.get('scheme'))
+    if tag.has_key('label') and tag.label:
+        xtag.setAttribute('label', tag.get('label'))
+    xentry.appendChild(xtag)
+
 def author(xentry, name, detail):
     """ insert an author-like element into the entry """
     if not detail: return
@@ -160,6 +170,9 @@ def source(xsource, source, bozo):
     createTextElement(xsource, 'icon', source.get('icon', None))
     createTextElement(xsource, 'logo', source.get('logo', None))
 
+    for tag in source.get('tags',[]):
+        category(xsource, tag)
+
     author_detail = source.get('author_detail',{})
     if not author_detail.has_key('name') and source.has_key('planet_name'):
         author_detail['name'] = source['planet_name']
@@ -200,6 +213,9 @@ def reconstitute(feed, entry):
 
     date(xentry, 'updated', entry.get('updated_parsed',time.gmtime()))
     date(xentry, 'published', entry.get('published_parsed',None))
+
+    for tag in entry.get('tags',[]):
+        category(xentry, tag)
 
     author(xentry, 'author', entry.get('author_detail',None))
     for contributor in entry.get('contributors',[]):
