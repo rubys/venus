@@ -1,0 +1,11 @@
+<!--
+Description:  category term
+Expect:       tags[0].term == 'inbox'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <category term="inbox"/>
+  </entry>
+</feed>
+

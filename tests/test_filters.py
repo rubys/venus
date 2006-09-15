@@ -58,6 +58,24 @@ class FilterTests(unittest.TestCase):
         self.assertEqual(u'before--after',
             excerpt.firstChild.firstChild.nodeValue)
 
+    def test_xpath_filter(self):
+        config.load('tests/data/filter/xpath-sifter.ini')
+        testfile = 'tests/data/filter/category-one.xml'
+
+        output = open(testfile).read()
+        for filter in config.filters():
+            output = shell.run(filter, output, mode="filter")
+
+        self.assertEqual('', output)
+
+        testfile = 'tests/data/filter/category-two.xml'
+
+        output = open(testfile).read()
+        for filter in config.filters():
+            output = shell.run(filter, output, mode="filter")
+
+        self.assertNotEqual('', output)
+
 try:
     from subprocess import Popen, PIPE
     sed=Popen(['sed','--version'],stdout=PIPE,stderr=PIPE)

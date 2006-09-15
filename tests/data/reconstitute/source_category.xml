@@ -1,0 +1,14 @@
+<!--
+Description:  source category
+Expect:       source.tags[0].term == 'inbox' and source.tags[0].scheme == 'http://example.com/categories' and source.tags[0].label == 'Inbox'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <source>
+      <category term='inbox' label='Inbox'
+        scheme="http://example.com/categories"/>
+    </source>
+  </entry>
+</feed>
+
