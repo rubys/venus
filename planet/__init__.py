@@ -85,7 +85,12 @@ def downloadReadingList(list, orig_config, callback, use_cache=True, re_read=Tru
             cached_config.set(list, key, value)
 
         # read list
-        base = urljoin('file:', os.path.abspath(os.path.curdir))
+        if sys.platform.find('win') < 0:
+            base = urljoin('file:', os.path.abspath(os.path.curdir))
+        else:
+            path = os.path.abspath(os.path.curdir)
+            base = urljoin('file:///', path.replace(':','|').replace('\\','/'))
+
         request = urllib2.Request(urljoin(base + '/', list))
         if options.has_key("etag"):
             request.add_header('If-None-Match', options['etag'])
