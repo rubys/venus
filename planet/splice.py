@@ -65,7 +65,8 @@ def splice():
         if not data.feed: continue
         xdoc=minidom.parseString('''<planet:source xmlns:planet="%s"
              xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
-        reconstitute.source(xdoc.documentElement, data.feed, data.bozo)
+        reconstitute.source(xdoc.documentElement, data.feed,
+            data.bozo, data.version)
         feed.appendChild(xdoc.documentElement)
 
     return doc
