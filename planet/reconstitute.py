@@ -193,8 +193,8 @@ def source(xsource, source, bozo, format):
         if key.startswith('planet_'):
             createTextElement(xsource, key.replace('_',':',1), value)
 
-    createTextElement(xsource, 'planet_bozo', bozo and 'true' or 'false')
-    createTextElement(xsource, 'planet_format', format)
+    createTextElement(xsource, 'planet:bozo', bozo and 'true' or 'false')
+    createTextElement(xsource, 'planet:format', format)
 
 def reconstitute(feed, entry):
     """ create an entry document from a parsed feed """

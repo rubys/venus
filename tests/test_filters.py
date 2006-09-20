@@ -81,6 +81,11 @@ try:
     sed=Popen(['sed','--version'],stdout=PIPE,stderr=PIPE)
     sed.communicate()
     if sed.returncode != 0: raise Exception
-except:
+except Exception, expr:
     # sed is not available
     del FilterTests.test_stripAd_yahoo
+
+    if isinstance(expr, ImportError):
+        # Popen is not available
+        for method in dir(FilterTests):
+            if method.startswith('test_'):  delattr(FilterTests,method)

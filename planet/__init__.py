@@ -67,8 +67,8 @@ def downloadReadingList(list, orig_config, callback, use_cache=True, re_read=Tru
         options = {}
 
         # add original options
-        for key, value in orig_config.items(list):
-            options[key] = value
+        for key in orig_config.options(list):
+            options[key] = orig_config.get(list, key)
             
         try:
             if use_cache:
@@ -85,8 +85,9 @@ def downloadReadingList(list, orig_config, callback, use_cache=True, re_read=Tru
             cached_config.set(list, key, value)
 
         # read list
+        curdir=getattr(os.path, 'curdir', '.')
         if sys.platform.find('win') < 0:
-            base = urljoin('file:', os.path.abspath(os.path.curdir))
+            base = urljoin('file:', os.path.abspath(curdir))
         else:
             path = os.path.abspath(os.path.curdir)
             base = urljoin('file:///', path.replace(':','|').replace('\\','/'))
