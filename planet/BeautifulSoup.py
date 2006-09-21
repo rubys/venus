@@ -66,6 +66,9 @@ except:
     if codepoint.startswith('&#'): codepoint=unichr(int(codepoint[2:-1]))
     name2codepoint[name]=ord(codepoint)
 
+# python 2.2 support
+if not hasattr(__builtins__, 'basestring'): basestring=str
+
 # This RE makes Beautiful Soup able to parse XML with namespaces.
 sgmllib.tagfind = re.compile('[a-zA-Z][-_.:a-zA-Z0-9]*')
 
@@ -870,7 +873,7 @@ def isString(s):
     """Convenience method that works with all 2.x versions of Python
     to determine whether or not something is stringlike."""
     try:
-        return isinstance(s, unicode) or isintance(s, basestring) 
+        return isinstance(s, unicode) or isinstance(s, basestring) 
     except NameError:
         return isinstance(s, str)
 
@@ -1285,6 +1288,12 @@ class BeautifulStoneSoup(Tag, SGMLParser):
                 j = i + len(toHandle)
         return j
 
+    def convert_charref(self, name):
+        return '&#%s;' % name
+
+    def convert_entityref(self, name):
+        return '&%s;' % name
+
 class BeautifulSoup(BeautifulStoneSoup):
 
     """This parser knows the following facts about HTML:
@@ -1654,6 +1663,8 @@ class UnicodeDammit:
     def _toUnicode(self, data, encoding):
         '''Given a string and its encoding, decodes the string into Unicode.
         %encoding is a string recognized by encodings.aliases'''
+
+        if not data: return u''
 
         # strip Byte Order Mark (if present)
         if (len(data) >= 4) and (data[:2] == '\xfe\xff') \

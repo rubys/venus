@@ -11,7 +11,7 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 1.139 $"[11:16] + "-cvs"
+__version__ = "4.2-pre-" + "$Revision: 1.141 $"[11:16] + "-cvs"
 __license__ = """Copyright (c) 2002-2006, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -1714,6 +1714,12 @@ class _BaseHTMLProcessor(sgmllib.SGMLParser):
             self.handle_data(rawdata)
 #            self.updatepos(declstartpos, i)
             return None, -1
+
+    def convert_charref(self, name):
+        return '&#%s;' % name
+
+    def convert_entityref(self, name):
+        return '&%s;' % name
 
     def output(self):
         '''Return processed HTML as a single string'''
