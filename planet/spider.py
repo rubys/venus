@@ -169,32 +169,6 @@ def spiderFeed(feed):
             {'rel':'self', 'type':'application/atom+xml', 'href':feed}))
     for name, value in config.feed_options(feed).items():
         data.feed['planet_'+name] = value
-    
-    # identify inactive feeds
-    if config.activity_threshold(feed):
-        activity_horizon = \
-            time.gmtime(time.time()-86400*config.activity_threshold(feed))
-        updated = [entry.updated_parsed for entry in data.entries
-            if entry.has_key('updated_parsed')]
-        updated.sort()
-        if not updated or updated[-1] < activity_horizon:
-            msg = "no activity in %d days" % config.activity_threshold(feed)
-            log.info(msg)
-            data.feed['planet_message'] = msg
-
-    # report channel level errors
-    if data.status == 403:
-       data.feed['planet_message'] = "403: forbidden"
-    elif data.status == 404:
-       data.feed['planet_message'] = "404: not found"
-    elif data.status == 408:
-       data.feed['planet_message'] = "408: request timeout"
-    elif data.status == 410:
-       data.feed['planet_message'] = "410: gone"
-    elif data.status == 500:
-       data.feed['planet_message'] = "internal server error"
-    elif data.status >= 400:
-       data.feed['planet_message'] = "http status %s" % data.status
 
     # perform user configured scrub operations on the data
     scrub(feed, data)
@@ -236,6 +210,32 @@ def spiderFeed(feed):
         # write out and timestamp the results
         write(output, cache_file) 
         os.utime(cache_file, (mtime, mtime))
+    
+    # identify inactive feeds
+    if config.activity_threshold(feed):
+        activity_horizon = \
+            time.gmtime(time.time()-86400*config.activity_threshold(feed))
+        updated = [entry.updated_parsed for entry in data.entries
+            if entry.has_key('updated_parsed')]
+        updated.sort()
+        if not updated or updated[-1] < activity_horizon:
+            msg = "no activity in %d days" % config.activity_threshold(feed)
+            log.info(msg)
+            data.feed['planet_message'] = msg
+
+    # report channel level errors
+    if data.status == 403:
+       data.feed['planet_message'] = "403: forbidden"
+    elif data.status == 404:
+       data.feed['planet_message'] = "404: not found"
+    elif data.status == 408:
+       data.feed['planet_message'] = "408: request timeout"
+    elif data.status == 410:
+       data.feed['planet_message'] = "410: gone"
+    elif data.status == 500:
+       data.feed['planet_message'] = "internal server error"
+    elif data.status >= 400:
+       data.feed['planet_message'] = "http status %s" % data.status
 
     # write the feed info to the cache
     if not os.path.exists(sources): os.makedirs(sources)
