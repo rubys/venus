@@ -44,6 +44,7 @@ import cgi          # for HTML escaping of variables
 import urllib       # for URL escaping of variables
 import cPickle      # for template compilation
 import gettext
+import portalocker  # for locking
 
 INCLUDE_DIR = "inc"
 
@@ -56,25 +57,6 @@ PARAM_NAME = 1
 PARAM_ESCAPE = 2
 PARAM_GLOBAL = 3
 PARAM_GETTEXT_STRING = 1
-
-# Find a way to lock files. Currently implemented only for UNIX and windows.
-LOCKTYPE_FCNTL = 1
-LOCKTYPE_MSVCRT = 2
-LOCKTYPE = None
-try:
-    import fcntl
-except:
-    try:
-        import msvcrt
-    except:
-        LOCKTYPE = None
-    else:
-        LOCKTYPE = LOCKTYPE_MSVCRT
-else:
-    LOCKTYPE = LOCKTYPE_FCNTL
-LOCK_EX = 1
-LOCK_SH = 2
-LOCK_UN = 3
 
 ##############################################
 #          CLASS: TemplateManager            #
@@ -129,13 +111,6 @@ class TemplateManager:
 
             The <em>TemplateError</em>exception is raised when the precompiled
             template cannot be saved. Precompilation is enabled by default.
-
-            Precompilation is available only on UNIX and Windows platforms,
-            because proper file locking which is necessary to ensure
-            multitask safe behaviour is platform specific and is not
-            implemented for other platforms. Attempts to enable precompilation
-            on the other platforms result in raise of the
-            <em>TemplateError</em> exception.
             
             @param comments Enable or disable template comments.
             This optional parameter can be used to enable or disable
@@ -159,13 +134,6 @@ class TemplateManager:
         self._gettext = gettext
         self._debug = debug
 
-        # Find what module to use to lock files.
-        # File locking is necessary for the 'precompile' feature to be
-        # multitask/thread safe. Currently it works only on UNIX
-        # and Windows. Anyone willing to implement it on Mac ?
-        if precompile and not LOCKTYPE:
-                raise TemplateError, "Template precompilation is not "\
-                                     "available on this platform."
         self.DEB("INIT DONE")
 
     def prepare(self, file):
@@ -260,33 +228,6 @@ class TemplateManager:
         """
         if self._debug: print >> sys.stderr, str
 
-    def lock_file(self, file, lock):
-        """ Provide platform independent file locking.
-            @hidden
-        """
-        fd = file.fileno()
-        if LOCKTYPE == LOCKTYPE_FCNTL:
-            if lock == LOCK_SH:
-                fcntl.flock(fd, fcntl.LOCK_SH)
-            elif lock == LOCK_EX:
-                fcntl.flock(fd, fcntl.LOCK_EX)
-            elif lock == LOCK_UN:
-                fcntl.flock(fd, fcntl.LOCK_UN)
-            else:
-                raise TemplateError, "BUG: bad lock in lock_file"
-        elif LOCKTYPE == LOCKTYPE_MSVCRT:
-            if lock == LOCK_SH:
-                # msvcrt does not support shared locks :-(
-                msvcrt.locking(fd, msvcrt.LK_LOCK, 1)
-            elif lock == LOCK_EX:
-                msvcrt.locking(fd, msvcrt.LK_LOCK, 1)
-            elif lock == LOCK_UN:
-                msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
-            else:
-                raise TemplateError, "BUG: bad lock in lock_file"
-        else:
-            raise TemplateError, "BUG: bad locktype in lock_file"
-
     def compile(self, file):
         """ Compile the template.
             @hidden
@@ -322,7 +263,7 @@ class TemplateManager:
             file = None
             try:
                 file = open(filename, "rb")
-                self.lock_file(file, LOCK_SH)
+                portalocker.lock(file, portalocker.LOCK_SH)
                 precompiled = cPickle.load(file)
             except IOError, (errno, errstr):
                 raise TemplateError, "IO error in load precompiled "\
@@ -338,7 +279,7 @@ class TemplateManager:
                 return precompiled
         finally:
             if file:
-                self.lock_file(file, LOCK_UN)
+                portalocker.unlock(file)
                 file.close()
             if remove_bad and os.path.isfile(filename):
                 # X: We may lose the original exception here, raising OSError.
@@ -369,7 +310,7 @@ class TemplateManager:
             file = None
             try:
                 file = open(filename, "wb")   # may truncate existing file
-                self.lock_file(file, LOCK_EX)
+                portalocker.lock(file, portalocker.LOCK_EX)
                 BINARY = 1
                 READABLE = 0
                 if self._debug:
@@ -393,7 +334,7 @@ class TemplateManager:
                 self.DEB("SAVING PRECOMPILED")
         finally:
             if file:
-                self.lock_file(file, LOCK_UN)
+                portalocker.unlock(file)
                 file.close()
             if remove_bad and os.path.isfile(filename):
                 # X: We may lose the original exception here, raising OSError.

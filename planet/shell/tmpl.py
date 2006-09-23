@@ -225,7 +225,7 @@ def template_info(source):
 
 def run(script, doc, output_file=None, options={}):
     """ process an HTMLTMPL file """
-    manager = htmltmpl.TemplateManager(precompile=(sys.platform.find('win')<0))
+    manager = htmltmpl.TemplateManager()
     template = manager.prepare(script)
     tp = htmltmpl.TemplateProcessor(html_escape=0)
     for key,value in template_info(doc).items():

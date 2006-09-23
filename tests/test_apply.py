@@ -32,7 +32,7 @@ class ApplyTest(unittest.TestCase):
         for file in ['index.html', 'default.css', 'images/foaf.png']:
             path = os.path.join(workdir, file)
             self.assertTrue(os.path.exists(path))
-            self.assertTrue(os.stat(path).st_size > 0)
+            self.assertTrue(os.stat(path).st_size > 0, file + ' has size 0')
 
         # verify that index.html is well formed, has content, and xml:lang
         html = open(os.path.join(workdir, 'index.html'))
