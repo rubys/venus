@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest, os, shutil
-from planet import config, splice
+from planet import config, splice, logger
 from xml.dom import minidom
 
 workdir = 'tests/work/apply'
@@ -62,3 +62,26 @@ class ApplyTest(unittest.TestCase):
         self.assertTrue(html.find('<h1>test planet</h1>')>=0)
         self.assertTrue(html.find(
           '<h4><a href="http://example.com/2">Venus</a></h4>')>=0)
+
+try:
+    import libxml2
+except ImportError:
+
+    try:
+        import win32pipe
+        (stdin,stdout) = win32pipe.popen4('xsltproc -V', 't')
+        stdin.close()
+        stdout.read()
+        try:
+            exitcode = stdout.close()
+        except IOError:
+            exitcode = -1
+    except:
+        import commands
+        (exitstatus,output) = commands.getstatusoutput('xsltproc -V')
+        exitcode = ((exitstatus>>8) & 0xFF)
+
+    if exitcode:
+        logger.warn("xsltproc is not available => can't test XSLT templates")
+        for method in dir(ApplyTest):
+            if method.startswith('test_'):  delattr(ApplyTest,method)

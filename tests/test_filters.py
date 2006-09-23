@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest, xml.dom.minidom
-from planet import shell, config
+from planet import shell, config, logger
 
 class FilterTests(unittest.TestCase):
 
@@ -80,12 +80,10 @@ try:
     from subprocess import Popen, PIPE
     sed=Popen(['sed','--version'],stdout=PIPE,stderr=PIPE)
     sed.communicate()
-    if sed.returncode != 0: raise Exception
-except Exception, expr:
-    # sed is not available
-    del FilterTests.test_stripAd_yahoo
-
-    if isinstance(expr, ImportError):
-        # Popen is not available
-        for method in dir(FilterTests):
-            if method.startswith('test_'):  delattr(FilterTests,method)
+    if sed.returncode != 0:
+        logger.warn("sed is not available => can't test stripAd_yahoo")
+        del FilterTests.test_stripAd_yahoo
+except ImportError:
+    logger.warn("Popen is not available => can't test filters")
+    for method in dir(FilterTests):
+        if method.startswith('test_'):  delattr(FilterTests,method)
