@@ -2,6 +2,8 @@ import planet
 import os
 import sys
 
+logged_modes = []
+
 def run(template_file, doc, mode='template'):
     """ select a template module based on file extension and execute it """
     log = planet.getLogger(planet.config.log_level())
@@ -16,7 +18,14 @@ def run(template_file, doc, mode='template'):
         template_resolved = os.path.join(template_dir, template_file)
         if os.path.exists(template_resolved): break
     else:
-        return log.error("Unable to locate %s %s", mode, template_file)
+        log.error("Unable to locate %s %s", mode, template_file)
+        if not mode in logged_modes:
+            log.info("%s search path:", mode)
+            for template_dir in dirs:
+                log.info("    %s", os.path.realpath(template_dir))
+            logged_modes.append(mode)
+        return
+    template_resolved = os.path.realpath(template_resolved)
 
     # Add shell directory to the path, if not already there
     shellpath = os.path.join(sys.path[0],'planet','shell')
@@ -34,13 +43,11 @@ def run(template_file, doc, mode='template'):
 
     # Execute the shell module
     options = planet.config.template_options(template_file)
+    log.debug("Processing %s %s using %s", mode,
+        os.path.realpath(template_resolved), module_name)
     if mode == 'filter':
-        log.debug("Processing filer %s using %s", template_resolved,
-            module_name)
         return module.run(template_resolved, doc, None, options)
     else:
-        log.info("Processing template %s using %s", template_resolved,
-            module_name)
         output_dir = planet.config.output_dir()
         output_file = os.path.join(output_dir, base)
         module.run(template_resolved, doc, output_file, options)

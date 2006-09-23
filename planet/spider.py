@@ -116,6 +116,9 @@ def spiderFeed(feed):
     data = feedparser.parse(feed_info.feed.get('planet_http_location',feed),
         etag=feed_info.feed.get('planet_http_etag',None), modified=modified)
 
+    # if read failed, retain cached information
+    if not data.version and feed_info.version: data.feed = feed_info.feed
+
     # capture http status
     if not data.has_key("status"):
         if data.has_key("entries") and len(data.entries)>0:
