@@ -1,0 +1,8 @@
+<!--
+Description:  id
+Expect:       source.planet_format == 'atom10'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry/>
+</feed>

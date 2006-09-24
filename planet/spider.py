@@ -116,6 +116,9 @@ def spiderFeed(feed):
     data = feedparser.parse(feed_info.feed.get('planet_http_location',feed),
         etag=feed_info.feed.get('planet_http_etag',None), modified=modified)
 
+    # if read failed, retain cached information
+    if not data.version and feed_info.version: data.feed = feed_info.feed
+
     # capture http status
     if not data.has_key("status"):
         if data.has_key("entries") and len(data.entries)>0:
@@ -166,32 +169,6 @@ def spiderFeed(feed):
             {'rel':'self', 'type':'application/atom+xml', 'href':feed}))
     for name, value in config.feed_options(feed).items():
         data.feed['planet_'+name] = value
-    
-    # identify inactive feeds
-    if config.activity_threshold(feed):
-        activity_horizon = \
-            time.gmtime(time.time()-86400*config.activity_threshold(feed))
-        updated = [entry.updated_parsed for entry in data.entries
-            if entry.has_key('updated_parsed')]
-        updated.sort()
-        if not updated or updated[-1] < activity_horizon:
-            msg = "no activity in %d days" % config.activity_threshold(feed)
-            log.info(msg)
-            data.feed['planet_message'] = msg
-
-    # report channel level errors
-    if data.status == 403:
-       data.feed['planet_message'] = "403: forbidden"
-    elif data.status == 404:
-       data.feed['planet_message'] = "404: not found"
-    elif data.status == 408:
-       data.feed['planet_message'] = "408: request timeout"
-    elif data.status == 410:
-       data.feed['planet_message'] = "410: gone"
-    elif data.status == 500:
-       data.feed['planet_message'] = "internal server error"
-    elif data.status >= 400:
-       data.feed['planet_message'] = "http status %s" % data.status
 
     # perform user configured scrub operations on the data
     scrub(feed, data)
@@ -233,12 +210,38 @@ def spiderFeed(feed):
         # write out and timestamp the results
         write(output, cache_file) 
         os.utime(cache_file, (mtime, mtime))
+    
+    # identify inactive feeds
+    if config.activity_threshold(feed):
+        activity_horizon = \
+            time.gmtime(time.time()-86400*config.activity_threshold(feed))
+        updated = [entry.updated_parsed for entry in data.entries
+            if entry.has_key('updated_parsed')]
+        updated.sort()
+        if not updated or updated[-1] < activity_horizon:
+            msg = "no activity in %d days" % config.activity_threshold(feed)
+            log.info(msg)
+            data.feed['planet_message'] = msg
+
+    # report channel level errors
+    if data.status == 403:
+       data.feed['planet_message'] = "403: forbidden"
+    elif data.status == 404:
+       data.feed['planet_message'] = "404: not found"
+    elif data.status == 408:
+       data.feed['planet_message'] = "408: request timeout"
+    elif data.status == 410:
+       data.feed['planet_message'] = "410: gone"
+    elif data.status == 500:
+       data.feed['planet_message'] = "internal server error"
+    elif data.status >= 400:
+       data.feed['planet_message'] = "http status %s" % data.status
 
     # write the feed info to the cache
     if not os.path.exists(sources): os.makedirs(sources)
     xdoc=minidom.parseString('''<feed xmlns:planet="%s"
       xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
-    reconstitute.source(xdoc.documentElement, data.feed, data.bozo)
+    reconstitute.source(xdoc.documentElement,data.feed,data.bozo,data.version)
     write(xdoc.toxml('utf-8'), filename(sources, feed))
     xdoc.unlink()
 

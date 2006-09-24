@@ -149,11 +149,14 @@ def load(config_file):
                     config.template_directories()]
 
                 # merge configurations, allowing current one to override theme
+                template_files = config.template_files()
                 parser.read(config_file)
                 for file in config.bill_of_materials():
                     if not file in bom: bom.append(file)
                 parser.set('Planet', 'bill_of_materials', ' '.join(bom))
                 parser.set('Planet', 'template_directories', ' '.join(dirs))
+                parser.set('Planet', 'template_files',
+                   ' '.join(template_files + config.template_files()))
                 break
         else:
             log.error('Unable to find theme %s', theme)

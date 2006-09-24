@@ -6,7 +6,7 @@ from os.path import split
 from glob import glob
 from ConfigParser import ConfigParser
 
-workdir = 'tests/work/config/cache'
+workdir = os.path.join('tests', 'work', 'config', 'cache')
 
 class ReadingListTest(unittest.TestCase):
     def setUp(self):
@@ -38,7 +38,7 @@ class ReadingListTest(unittest.TestCase):
 
     def test_cache(self):
         cache = glob(os.path.join(workdir,'lists','*'))
-        self.assertTrue(1,len(cache))
+        self.assertEqual(1,len(cache))
 
         parser = ConfigParser()
         parser.read(cache[0])

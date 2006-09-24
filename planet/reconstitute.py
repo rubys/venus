@@ -162,7 +162,7 @@ def content(xentry, name, detail, bozo):
 
     xentry.appendChild(xcontent)
 
-def source(xsource, source, bozo):
+def source(xsource, source, bozo, format):
     """ copy source information to the entry """
     xdoc = xsource.ownerDocument
 
@@ -193,6 +193,9 @@ def source(xsource, source, bozo):
         if key.startswith('planet_'):
             createTextElement(xsource, key.replace('_',':',1), value)
 
+    createTextElement(xsource, 'planet:bozo', bozo and 'true' or 'false')
+    createTextElement(xsource, 'planet:format', format)
+
 def reconstitute(feed, entry):
     """ create an entry document from a parsed feed """
     xdoc=minidom.parseString('<entry xmlns="http://www.w3.org/2005/Atom"/>\n')
@@ -222,7 +225,7 @@ def reconstitute(feed, entry):
         author(xentry, 'contributor', contributor)
 
     xsource = xdoc.createElement('source')
-    source(xsource, entry.get('source', feed.feed), bozo)
+    source(xsource, entry.get('source', feed.feed), bozo, feed.version)
     xentry.appendChild(xsource)
 
     return xdoc

@@ -21,6 +21,10 @@ sys.path[0] = os.getcwd()
 # find all of the planet test modules
 modules = map(fullmodname, glob.glob(os.path.join('tests', 'test_*.py')))
 
+# enable warnings
+import planet
+planet.getLogger("WARNING")
+
 # load all of the tests into a suite
 suite = unittest.TestLoader().loadTestsFromNames(modules)
 
