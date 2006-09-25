@@ -116,9 +116,6 @@ def spiderFeed(feed):
     data = feedparser.parse(feed_info.feed.get('planet_http_location',feed),
         etag=feed_info.feed.get('planet_http_etag',None), modified=modified)
 
-    # if read failed, retain cached information
-    if not data.version and feed_info.version: data.feed = feed_info.feed
-
     # capture http status
     if not data.has_key("status"):
         if data.has_key("entries") and len(data.entries)>0:
@@ -127,7 +124,6 @@ def spiderFeed(feed):
             data.status = 408
         else:
             data.status = 500
-    data.feed['planet_http_status'] = str(data.status)
 
     # process based on the HTTP status code
     log = planet.logger
@@ -138,17 +134,18 @@ def spiderFeed(feed):
         data.feed['planet_http_location'] = data.url
     elif data.status == 304:
         return log.info("Feed %s unchanged", feed)
+    elif data.status == 410:
+        log.info("Feed %s gone", feed)
+    elif data.status == 408:
+        log.warning("Feed %s timed out", feed)
     elif data.status >= 400:
-        feed_info.update(data.feed)
-        data.feed = feed_info
-        if data.status == 410:
-            log.info("Feed %s gone", feed)
-        elif data.status == 408:
-            log.warning("Feed %s timed out", feed)
-        else:
-            log.error("Error %d while updating feed %s", data.status, feed)
+        log.error("Error %d while updating feed %s", data.status, feed)
     else:
         log.info("Updating feed %s", feed)
+
+    # if read failed, retain cached information
+    if not data.version and feed_info.version: data.feed = feed_info.feed
+    data.feed['planet_http_status'] = str(data.status)
 
     # capture etag and last-modified information
     if data.has_key('headers'):
