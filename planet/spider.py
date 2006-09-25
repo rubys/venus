@@ -133,7 +133,9 @@ def spiderFeed(feed):
         log.warning("Feed has moved from <%s> to <%s>", feed, data.url)
         data.feed['planet_http_location'] = data.url
     elif data.status == 304:
-        return log.info("Feed %s unchanged", feed)
+        log.info("Feed %s unchanged", feed)
+        if not feed_info.feed.has_key('planet_message'): return
+        del feed_info.feed['planet_message']
     elif data.status == 410:
         log.info("Feed %s gone", feed)
     elif data.status == 408:
@@ -215,6 +217,13 @@ def spiderFeed(feed):
         updated = [entry.updated_parsed for entry in data.entries
             if entry.has_key('updated_parsed')]
         updated.sort()
+
+        if updated:
+            data.feed['planet_updated'] = \
+                time.strftime("%Y-%m-%dT%H:%M:%SZ", updated[-1])
+        elif data.feed.has_key('planet_updated'):
+           updated = [feedparser._parse_date_iso8601(data.feed.planet_updated)]
+
         if not updated or updated[-1] < activity_horizon:
             msg = "no activity in %d days" % config.activity_threshold(feed)
             log.info(msg)
