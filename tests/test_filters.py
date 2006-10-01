@@ -78,11 +78,19 @@ class FilterTests(unittest.TestCase):
 
 try:
     from subprocess import Popen, PIPE
+
     sed=Popen(['sed','--version'],stdout=PIPE,stderr=PIPE)
     sed.communicate()
     if sed.returncode != 0:
         logger.warn("sed is not available => can't test stripAd_yahoo")
         del FilterTests.test_stripAd_yahoo
+
+    try:
+        import libxml2
+    except:
+        logger.warn("libxml2 is not available => can't test xpath_sifter")
+        del FilterTests.test_xpath_filter
+
 except ImportError:
     logger.warn("Popen is not available => can't test filters")
     for method in dir(FilterTests):

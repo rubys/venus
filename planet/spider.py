@@ -99,6 +99,7 @@ def scrub(feed, data):
 
 def spiderFeed(feed):
     """ Spider (fetch) a single feed """
+    log = planet.logger
 
     # read cached feed info
     sources = config.cache_sources_directory()
@@ -125,8 +126,10 @@ def spiderFeed(feed):
         else:
             data.status = 500
 
+    activity_horizon = \
+        time.gmtime(time.time()-86400*config.activity_threshold(feed))
+
     # process based on the HTTP status code
-    log = planet.logger
     if data.status == 200 and data.has_key("url"):
         data.feed['planet_http_location'] = data.url
     elif data.status == 301 and data.has_key("entries") and len(data.entries)>0:
@@ -134,8 +137,17 @@ def spiderFeed(feed):
         data.feed['planet_http_location'] = data.url
     elif data.status == 304:
         log.info("Feed %s unchanged", feed)
-        if not feed_info.feed.has_key('planet_message'): return
-        del feed_info.feed['planet_message']
+
+        if not feed_info.feed.has_key('planet_message'):
+            if feed_info.feed.has_key('planet_updated'):
+                updated = feed_info.feed.planet_updated
+                if feedparser._parse_date_iso8601(updated) >= activity_horizon:
+                    return
+        else:
+            if feed_info.feed.planet_message.startswith("no activity in"):
+               return
+            del feed_info.feed['planet_message']
+
     elif data.status == 410:
         log.info("Feed %s gone", feed)
     elif data.status == 408:
@@ -146,7 +158,9 @@ def spiderFeed(feed):
         log.info("Updating feed %s", feed)
 
     # if read failed, retain cached information
-    if not data.version and feed_info.version: data.feed = feed_info.feed
+    if not data.version and feed_info.version:
+        data.feed = feed_info.feed
+        data.bozo = feed_info.feed.get('planet_bozo','true') == 'true'
     data.feed['planet_http_status'] = str(data.status)
 
     # capture etag and last-modified information
@@ -212,8 +226,6 @@ def spiderFeed(feed):
     
     # identify inactive feeds
     if config.activity_threshold(feed):
-        activity_horizon = \
-            time.gmtime(time.time()-86400*config.activity_threshold(feed))
         updated = [entry.updated_parsed for entry in data.entries
             if entry.has_key('updated_parsed')]
         updated.sort()
@@ -230,18 +242,20 @@ def spiderFeed(feed):
             data.feed['planet_message'] = msg
 
     # report channel level errors
-    if data.status == 403:
-       data.feed['planet_message'] = "403: forbidden"
+    if data.status == 226:
+        if data.feed.has_key('planet_message'): del data.feed['planet_message']
+    elif data.status == 403:
+        data.feed['planet_message'] = "403: forbidden"
     elif data.status == 404:
-       data.feed['planet_message'] = "404: not found"
+        data.feed['planet_message'] = "404: not found"
     elif data.status == 408:
-       data.feed['planet_message'] = "408: request timeout"
+        data.feed['planet_message'] = "408: request timeout"
     elif data.status == 410:
-       data.feed['planet_message'] = "410: gone"
+        data.feed['planet_message'] = "410: gone"
     elif data.status == 500:
-       data.feed['planet_message'] = "internal server error"
+        data.feed['planet_message'] = "internal server error"
     elif data.status >= 400:
-       data.feed['planet_message'] = "http status %s" % data.status
+        data.feed['planet_message'] = "http status %s" % data.status
 
     # write the feed info to the cache
     if not os.path.exists(sources): os.makedirs(sources)
@@ -257,4 +271,12 @@ def spiderPlanet():
     planet.setTimeout(config.feed_timeout())
 
     for feed in config.subscriptions():
-        spiderFeed(feed)
+        try:
+            spiderFeed(feed)
+        except Exception,e:
+            import sys, traceback
+            type, value, tb = sys.exc_info()
+            log.error('Error processing %s', feed)
+            for line in (traceback.format_exception_only(type, value) +
+                traceback.format_tb(tb)):
+                log.error(line.rstrip())
