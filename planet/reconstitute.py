@@ -188,13 +188,13 @@ def source(xsource, source, bozo, format):
 
     date(xsource, 'updated', source.get('updated_parsed',time.gmtime()))
 
+    if format: source['planet_format'] = format
+    if not bozo == None: source['planet_bozo'] = bozo and 'true' or 'false'
+
     # propagate planet inserted information
     for key, value in source.items():
         if key.startswith('planet_'):
             createTextElement(xsource, key.replace('_',':',1), value)
-
-    createTextElement(xsource, 'planet:bozo', bozo and 'true' or 'false')
-    createTextElement(xsource, 'planet:format', format)
 
 def reconstitute(feed, entry):
     """ create an entry document from a parsed feed """

@@ -1,4 +1,5 @@
 from subprocess import Popen, PIPE
+import sys 
 
 def run(script, doc, output_file=None, options={}):
     """ process an Python script """
@@ -10,7 +11,7 @@ def run(script, doc, output_file=None, options={}):
 
     options = sum([['--'+key, value] for key,value in options.items()], [])
 
-    proc = Popen(['python', script] + options,
+    proc = Popen([sys.executable, script] + options,
         stdin=PIPE, stdout=out, stderr=PIPE)
 
     stdout, stderr = proc.communicate(doc)
