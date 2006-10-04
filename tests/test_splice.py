@@ -16,3 +16,11 @@ class SpliceTest(unittest.TestCase):
 
         self.assertEqual('test planet',
             doc.getElementsByTagName('title')[0].firstChild.nodeValue)
+
+    def test_splice_unsub(self):
+        config.load(configfile)
+        config.parser.remove_section('tests/data/spider/testfeed2.atom')
+        doc = splice()
+        self.assertEqual(8,len(doc.getElementsByTagName('entry')))
+        self.assertEqual(3,len(doc.getElementsByTagName('planet:source')))
+        self.assertEqual(11,len(doc.getElementsByTagName('planet:name')))
