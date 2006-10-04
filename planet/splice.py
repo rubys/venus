@@ -17,7 +17,7 @@ def splice():
     dir.sort()
     dir.reverse()
 
-    items=max([config.items_per_page(templ)
+    max_items=max([config.items_per_page(templ)
         for templ in config.template_files() or ['Planet']])
 
     doc = minidom.parseString('<feed xmlns="http://www.w3.org/2005/Atom"/>')
@@ -49,24 +49,39 @@ def splice():
         link.setAttribute('href', config.link())
         feed.appendChild(link)
 
-    # insert entry information
-    for mtime,file in dir[:items]:
-        try:
-            entry=minidom.parse(file)
-            feed.appendChild(entry.documentElement)
-        except:
-            log.error("Error parsing %s", file)
-
     # insert subscription information
+    sub_ids = []
     feed.setAttribute('xmlns:planet',planet.xmlns)
     sources = config.cache_sources_directory()
     for sub in config.subscriptions():
         data=feedparser.parse(filename(sources,sub))
+        if data.feed.has_key('id'): sub_ids.append(data.feed.id)
         if not data.feed: continue
         xdoc=minidom.parseString('''<planet:source xmlns:planet="%s"
              xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
         reconstitute.source(xdoc.documentElement, data.feed, None, None)
         feed.appendChild(xdoc.documentElement)
+
+    # insert entry information
+    items = 0
+    for mtime,file in dir:
+        try:
+            entry=minidom.parse(file)
+
+            # verify that this entry is currently subscribed to
+            entry.normalize()
+            sources = entry.getElementsByTagName('source')
+            if sources:
+                ids = sources[0].getElementsByTagName('id')
+                if ids and ids[0].childNodes[0].nodeValue not in sub_ids:
+                    continue
+
+            # add entry to feed
+            feed.appendChild(entry.documentElement)
+            items = items + 1
+            if items >= max_items: break
+        except:
+            log.error("Error parsing %s", file)
 
     return doc
 
