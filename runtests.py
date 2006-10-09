@@ -26,7 +26,12 @@ import planet
 planet.getLogger("WARNING")
 
 # load all of the tests into a suite
-suite = unittest.TestLoader().loadTestsFromNames(modules)
+try:
+    suite = unittest.TestLoader().loadTestsFromNames(modules)
+except Exception, exception:
+    # attempt to produce a more specific message
+    for module in modules: __import__(module)
+    raise
 
 # run test suite
 unittest.TextTestRunner().run(suite)
