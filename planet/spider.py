@@ -34,6 +34,16 @@ def filename(directory, filename):
     filename = re_initial_cruft.sub("", filename)
     filename = re_final_cruft.sub("", filename)
 
+    # limit length of filename
+    if len(filename)>250:
+        parts=filename.split(',')
+        for i in range(len(parts),0,-1):
+            if len(','.join(parts[:i])) < 220:
+                import md5
+                filename = ','.join(parts[:i]) + ',' + \
+                    md5.new(','.join(parts[i:])).hexdigest()
+                break
+  
     return os.path.join(directory, filename)
 
 def write(xdoc, out):
