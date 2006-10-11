@@ -225,7 +225,7 @@ def reconstitute(feed, entry):
         author(xentry, 'contributor', contributor)
 
     xsource = xdoc.createElement('source')
-    source(xsource, entry.get('source', feed.feed), bozo, feed.version)
+    source(xsource, entry.get('source') or feed.feed, bozo, feed.version)
     xentry.appendChild(xsource)
 
     return xdoc
