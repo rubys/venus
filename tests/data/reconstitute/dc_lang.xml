@@ -1,0 +1,14 @@
+<!--
+Description:  title value
+Expect:       title_detail.language == 'en-us'
+-->
+
+<rdf:RDF
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns="http://purl.org/rss/1.0/">
+<item>
+  <title>foo</title>
+  <dc:language>en-us</dc:language>
+</item>
+</rdf:RDF>

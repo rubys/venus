@@ -202,6 +202,9 @@ def reconstitute(feed, entry):
     xentry=xdoc.documentElement
     xentry.setAttribute('xmlns:planet',planet.xmlns)
 
+    if entry.has_key('language'):
+        xentry.setAttribute('xml:lang', entry.language)
+
     id(xentry, entry)
     links(xentry, entry)
 
