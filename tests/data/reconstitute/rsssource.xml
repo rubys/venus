@@ -1,0 +1,15 @@
+<!--
+Description:  source element
+Expect:       source.title == 'foo' 
+-->
+
+<rss version="2.0">
+  <channel>
+    <title>foo</title>
+    <item>
+      <guid>http://example.com/1</guid>
+      <source url="http://www.example.org">org</source>
+    </item>
+  </channel>
+</rss>
+

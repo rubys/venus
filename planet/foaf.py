@@ -133,8 +133,8 @@ def foaf2config(rdf, config, subject=None):
                             { 'content_type' : 'foaf', 
                               'depth' : str(depth - 1) })
                 try:
-                    import planet
-                    planet.downloadReadingList(seeAlso, config,
+                    from planet.config import downloadReadingList
+                    downloadReadingList(seeAlso, config,
                         lambda data, subconfig : friend2config(model, friend, seeAlso, subconfig, data), 
                         False)
                 except:
