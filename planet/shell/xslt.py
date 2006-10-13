@@ -1,5 +1,19 @@
 import os
 
+def quote(string, apos):
+    """ quote a string so that it can be passed as a parameter """
+    if type(string) == unicode:
+        string=string.encode('utf-8')
+    if apos.startswith("\\"): string.replace('\\','\\\\')
+
+    if string.find("'")<0:
+        return "'" + string + "'"
+    elif string.find("'")<0:
+        return '"' + string + '"'
+    else:
+        # unclear how to quote strings with both types of quotes for libxslt
+        return "'" + string.replace("'",apos) + "'"
+
 def run(script, doc, output_file=None, options={}):
     """ process an XSLT stylesheet """
 
@@ -12,6 +26,22 @@ def run(script, doc, output_file=None, options={}):
     except:
         # otherwise, use the command line interface
         dom = None
+
+    # do it
+    result = None
+    if dom:
+        styledoc = libxml2.parseFile(script)
+        style = libxslt.parseStylesheetDoc(styledoc)
+        for key in options.keys():
+            options[key] = quote(options[key], apos="\xe2\x80\x99")
+        output = style.applyStylesheet(dom, options)
+        if output_file:
+            style.saveResultToFilename(output_file, output, 0)
+        else:
+            result = str(output)
+        style.freeStylesheet()
+        output.freeDoc()
+    elif output_file:
         import warnings
         if hasattr(warnings, 'simplefilter'):
             warnings.simplefilter('ignore', RuntimeWarning)
@@ -20,16 +50,28 @@ def run(script, doc, output_file=None, options={}):
         file.write(doc)
         file.close()
 
-    # do it
-    if dom:
-        styledoc = libxml2.parseFile(script)
-        style = libxslt.parseStylesheetDoc(styledoc)
-        result = style.applyStylesheet(dom, None)
-        style.saveResultToFilename(output_file, result, 0)
-        style.freeStylesheet()
-        result.freeDoc()
+        cmdopts = []
+        for key,value in options.items():
+           cmdopts += ['--stringparam', key, quote(value, apos=r"\'")]
+
+        os.system('xsltproc %s %s %s > %s' %
+            (script, ' '.join(cmdopts), docfile, output_file))
+        os.unlink(docfile)
     else:
-        os.system('xsltproc %s %s > %s' % (script, docfile, output_file))
+        import sys
+        from subprocess import Popen, PIPE
+
+        options = sum([['--stringparam', key, value]
+            for key,value in options.items()], [])
+
+        proc = Popen(['xsltproc'] + options + [script, '-'],
+            stdin=PIPE, stdout=PIPE, stderr=PIPE)
+
+        result, stderr = proc.communicate(doc)
+        if stderr:
+            import planet
+            planet.logger.error(stderr)
 
     if dom: dom.freeDoc()
-    if docfile: os.unlink(docfile)
+
+    return result

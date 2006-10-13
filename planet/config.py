@@ -32,7 +32,7 @@ from urlparse import urljoin
 
 parser = ConfigParser()
 
-planet_predefined_options = []
+planet_predefined_options = ['filters']
 
 def __init__():
     """define the struture of an ini file"""

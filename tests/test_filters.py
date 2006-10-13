@@ -92,6 +92,6 @@ try:
         del FilterTests.test_xpath_filter
 
 except ImportError:
-    logger.warn("Popen is not available => can't test filters")
+    logger.warn("Popen is not available => can't test standard filters")
     for method in dir(FilterTests):
         if method.startswith('test_'):  delattr(FilterTests,method)
