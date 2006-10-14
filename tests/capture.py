@@ -20,7 +20,8 @@ import planet
 from planet import spider, config
 planet.getLogger('CRITICAL')
 
-spider.spiderPlanet('tests/data/spider/config.ini')
+config.load('tests/data/spider/config.ini')
+spider.spiderPlanet()
 if os.path.exists('tests/data/splice/cache'):
     shutil.rmtree('tests/data/splice/cache')
 shutil.move('tests/work/spider/cache', 'tests/data/splice/cache')
@@ -31,7 +32,7 @@ dest1.write(source.read().replace('/work/spider/', '/data/splice/'))
 dest1.close()
 
 source.seek(0)
-dest2=open('tests/data/apply/config.ini', 'w')
+dest2=open('tests/work/apply_config.ini', 'w')
 dest2.write(source.read().replace('[Planet]', '''[Planet]
 output_theme = asf
 output_dir = tests/work/apply'''))
@@ -41,12 +42,13 @@ source.close()
 # copy splice output to apply input
 from planet import splice
 file=open('tests/data/apply/feed.xml', 'w')
-data=splice.splice('tests/data/splice/config.ini').toxml('utf-8')
+config.load('tests/data/splice/config.ini')
+data=splice.splice().toxml('utf-8')
 file.write(data)
 file.close()
 
 # copy apply output to config/reading-list input
-config.load('tests/data/apply/config.ini')
+config.load('tests/work/apply_config.ini')
 splice.apply(data)
 shutil.move('tests/work/apply/opml.xml', 'tests/data/config')
 

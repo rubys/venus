@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom" xmlns:planet="http://planet.intertwingly.net/"><link href="tests/data/spider/testfeed0.atom" rel="self" type="application/atom+xml"/><planet:name>not found</planet:name><planet:http_status>500</planet:http_status></feed>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:planet="http://planet.intertwingly.net/"><author><name>not found</name></author><link href="tests/data/spider/testfeed0.atom" rel="self" type="application/atom+xml"/><updated planet:format="October 14, 2006 01:02 PM">2006-10-14T13:02:18Z</updated><planet:message>internal server error</planet:message><planet:bozo>true</planet:bozo><planet:http_status>500</planet:http_status><planet:name>not found</planet:name></feed>
