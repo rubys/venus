@@ -25,15 +25,22 @@ def destroy():
     log.info(idindex + " deleted")
 
 def create():
-    import libxml2
     from planet import logger as log
     cache = config.cache_directory()
     index=os.path.join(cache,'index')
     if not os.path.exists(index): os.makedirs(index)
     index = dbhash.open(filename(index, 'id'),'c')
 
+    try:
+        import libxml2
+    except:
+        libxml2 = False
+        from xml.dom import minidom
+
     for file in glob(cache+"/*"):
-        if not os.path.isdir(file):
+        if os.path.isdir(file):
+            continue
+        elif libxml2:
             try:
                 doc = libxml2.parseFile(file)
                 ctxt = doc.xpathNewContext()
@@ -42,6 +49,19 @@ def create():
                 source = ctxt.xpathEval('/atom:entry/atom:source/atom:id')
                 if entry and source:
                     index[filename('',entry[0].content)] = source[0].content
+                doc.freeDoc()
+            except:
+                log.error(file)
+        else:
+            try:
+                doc = minidom.parse(file)
+                doc.normalize()
+                ids = doc.getElementsByTagName('id')
+                entry = [e for e in ids if e.parentNode.nodeName == 'entry']
+                source = [e for e in ids if e.parentNode.nodeName == 'source']
+                if entry and source:
+                    index[filename('',entry[0].childNodes[0].nodeValue)] = \
+                        source[0].childNodes[0].nodeValue
                 doc.freeDoc()
             except:
                 log.error(file)
