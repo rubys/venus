@@ -4,6 +4,7 @@ from xml.dom import minidom
 import planet, config, feedparser, reconstitute, shell
 from reconstitute import createTextElement, date
 from spider import filename
+from planet import idindex
 
 def splice():
     """ Splice together a planet from a cache of entries """
@@ -62,9 +63,12 @@ def splice():
         reconstitute.source(xdoc.documentElement, data.feed, None, None)
         feed.appendChild(xdoc.documentElement)
 
+    index = idindex.open()
+
     # insert entry information
     items = 0
     for mtime,file in dir:
+        if index and index[file.split('/')[-1]] not in sub_ids: continue
         try:
             entry=minidom.parse(file)
 
@@ -82,6 +86,8 @@ def splice():
             if items >= max_items: break
         except:
             log.error("Error parsing %s", file)
+
+    if index: index.close()
 
     return doc
 

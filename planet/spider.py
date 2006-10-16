@@ -196,6 +196,9 @@ def spiderFeed(feed):
     # perform user configured scrub operations on the data
     scrub(feed, data)
 
+    from planet import idindex
+    index = idindex.open()
+
     # write each entry to the cache
     cache = config.cache_directory()
     for entry in data.entries:
@@ -234,6 +237,13 @@ def spiderFeed(feed):
         write(output, cache_file) 
         os.utime(cache_file, (mtime, mtime))
     
+        # optionally index
+        if index != None: 
+            index[filename('', entry.id)] = \
+                data.feed.get('id', data.feed.get('link',None))
+
+    if index: index.close()
+
     # identify inactive feeds
     if config.activity_threshold(feed):
         updated = [entry.updated_parsed for entry in data.entries
