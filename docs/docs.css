@@ -1,0 +1,106 @@
+body {
+  background-color: #fff;
+  color: #333;
+  font-family: 'Lucida Grande', Verdana, Geneva, Lucida, Helvetica, sans-serif;
+  font-size: small;
+  margin: 40px;
+  padding: 0;
+}
+
+a:link, a:visited { 
+  background-color: transparent;
+  color: #333;
+  text-decoration: none !important;
+  border-bottom: 1px dotted #333 !important;
+  text-decoration: underline;
+  border-bottom: 0;
+}
+
+a:hover {
+  background-color: transparent;
+  color: #993344;
+  text-decoration: none !important;
+  text-decoration: underline;
+  border-bottom: 1px dotted #993344 !important;
+  border-bottom: 0;
+}
+
+code {
+  color: green;
+  font-size: large
+}
+
+h1 {
+  margin: 8px 0 10px 20px;
+  padding: 0;
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+  font-family: "Book Antiqua", Georgia, Palatino, Times, "Times New Roman", serif;
+}
+
+h2 {
+  clear: both;
+}
+
+ul.outer > li {
+  margin: 14px 0 10px 0;
+}
+
+.z {
+  float:left;
+  background: url(img/shadowAlpha.png) no-repeat bottom right !important;
+  background: url(img/shadow.gif) no-repeat bottom right;
+  margin: -15px 0 20px -15px !important;
+}
+
+.z p {
+  margin: 14px 0 10px 15px !important;
+}
+
+.z .sectionInner {
+  width: 730px;
+  background: none !important;
+  background: url(img/shadow2.gif) no-repeat left top;
+  padding: 0 !important;
+  padding: 0 6px 6px 10;
+  }
+
+.z .sectionInner .sectionInner2 {
+  background-color: #fff;
+  border: 1px solid #a9a9a9;
+  padding: 4px;
+  margin: -6px 6px 6px -6px !important;
+  margin: 0;
+}
+
+ins {
+  color: magenta;
+  text-decoration: none;
+}
+
+dl.compact {
+  margin-bottom: 1em;
+  margin-top: 1em;
+}
+
+dl.code > dt {
+  font-family: mono;
+}
+
+dl.compact > dt {
+  float: left;
+  margin-bottom: 0;
+  padding-right: 8px;
+  margin-top: 0;
+  list-style-type: none;
+}
+
+dl.compact > dd {
+  margin-bottom: 0;
+  margin-top: 0;
+  margin-left: 10em;
+}
+
+th, td {
+  font-size: small;
+}
