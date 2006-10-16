@@ -51,8 +51,11 @@ class idIndexTest(unittest.TestCase):
         self.assertEqual(12,len(doc.getElementsByTagName('planet:name')))
 
 try:
+    module = 'dbhash'
+    import dbhash
+    module = 'libxml2'
     import libxml2
 except ImportError:
-    logger.warn("libxml2 is not available => can't test id index")
+    logger.warn(module + " is not available => can't test id index")
     for method in dir(idIndexTest):
         if method.startswith('test_'):  delattr(idIndexTest,method)
