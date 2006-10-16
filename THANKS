@@ -4,6 +4,8 @@ Elias Torres    - FOAF OnlineAccounts
 Jacques Distler - Template patches
 Michael Koziarski - HTTP Auth fix
 Brian Ewins     - Win32 / Portalocker
+Joe Gregorio    - Invoke same version of Python for filters
+Harry Fuecks    - Pipe characters in file names
 
 This codebase represents a radical refactoring of Planet 2.0, which lists
 the following contributors:
