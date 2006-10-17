@@ -78,6 +78,7 @@ dl.compact {
 
 dl.code > dt {
   font-family: monospace;
+  font-size: large;
 }
 
 dl.compact > dt {
