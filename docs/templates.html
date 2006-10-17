@@ -1,3 +1,6 @@
+<!DOCTYPE html PUBLIC
+    "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN"
+    "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <script type="text/javascript" src="docs.js"></script>
@@ -29,7 +32,7 @@ the following (rather substantial) subset:</p>
 
 <blockquote>
 <table border="1" cellpadding="5" cellspacing="0">
-<thead><th>VAR</th><th>type</th><th>source</th></thead>
+<tr><th>VAR</th><th>type</th><th>source</th></tr>
 <tr><td>author</td><td>String</td><td><a href="http://feedparser.org/docs/reference-feed-author.html">author</a></td></tr>
 <tr><td>author_name</td><td>String</td><td><a href="http://feedparser.org/docs/reference-feed-author_detail.html#reference.feed.author_detail.name">author_detail.name</a></td></tr>
 <tr><td>generator</td><td>String</td><td><a href="http://feedparser.org/docs/reference-feed-generator.html">generator</a></td></tr>
@@ -58,7 +61,7 @@ The data values within the <code>Items</code> array are as follows:</p>
 
 <blockquote>
 <table border="1" cellpadding="5" cellspacing="0">
-<thead><th>VAR</th><th>type</th><th>source</th></thead>
+<tr><th>VAR</th><th>type</th><th>source</th></tr>
 <tr><td>author</td><td>String</td><td><a href="http://feedparser.org/docs/reference-entry-author.html">author</a></td></tr>
 <tr><td>author_email</td><td>String</td><td><a href="http://feedparser.org/docs/reference-entry-author_detail.html#reference.entry.author_detail.email">author_detail.email</a></td></tr>
 <tr><td>author_name</td><td>String</td><td><a href="http://feedparser.org/docs/reference-entry-author_detail.html#reference.entry.author_detail.name">author_detail.name</a></td></tr>
@@ -103,7 +106,7 @@ find XSLT less approachable than htmltmpl.</p>
 input is a <a href="normalization.html">highly normalized</a> feed,
 with a few extension elements.</p>
 <ul>
-<li><code>atom:feed</code> will have the following child elements:</li>
+<li><code>atom:feed</code> will have the following child elements:
 <ul>
 <li>A <code>planet:source</code> element per subscription, with the same child elements as <a href="http://www.atomenabled.org/developers/syndication/atom-format-spec.php#element.source"><code>atom:source</code></a>, as well as
 an additional child element in the planet namespace for each
@@ -112,6 +115,7 @@ this subscription.</li>
 <li><a href="http://www.feedparser.org/docs/reference-version.html"><code>planet:format</code></a> indicating the format and version of the source feed.</li>
 <li><a href="http://www.feedparser.org/docs/reference-bozo.html"><code>planet:bozo</code></a> which is either <code>true</code> or <code>false</code>.</li>
 </ul>
+</li>
 <li><code>atom:updated</code> and <code>atom:published</code> will have
 a <code>planet:format</code> attribute containing the referenced date
 formatted according to the <code>[planet] date_format</code> specified
