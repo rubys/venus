@@ -22,6 +22,7 @@
     <xsl:copy>
       <xsl:attribute name="indexing:index">no</xsl:attribute>
       <xsl:apply-templates select="@*|node()"/>
+      <xsl:text>&#10;</xsl:text>
     </xsl:copy>
   </xsl:template>
 
