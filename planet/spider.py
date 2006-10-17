@@ -187,11 +187,16 @@ def spiderFeed(feed):
 
     # capture feed and data from the planet configuration file
     if not data.feed.has_key('links'): data.feed['links'] = list()
+    feedtype = 'application/atom+xml'
+    if data.version.startswith('rss'): feedtype = 'application/rss+xml'
+    if data.version in ['rss090','rss10']: feedtype = 'application/rdf+xml'
     for link in data.feed.links:
-        if link.rel == 'self': break
+        if link.rel == 'self':
+            link['type'] = feedtype
+            break
     else:
         data.feed.links.append(feedparser.FeedParserDict(
-            {'rel':'self', 'type':'application/atom+xml', 'href':feed}))
+            {'rel':'self', 'type':feedtype, 'href':feed}))
     for name, value in config.feed_options(feed).items():
         data.feed['planet_'+name] = value
 
