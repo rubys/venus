@@ -153,7 +153,9 @@
           <img src="{atom:source/atom:icon}" class="icon"/>
         </xsl:if>
         <a href="{atom:source/atom:link[@rel='alternate']/@href}">
-          <xsl:attribute name="title" select="atom:source/atom:title"/>
+          <xsl:attribute name="title">
+            <xsl:value-of select="atom:source/atom:title"/>
+          </xsl:attribute>
           <xsl:value-of select="atom:source/planet:name"/>
         </a>
         <xsl:if test="string-length(atom:title) &gt; 0">
