@@ -15,6 +15,8 @@ re_slash         = re.compile(r'[?/:|]+')
 re_initial_cruft = re.compile(r'^[,.]*')
 re_final_cruft   = re.compile(r'[,.]*$')
 
+index = True
+
 def filename(directory, filename):
     """Return a filename suitable for the cache.
 
@@ -197,7 +199,8 @@ def spiderFeed(feed):
     scrub(feed, data)
 
     from planet import idindex
-    index = idindex.open()
+    global index
+    if index != None: index = idindex.open()
 
     # write each entry to the cache
     cache = config.cache_directory()
@@ -289,6 +292,9 @@ def spiderPlanet():
     """ Spider (fetch) an entire planet """
     log = planet.getLogger(config.log_level())
     planet.setTimeout(config.feed_timeout())
+
+    global index
+    index = True
 
     for feed in config.subscriptions():
         try:

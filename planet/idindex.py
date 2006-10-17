@@ -9,10 +9,15 @@ from planet.spider import filename
 from planet import config
 
 def open():
-    cache = config.cache_directory()
-    index=os.path.join(cache,'index')
-    if not os.path.exists(index): return None
-    return dbhash.open(filename(index, 'id'),'w')
+    try:
+        cache = config.cache_directory()
+        index=os.path.join(cache,'index')
+        if not os.path.exists(index): return None
+        return dbhash.open(filename(index, 'id'),'w')
+    except Exception, e:
+        if e.__class__.__name__ == 'DBError': e = e.args[-1]
+        from planet import logger as log
+        log.error(str(e))
 
 def destroy():
     from planet import logger as log
