@@ -1,6 +1,8 @@
 window.onload=function() {
   var vindex = document.URL.lastIndexOf('venus/');
+  if (vindex<0) vindex = document.URL.lastIndexOf('planet/');
   var base = document.URL.substring(0,vindex+6);
+  if (vindex<0) vindex = '..';
 
   var body = document.getElementsByTagName('body')[0];
   var div = document.createElement('div');

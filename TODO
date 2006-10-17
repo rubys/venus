@@ -1,11 +1,6 @@
 TODO
 ====
 
-  * Enable per-feed adjustments
-
-    The goal is to better cope with feeds that don't have dates or ids or
-    consitently encode or escape things incorrectly.
-
   * Expire feed history
 
     The feed cache doesn't currently expire old entries, so could get

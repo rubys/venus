@@ -12,21 +12,18 @@ a:link, a:visited {
   color: #333;
   text-decoration: none !important;
   border-bottom: 1px dotted #333 !important;
-  text-decoration: underline;
-  border-bottom: 0;
 }
 
 a:hover {
   background-color: transparent;
-  color: #993344;
+  color: #934;
   text-decoration: none !important;
-  text-decoration: underline;
   border-bottom: 1px dotted #993344 !important;
-  border-bottom: 0;
 }
 
 code {
-  color: green;
+  background-color: #FFF;
+  color: #00F;
   font-size: large
 }
 
@@ -42,14 +39,13 @@ h2 {
   clear: both;
 }
 
-ul.outer > li {
+ul, ul.outer > li {
   margin: 14px 0 10px 0;
 }
 
 .z {
   float:left;
   background: url(img/shadowAlpha.png) no-repeat bottom right !important;
-  background: url(img/shadow.gif) no-repeat bottom right;
   margin: -15px 0 20px -15px !important;
 }
 
@@ -60,21 +56,18 @@ ul.outer > li {
 .z .sectionInner {
   width: 730px;
   background: none !important;
-  background: url(img/shadow2.gif) no-repeat left top;
   padding: 0 !important;
-  padding: 0 6px 6px 10;
   }
 
 .z .sectionInner .sectionInner2 {
-  background-color: #fff;
   border: 1px solid #a9a9a9;
   padding: 4px;
   margin: -6px 6px 6px -6px !important;
-  margin: 0;
 }
 
 ins {
-  color: magenta;
+  background-color: #FFF;
+  color: #F0F;
   text-decoration: none;
 }
 
@@ -84,7 +77,7 @@ dl.compact {
 }
 
 dl.code > dt {
-  font-family: mono;
+  font-family: monospace;
 }
 
 dl.compact > dt {

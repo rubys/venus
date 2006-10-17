@@ -27,6 +27,7 @@ either (or both) of <code>template_files</code> and <code>theme</code>.</p>
 <p>Below is a complete list of predefined planet configuration parameters,
 including <del>ones not (yet) implemented by Venus</del> and <ins>ones that
 are either new or implemented differently by Venus</ins>.</p>
+
 <blockquote>
 <dl class="compact code">
 <dt>name</dt>
@@ -37,16 +38,35 @@ are either new or implemented differently by Venus</ins>.</p>
 <dd>Your name</dd>
 <dt>owner_email</dt>
 <dd>Your e-mail address</dd>
+
+</dl>
+<dl class="compact">
+
 <dt>cache_directory</dt>
 <dd>Where cached feeds are stored</dd>
-<dt>log_level</dt>
-<dd>One of <code>DEBUG</code>, <code>INFO</code>, <code>WARNING</code>, <code>ERROR</code> or <code>CRITICAL</code></dd>
-<dt><ins>output_theme</ins></dt>
+<dt>output_dir</dt>
+<dd>Directory to place output files</dd>
+
+</dl>
+<dl class="compact">
+
+<dt><ins>theme</ins></dt>
 <dd>Directory containing a <code>config.ini</code> file which is merged
 with this one.  This is typically used to specify templating and bill of
 material information.</dd>
-<dt>output_dir</dt>
-<dd>Directory to place output files</dd>
+<dt>template_files</dt>
+<dd>Space-separated list of output template files</dd>
+<dt><ins>template_directories</ins></dt>
+<dd>Space-separated list of directories in which <code>template_files</code>
+can be found</dd>
+<dt><ins>bill_of_materials</ins></dt>
+<dd>Space-separated list of files to be copied as is directly from the <code>template_directories</code> to the <code>output_dir</code></dd>
+<dt><ins>filters</ins></dt>
+<dd>Space-separated list of filters to apply to each entry</dd>
+
+</dl>
+<dl class="compact">
+
 <dt>items_per_page</dt>
 <dd>How many items to put on each page.  <ins>Whereas Planet 2.0 allows this to
 be overridden on a per template basis, Venus currently takes the maximum value
@@ -61,22 +81,19 @@ for this across all templates.</ins></dd>
 <dd>Output encoding for the file, Python 2.3+ users can use the special "xml" value to output ASCII with XML character references</dd>
 <dt><del>locale</del></dt>
 <dd>Locale to use for (e.g.) strings in dates, default is taken from your system</dd>
+<dt>activity_threshold</dt>
+<dd>If non-zero, all feeds which have not been updated in the indicated
+number of days will be marked as inactive</dd>
+
+</dl>
+<dl class="compact">
+
+<dt>log_level</dt>
+<dd>One of <code>DEBUG</code>, <code>INFO</code>, <code>WARNING</code>, <code>ERROR</code> or <code>CRITICAL</code></dd>
 <dt>feed_timeout</dt>
 <dd>Number of seconds to wait for any given feed</dd>
 <dt><del>new_feed_items</del></dt>
 <dd>Number of items to take from new feeds</dd>
-<dt>activity_threshold</dt>
-<dd>If non-zero, all feeds which have not been updated in the indicated
-number of days will be marked as inactive</dd>
-<dt>template_files</dt>
-<dd>Space-separated list of output template files</dd>
-<dt><ins>template_directories</ins></dt>
-<dd>Space-separated list of directories in which <code>template_files</code>
-can be found</dd>
-<dt><ins>bill_of_materials</ins></dt>
-<dd>Space-separated list of files to be copied as is directly from the <code>template_directories</code> to the <code>output_dir</code></dd>
-<dt><ins>filters</ins></dt>
-<dd>Space-separated list of filters to apply to each entry</dd>
 </dl>
 </blockquote>
 
