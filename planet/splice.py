@@ -68,7 +68,10 @@ def splice():
     # insert entry information
     items = 0
     for mtime,file in dir:
-        if index and index[file.split('/')[-1]] not in sub_ids: continue
+        if index:
+            base = file.split('/')[-1]
+            if index.has_key(base) and index[base] not in sub_ids: continue
+
         try:
             entry=minidom.parse(file)
 

@@ -39,8 +39,9 @@ class idIndexTest(unittest.TestCase):
         self.assertEqual('tag:planet.intertwingly.net,2006:testfeed1', index['planet.intertwingly.net,2006,testfeed1,1'])
         self.assertEqual('http://intertwingly.net/code/venus/tests/data/spider/testfeed3.rss', index['planet.intertwingly.net,2006,testfeed3,1'])
 
-        for key,value in index.items():
-            if value.find('testfeed2')>0: index[key] = value[::-1]
+        for key in index.keys():
+            value = index[key]
+            if value.find('testfeed2')>0: index[key] = value.swapcase()
         index.close()
 
         from planet.splice import splice
