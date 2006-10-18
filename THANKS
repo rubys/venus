@@ -5,7 +5,7 @@ Jacques Distler - Template patches
 Michael Koziarski - HTTP Auth fix
 Brian Ewins     - Win32 / Portalocker
 Joe Gregorio    - Invoke same version of Python for filters
-Harry Fuecks    - Pipe characters in file names
+Harry Fuecks    - Pipe characters in file names, filter bug
 Eric van der Vlist - Filters to add language, category information
 
 This codebase represents a radical refactoring of Planet 2.0, which lists
