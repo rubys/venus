@@ -249,8 +249,10 @@ def spiderFeed(feed):
     
         # optionally index
         if index != None: 
-            index[filename('', entry.id)] = \
-                data.feed.get('id', data.feed.get('link',None))
+            feedid = data.feed.get('id', data.feed.get('link',None))
+            if feedid:
+                if type(feedid) == unicode: feedid = feedid.encode('utf-8')
+                index[filename('', entry.id)] = feedid
 
     if index: index.close()
 
