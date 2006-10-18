@@ -186,17 +186,18 @@ def spiderFeed(feed):
                 data.feed['planet_http_last_modified'])
 
     # capture feed and data from the planet configuration file
-    if not data.feed.has_key('links'): data.feed['links'] = list()
-    feedtype = 'application/atom+xml'
-    if data.version.startswith('rss'): feedtype = 'application/rss+xml'
-    if data.version in ['rss090','rss10']: feedtype = 'application/rdf+xml'
-    for link in data.feed.links:
-        if link.rel == 'self':
-            link['type'] = feedtype
-            break
-    else:
-        data.feed.links.append(feedparser.FeedParserDict(
-            {'rel':'self', 'type':feedtype, 'href':feed}))
+    if data.version:
+        if not data.feed.has_key('links'): data.feed['links'] = list()
+        feedtype = 'application/atom+xml'
+        if data.version.startswith('rss'): feedtype = 'application/rss+xml'
+        if data.version in ['rss090','rss10']: feedtype = 'application/rdf+xml'
+        for link in data.feed.links:
+            if link.rel == 'self':
+                link['type'] = feedtype
+                break
+        else:
+            data.feed.links.append(feedparser.FeedParserDict(
+                {'rel':'self', 'type':feedtype, 'href':feed}))
     for name, value in config.feed_options(feed).items():
         data.feed['planet_'+name] = value
 
@@ -272,6 +273,8 @@ def spiderFeed(feed):
     # report channel level errors
     if data.status == 226:
         if data.feed.has_key('planet_message'): del data.feed['planet_message']
+        if feed_info.feed.has_key('planet_updated'):
+            data.feed['planet_updated'] = feed_info.feed['planet_updated']
     elif data.status == 403:
         data.feed['planet_message'] = "403: forbidden"
     elif data.status == 404:
