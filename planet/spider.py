@@ -173,6 +173,7 @@ def spiderFeed(feed):
     if not data.version and feed_info.version:
         data.feed = feed_info.feed
         data.bozo = feed_info.feed.get('planet_bozo','true') == 'true'
+        data.version = feed_info.feed.get('planet_format')
     data.feed['planet_http_status'] = str(data.status)
 
     # capture etag and last-modified information
