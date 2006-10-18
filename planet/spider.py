@@ -115,6 +115,8 @@ def spiderFeed(feed):
 
     # read cached feed info
     sources = config.cache_sources_directory()
+    if not os.path.exists(sources):
+        os.makedirs(sources, 0700)
     feed_source = filename(sources, feed)
     feed_info = feedparser.parse(feed_source)
     if feed_info.feed.get('planet_http_status',None) == '410': return

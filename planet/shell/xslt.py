@@ -55,7 +55,7 @@ def run(script, doc, output_file=None, options={}):
            cmdopts += ['--stringparam', key, quote(value, apos=r"\'")]
 
         os.system('xsltproc %s %s %s > %s' %
-            (script, ' '.join(cmdopts), docfile, output_file))
+            (' '.join(cmdopts), script, docfile, output_file))
         os.unlink(docfile)
     else:
         import sys

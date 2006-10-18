@@ -69,8 +69,8 @@ def __init__():
         planet_predefined_options.append(name)
 
     # define a list planet-level variable
-    def define_planet_list(name):
-        setattr(config, name, lambda : expand(get(None,name,'')))
+    def define_planet_list(name, default=''):
+        setattr(config, name, lambda : expand(get(None,name,default)))
         planet_predefined_options.append(name)
 
     # define a string template-level variable
@@ -100,7 +100,7 @@ def __init__():
 
     define_planet_list('template_files')
     define_planet_list('bill_of_materials')
-    define_planet_list('template_directories')
+    define_planet_list('template_directories', '.')
     define_planet_list('filter_directories')
 
     # template options
