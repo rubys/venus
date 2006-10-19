@@ -100,6 +100,8 @@ def links(xentry, entry):
             xlink.setAttribute('type', link.get('type'))
         if link.has_key('rel'):
             xlink.setAttribute('rel', link.get('rel',None))
+        if link.has_key('length'):
+            xlink.setAttribute('length', link.get('length'))
         xentry.appendChild(xlink)
 
 def date(xentry, name, parsed):

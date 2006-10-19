@@ -1,0 +1,11 @@
+<!--
+Description:  link relationship
+Expect:       links[0].length == '4000000'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <link rel="enclosure" href="http://example.com/music.mp3" length="4000000"/>
+  </entry>
+</feed>
+

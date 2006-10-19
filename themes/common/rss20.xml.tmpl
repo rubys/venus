@@ -10,7 +10,7 @@
 <TMPL_LOOP Items>
 <item>
 	<title><TMPL_VAR channel_name ESCAPE="HTML"><TMPL_IF title>: <TMPL_VAR title_plain ESCAPE="HTML"></TMPL_IF></title>
-	<guid><TMPL_VAR id ESCAPE="HTML"></guid>
+	<guid isPermaLink="<TMPL_VAR guid_isPermaLink>"><TMPL_VAR id ESCAPE="HTML"></guid>
 	<link><TMPL_VAR link ESCAPE="HTML"></link>
 	<TMPL_IF content>
 	<description><TMPL_VAR content ESCAPE="HTML"></description>
@@ -22,6 +22,9 @@
 	<TMPL_ELSE>
 	<author><TMPL_VAR author_email></author>
 	</TMPL_IF>
+	</TMPL_IF>
+	<TMPL_IF enclosure_href>
+        <enclosure url="<TMPL_VAR enclosure_href ESCAPE="HTML">" length="<TMPL_VAR enclosure_length>" type="<TMPL_VAR enclosure_type>"/>
 	</TMPL_IF>
 </item>
 </TMPL_LOOP>
