@@ -178,6 +178,12 @@ def load(config_file):
                     opml.opml2config(data, cached_config)
                 elif content_type(list).find('foaf')>=0:
                     foaf.foaf2config(data, cached_config)
+                else:
+                    from planet import shell
+                    import StringIO
+                    cached_config.readfp(StringIO.StringIO(shell.run(
+                        content_type(list), data.getvalue(), mode="filter")))
+
                 if cached_config.sections() in [[], [list]]: 
                     raise Exception
 
@@ -314,7 +320,7 @@ def reading_lists():
     for section in parser.sections():
         if parser.has_option(section, 'content_type'):
             type = parser.get(section, 'content_type')
-            if type.find('opml')>=0 or type.find('foaf')>=0:
+            if type.find('opml')>=0 or type.find('foaf')>=0 or type.find('.')>=0:
                 result.append(section)
     return result
 
