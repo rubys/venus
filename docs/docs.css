@@ -49,6 +49,10 @@ ul, ul.outer > li {
   margin: -15px 0 20px -15px !important;
 }
 
+.z .logo {
+ color: magenta;
+}
+
 .z p {
   margin: 14px 0 10px 15px !important;
 }

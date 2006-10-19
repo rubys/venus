@@ -19,6 +19,24 @@ of the cache has changed dramatically.</li>
 though some <a href="config.html">configuration</a> options (e.g.,
 <code>days_per_page</code>) have not yet been implemented</li>
 <li>No testing has been done on Python 2.1, and it is presumed not to work.</li>
+<li>To take advantage of all features, you should install the optional
+XML and RDF libraries described on
+the <a href="installation.html">Installation</a> page.</li>
+</ul>
+
+<p>
+Common changes to config.ini include:
+</p>
+<ul>
+ <li><p>Filename changes:<br />
+<pre>
+examples/fancy/index.html.tmpl => themes/classic_fancy/index.html.tmpl
+examples/atom.xml.tmpl         => themes/common/atom.xml.xslt
+examples/rss20.xml.tmpl        => themes/common/rss20.xml.tmpl
+examples/rss10.xml.tmpl        => themes/common/rss10.xml.tmpl
+examples/opml.xml.tmpl         => themes/common/opml.xml.xslt
+examples/foafroll.xml.tmpl     => themes/common/foafroll.xml.xslt
+</pre></p></li>
 </ul>
 </body>
 </html>
