@@ -2,7 +2,6 @@ window.onload=function() {
   var vindex = document.URL.lastIndexOf('venus/');
   if (vindex<0) vindex = document.URL.lastIndexOf('planet/');
   var base = document.URL.substring(0,vindex+6);
-  if (vindex<0) vindex = '..';
 
   var body = document.getElementsByTagName('body')[0];
   var div = document.createElement('div');
@@ -10,7 +9,7 @@ window.onload=function() {
   var h1 = document.createElement('h1');
   var span = document.createElement('span');
   span.appendChild(document.createTextNode('\u2640'));
-  span.setAttribute('style','color: magenta');
+  span.setAttribute('class','logo');
   h1.appendChild(span);
   h1.appendChild(document.createTextNode(' Planet Venus'));
 
@@ -24,17 +23,17 @@ window.onload=function() {
 
   p = document.createElement('p');
   var a = document.createElement('a');
-  a.setAttribute('href',base);
+  a.setAttribute('href',base+'index.html');
   a.appendChild(document.createTextNode('Download'));
   p.appendChild(a);
   p.appendChild(document.createTextNode(" \u00b7 "));
   a = document.createElement('a');
-  a.setAttribute('href',base+'docs/');
+  a.setAttribute('href',base+'docs/index.html');
   a.appendChild(document.createTextNode('Documentation'));
   p.appendChild(a);
   p.appendChild(document.createTextNode(" \u00b7 "));
   a = document.createElement('a');
-  a.setAttribute('href',base+'tests/');
+  a.setAttribute('href',base+'tests/index.html');
   a.appendChild(document.createTextNode('Unit tests'));
   p.appendChild(a);
   p.appendChild(document.createTextNode(" \u00b7 "));

@@ -29,11 +29,16 @@ module which was introduced in Python 2.4.</li>
 <a href="http://librdf.org/">librdf</a>.</li>
 </ul>
 
-<h3>Instructions</h3>
+<h3>General Instructions</h3>
+
+<p>
+These instructions apply to any platform.  Check the instructions
+below for more specific instructions for your platform.
+</p>
 
 <ol>
 <li><p>If you are reading this online, you will need to
-<a href="..">download</a> and extract the files into a folder somewhere.
+<a href="../index.html">download</a> and extract the files into a folder somewhere.
 You can place this wherever you like, <code>~/planet</code>
 and <code>~/venus</code> are good
 choices, but so's anywhere else you prefer.</p></li>
@@ -63,5 +68,38 @@ right directory.</p></li>
 <li><p>(Optional)</p>
 <p>Build your own themes, templates, or filters!  And share!</p></li>
 </ol>
+
+<h3>Mac OS X and Fink Instructions</h3>
+
+<p>
+The <a href="http://fink.sourceforge.net/">Fink Project</a> packages
+various open source software for MacOS.  This makes it a little easier
+to get started with projects like Planet Venus.
+</p>
+
+<p>
+Note: in the following, we recommend explicitly
+using <code>python2.4</code>.  As of this writing, Fink is starting to
+support <code>python2.5</code> but the XML libraries, for example, are
+not yet ported to the newer python so Venus will be less featureful.
+</p>
+
+<ol>
+ <li><p>Install the XCode development tools from your Mac OS X install
+        disks</p></li>
+ <li><p><a href="http://fink.sourceforge.net/download/">Download</a>
+        and install Fink</p></li>
+ <li><p>Tell fink to install the Planet Venus prerequisites:<br />
+        <code>fink install python24 celementtree-py24 bzr-py24 libxslt-py24
+        libxml2-py24</code></p></li>
+ <li><p><a href="../index.html">Download</a> and extract the Venus files into a
+        folder somewhere</p></li>
+ <li><p>Run the tests: <code>python2.4 runtests.py</code><br /> This
+        will warn you that the RDF library is missing, but that's
+        OK.</p></li>
+ <li><p>Continue with the general steps above, starting with Step 3.  You
+        may want to explicitly specify <code>python2.4</code>.</p></li>
+</ol>
+
 </body>
 </html>
