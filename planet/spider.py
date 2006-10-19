@@ -119,7 +119,9 @@ def spiderFeed(feed, only_if_new=0):
         os.makedirs(sources, 0700)
     feed_source = filename(sources, feed)
     feed_info = feedparser.parse(feed_source)
-    if feed_info.feed and only_if_new: return
+    if feed_info.feed and only_if_new:
+        log.info("Feed %s already in cache", feed)
+        return
     if feed_info.feed.get('planet_http_status',None) == '410': return
 
     # read feed itself
