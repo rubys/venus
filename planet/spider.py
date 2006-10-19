@@ -109,7 +109,7 @@ def scrub(feed, data):
                     source.author_detail['name'] = \
                         str(stripHtml(source.author_detail.name))
 
-def spiderFeed(feed):
+def spiderFeed(feed, only_if_new=0):
     """ Spider (fetch) a single feed """
     log = planet.logger
 
@@ -119,6 +119,7 @@ def spiderFeed(feed):
         os.makedirs(sources, 0700)
     feed_source = filename(sources, feed)
     feed_info = feedparser.parse(feed_source)
+    if feed_info.feed and only_if_new: return
     if feed_info.feed.get('planet_http_status',None) == '410': return
 
     # read feed itself
@@ -302,7 +303,7 @@ def spiderFeed(feed):
     write(xdoc.toxml('utf-8'), filename(sources, feed))
     xdoc.unlink()
 
-def spiderPlanet():
+def spiderPlanet(only_if_new = False):
     """ Spider (fetch) an entire planet """
     log = planet.getLogger(config.log_level())
     planet.setTimeout(config.feed_timeout())
@@ -312,7 +313,7 @@ def spiderPlanet():
 
     for feed in config.subscriptions():
         try:
-            spiderFeed(feed)
+            spiderFeed(feed, only_if_new=only_if_new)
         except Exception,e:
             import sys, traceback
             type, value, tb = sys.exc_info()

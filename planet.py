@@ -20,6 +20,7 @@ if __name__ == "__main__":
     config_file = "config.ini"
     offline = 0
     verbose = 0
+    only_if_new = 0
 
     for arg in sys.argv[1:]:
         if arg == "-h" or arg == "--help":
@@ -29,12 +30,15 @@ if __name__ == "__main__":
             print " -v, --verbose       DEBUG level logging during update"
             print " -o, --offline       Update the Planet from the cache only"
             print " -h, --help          Display this help message and exit"
+            print " -n, --only-if-new   Only spider new feeds"
             print
             sys.exit(0)
         elif arg == "-v" or arg == "--verbose":
             verbose = 1
         elif arg == "-o" or arg == "--offline":
             offline = 1
+        elif arg == "-n" or arg == "--only-if-new":
+            only_if_new = 1
         elif arg.startswith("-"):
             print >>sys.stderr, "Unknown option:", arg
             sys.exit(1)
@@ -50,7 +54,7 @@ if __name__ == "__main__":
 
     if not offline:
         from planet import spider
-        spider.spiderPlanet()
+        spider.spiderPlanet(only_if_new=only_if_new)
 
     from planet import splice
     doc = splice.splice()
