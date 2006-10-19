@@ -21,7 +21,7 @@ a:hover {
   border-bottom: 1px dotted #993344 !important;
 }
 
-code {
+pre, code {
   background-color: #FFF;
   color: #00F;
   font-size: large
@@ -47,6 +47,10 @@ ul, ul.outer > li {
   float:left;
   background: url(img/shadowAlpha.png) no-repeat bottom right !important;
   margin: -15px 0 20px -15px !important;
+}
+
+.z .logo {
+ color: magenta;
 }
 
 .z p {
