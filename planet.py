@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     if verbose:
         import planet
-        planet.getLogger('DEBUG')
+        planet.getLogger('DEBUG',config.log_format())
 
     if not offline:
         from planet import spider

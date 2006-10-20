@@ -18,7 +18,7 @@ os.chdir(sys.path[0])
 # copy spider output to splice input
 import planet
 from planet import spider, config
-planet.getLogger('CRITICAL')
+planet.getLogger('CRITICAL',None)
 
 config.load('tests/data/spider/config.ini')
 spider.spiderPlanet()

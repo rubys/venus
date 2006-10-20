@@ -43,6 +43,8 @@ def __init__():
         if section and parser.has_option(section, option):
             return parser.get(section, option)
         elif parser.has_option('Planet', option):
+            if option == 'log_format':
+                return parser.get('Planet', option, raw=True)
             return parser.get('Planet', option)
         else:
             return default
@@ -88,6 +90,7 @@ def __init__():
     define_planet('link', '')
     define_planet('cache_directory', "cache")
     define_planet('log_level', "WARNING")
+    define_planet('log_format', "%(levelname)s:%(name)s:%(message)s")
     define_planet('feed_timeout', 20)
     define_planet('date_format', "%B %d, %Y %I:%M %p")
     define_planet('new_date_format', "%B %d, %Y")
@@ -123,7 +126,7 @@ def load(config_file):
 
     import config, planet
     from planet import opml, foaf
-    log = planet.getLogger(config.log_level())
+    log = planet.getLogger(config.log_level(),config.log_format())
 
     # Theme support
     theme = config.output_theme()
@@ -146,10 +149,11 @@ def load(config_file):
 
                 # complete search list for theme directories
                 dirs += [os.path.join(theme_dir,dir) for dir in 
-                    config.template_directories()]
+                    config.template_directories() if dir not in dirs]
 
                 # merge configurations, allowing current one to override theme
                 template_files = config.template_files()
+                parser.set('Planet','template_files','')
                 parser.read(config_file)
                 for file in config.bill_of_materials():
                     if not file in bom: bom.append(file)
@@ -334,7 +338,8 @@ def filters(section=None):
 
 def planet_options():
     """ dictionary of planet wide options"""
-    return dict(map(lambda opt: (opt, parser.get('Planet',opt)),
+    return dict(map(lambda opt: (opt,
+        parser.get('Planet', opt, raw=(opt=="log_format"))),
         parser.options('Planet')))
 
 def feed_options(section):

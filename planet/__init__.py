@@ -9,7 +9,7 @@ config.__init__()
 from ConfigParser import ConfigParser
 from urlparse import urljoin
 
-def getLogger(level):
+def getLogger(level, format):
     """ get a logger with the specified log level """
     global logger
     if logger: return logger
@@ -19,7 +19,7 @@ def getLogger(level):
     except:
         import compat_logging as logging
 
-    logging.basicConfig()
+    logging.basicConfig(format=format)
     logging.getLogger().setLevel(logging.getLevelName(level))
     logger = logging.getLogger("planet.runner")
     try:

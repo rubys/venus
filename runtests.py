@@ -23,7 +23,7 @@ modules = map(fullmodname, glob.glob(os.path.join('tests', 'test_*.py')))
 
 # enable warnings
 import planet
-planet.getLogger("WARNING")
+planet.getLogger("WARNING",None)
 
 # load all of the tests into a suite
 try:

@@ -31,6 +31,8 @@ def filename(directory, filename):
                 filename=filename.encode('idna')
     except:
         pass
+    if isinstance(filename,unicode):
+        filename=filename.encode('utf-8')
     filename = re_url_scheme.sub("", filename)
     filename = re_slash.sub(",", filename)
     filename = re_initial_cruft.sub("", filename)
@@ -307,7 +309,7 @@ def spiderFeed(feed, only_if_new=0):
 
 def spiderPlanet(only_if_new = False):
     """ Spider (fetch) an entire planet """
-    log = planet.getLogger(config.log_level())
+    log = planet.getLogger(config.log_level(),config.log_format())
     planet.setTimeout(config.feed_timeout())
 
     global index

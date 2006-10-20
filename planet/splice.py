@@ -9,7 +9,7 @@ from planet import idindex
 def splice():
     """ Splice together a planet from a cache of entries """
     import planet
-    log = planet.getLogger(config.log_level())
+    log = planet.getLogger(config.log_level(),config.log_format())
 
     log.info("Loading cached data")
     cache = config.cache_directory()
@@ -97,7 +97,7 @@ def splice():
 def apply(doc):
     output_dir = config.output_dir()
     if not os.path.exists(output_dir): os.makedirs(output_dir)
-    log = planet.getLogger(config.log_level())
+    log = planet.getLogger(config.log_level(),config.log_format())
 
     # Go-go-gadget-template
     for template_file in config.template_files():

@@ -8,6 +8,15 @@ class idIndexTest(unittest.TestCase):
     def tearDown(self):
         idindex.destroy()
 
+    def test_unicode(self):
+        from planet.spider import filename
+        index = idindex.create()
+        iri = 'http://www.\xe8\xa9\xb9\xe5\xa7\x86\xe6\x96\xaf.com/'
+        index[filename('', iri)] = 'data'
+        index[filename('', iri.decode('utf-8'))] = 'data'
+        index[filename('', u'1234')] = 'data'
+        index.close()
+        
     def test_index_spider(self):
         import test_spider
         config.load(test_spider.configfile)

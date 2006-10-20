@@ -13,7 +13,7 @@ class SpiderTest(unittest.TestCase):
     def setUp(self):
         # silence errors
         planet.logger = None
-        planet.getLogger('CRITICAL')
+        planet.getLogger('CRITICAL',None)
 
         try:
              os.makedirs(workdir)
