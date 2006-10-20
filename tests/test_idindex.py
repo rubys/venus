@@ -5,6 +5,12 @@ from planet import idindex, config, logger
 
 class idIndexTest(unittest.TestCase):
 
+    def setUp(self):
+        # silence errors
+        import planet
+        planet.logger = None
+        planet.getLogger('CRITICAL',None)
+
     def tearDown(self):
         idindex.destroy()
 
