@@ -32,12 +32,19 @@ types of advertisements that you may find in feeds.</p>
 the form of a <code>planet:excerpt</code> element) to the feed itself.  You
 can see examples of how parameters are passed to this program in either
 <a href="../tests/data/filter/excerpt-images.ini">excerpt-images</a> or 
-<a href="../examples/opml-top100.ini">opml-top100.ini</a>.</p>
+<a href="../examples/opml-top100.ini">opml-top100.ini</a>.
+Alternately parameters may be passed
+<abbr title="Uniform Resource Identifier">URI</abbr> style, for example: 
+<a href="../tests/data/filter/excerpt-images2.ini">excerpt-images2</a>.
+</p>
 
 <p>The <a href="../filters/xpath_sifter.py">xpath sifter</a> is a variation of
 the above, including or excluding feeds based on the presence (or absence) of
 data specified by <a href="http://www.w3.org/TR/xpath20/">xpath</a>
-expressions.</p>
+expressions.  Again, parameters can be passed as
+<a href="../tests/data/filter/xpath-sifter.ini">config options</a> or 
+<a href="../tests/data/filter/xpath-sifter2.ini">URI style</a>.
+</p>
 
 <h3>Notes</h3>
 

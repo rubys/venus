@@ -13,6 +13,14 @@ def run(template_file, doc, mode='template'):
     else:
         dirs = planet.config.filter_directories()
  
+    # parse out "extra" options
+    if template_file.find('?') < 0:
+        extra_options = {}
+    else:
+        import cgi
+        template_file, extra_options = template_file.split('?',1)
+        extra_options = dict(cgi.parse_qsl(extra_options))
+
     # see if the template can be located
     for template_dir in dirs:
         template_resolved = os.path.join(template_dir, template_file)
@@ -43,6 +51,7 @@ def run(template_file, doc, mode='template'):
 
     # Execute the shell module
     options = planet.config.template_options(template_file)
+    options.update(extra_options)
     log.debug("Processing %s %s using %s", mode,
         os.path.realpath(template_resolved), module_name)
     if mode == 'filter':
