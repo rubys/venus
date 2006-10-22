@@ -76,6 +76,14 @@ class OpmlTest(unittest.TestCase):
                                 text="sample feed"/>''', self.config)
         self.assertFalse(self.config.has_section("http://example.com/feed.xml"))
 
+    def test_WordPress_link_manager(self):
+        # http://www.wasab.dk/morten/blog/archives/2006/10/22/wp-venus
+        opml2config('''<outline type="link"
+                                xmlUrl="http://example.com/feed.xml"
+                                text="sample feed"/>''', self.config)
+        self.assertEqual('sample feed',
+           self.config.get("http://example.com/feed.xml", 'name'))
+
     #
     # xmlUrl
     #
