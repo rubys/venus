@@ -20,6 +20,9 @@ try:
 except:
     try:
         from subprocess import Popen, PIPE
-    except ImportError:
+        xsltproc=Popen(['xsltproc','--version'],stdout=PIPE,stderr=PIPE)
+        xsltproc.communicate()
+        if xsltproc.returncode != 0: raise ImportError
+    except:
         logger.warn("libxslt is not available => can't test xslt filters")
         del XsltFilterTests.test_xslt_filter
