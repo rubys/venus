@@ -206,6 +206,8 @@ def reconstitute(feed, entry):
 
     if entry.has_key('language'):
         xentry.setAttribute('xml:lang', entry.language)
+    elif feed.feed.has_key('language'):
+        xentry.setAttribute('xml:lang', feed.feed.language)
 
     id(xentry, entry)
     links(xentry, entry)
