@@ -33,7 +33,7 @@ window.onload=function() {
   p.appendChild(a);
   p.appendChild(document.createTextNode(" \u00b7 "));
   a = document.createElement('a');
-  a.setAttribute('href',base+'tests/index.html');
+  a.setAttribute('href',base+'tests/');
   a.appendChild(document.createTextNode('Unit tests'));
   p.appendChild(a);
   p.appendChild(document.createTextNode(" \u00b7 "));
