@@ -159,7 +159,7 @@ def content(xentry, name, detail, bozo):
         xcontent.setAttribute('type', 'html')
         xcontent.appendChild(xdoc.createTextNode(detail.value.decode('utf-8')))
 
-    if detail.language:
+    if detail.get("language"):
         xcontent.setAttribute('xml:lang', detail.language)
 
     xentry.appendChild(xcontent)

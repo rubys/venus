@@ -7,7 +7,7 @@ from planet import feedparser, config
 feed = '''
 <feed xmlns='http://www.w3.org/2005/Atom'>
   <author><name>F&amp;ouml;o</name></author>
-  <entry>
+  <entry xml:lang="en">
     <id>ignoreme</id>
     <author><name>F&amp;ouml;o</name></author>
     <updated>2000-01-01T00:00:00Z</updated>
@@ -23,7 +23,7 @@ feed = '''
 
 configData = '''
 [testfeed]
-ignore_in_feed = id updated
+ignore_in_feed = id updated xml:lang
 name_type = html
 title_type = html
 summary_type = html
@@ -40,12 +40,14 @@ class ScrubTest(unittest.TestCase):
         self.assertTrue(data.entries[0].has_key('id'))
         self.assertTrue(data.entries[0].has_key('updated'))
         self.assertTrue(data.entries[0].has_key('updated_parsed'))
+        self.assertTrue(data.entries[0].summary_detail.has_key('language'))
 
         scrub('testfeed', data)
 
         self.assertFalse(data.entries[0].has_key('id'))
         self.assertFalse(data.entries[0].has_key('updated'))
         self.assertFalse(data.entries[0].has_key('updated_parsed'))
+        self.assertFalse(data.entries[0].summary_detail.has_key('language'))
 
         self.assertEqual('F\xc3\xb6o', data.feed.author_detail.name)
         self.assertEqual('F\xc3\xb6o', data.entries[0].author_detail.name)

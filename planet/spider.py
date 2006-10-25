@@ -63,10 +63,16 @@ def scrub(feed, data):
 
     # some data is not trustworthy
     for tag in config.ignore_in_feed(feed).split():
+        if tag.find('lang')>=0: tag='language'
+        if data.feed.has_key(tag): del data.feed[tag]
         for entry in data.entries:
             if entry.has_key(tag): del entry[tag]
             if entry.has_key(tag + "_detail"): del entry[tag + "_detail"]
             if entry.has_key(tag + "_parsed"): del entry[tag + "_parsed"]
+            for key in entry.keys():
+                if not key.endswith('_detail'): continue
+                for detail in entry[key].copy():
+                    if detail == tag: del entry[key][detail]
 
     # adjust title types
     if config.title_type(feed):
