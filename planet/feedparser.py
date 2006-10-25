@@ -11,7 +11,7 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 1.142 $"[11:16] + "-cvs"
+__version__ = "4.2-pre-" + "$Revision: 1.144 $"[11:16] + "-cvs"
 __license__ = """Copyright (c) 2002-2006, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -1360,6 +1360,7 @@ class _FeedParserMixin:
             self._start_content(attrsD)
         else:
             self.pushContent('description', attrsD, 'text/html', self.infeed or self.inentry or self.insource)
+    _start_dc_description = _start_description
 
     def _start_abstract(self, attrsD):
         self.pushContent('description', attrsD, 'text/plain', self.infeed or self.inentry or self.insource)
@@ -1371,6 +1372,7 @@ class _FeedParserMixin:
             value = self.popContent('description')
         self._summaryKey = None
     _end_abstract = _end_description
+    _end_dc_description = _end_description
 
     def _start_info(self, attrsD):
         self.pushContent('info', attrsD, 'text/plain', 1)
