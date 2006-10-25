@@ -172,6 +172,9 @@ def source(xsource, source, bozo, format):
     createTextElement(xsource, 'icon', source.get('icon', None))
     createTextElement(xsource, 'logo', source.get('logo', None))
 
+    if not source.has_key('logo') and source.has_key('image'):
+        createTextElement(xsource, 'logo', source.image.get('href',None))
+
     for tag in source.get('tags',[]):
         category(xsource, tag)
 
