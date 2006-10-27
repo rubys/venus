@@ -130,7 +130,9 @@ def spiderFeed(feed, only_if_new=0):
     if feed_info.feed and only_if_new:
         log.info("Feed %s already in cache", feed)
         return
-    if feed_info.feed.get('planet_http_status',None) == '410': return
+    if feed_info.feed.get('planet_http_status',None) == '410':
+        log.info("Feed %s gone", feed)
+        return
 
     # read feed itself
     modified = None
@@ -157,6 +159,7 @@ def spiderFeed(feed, only_if_new=0):
     # process based on the HTTP status code
     if data.status == 200 and data.has_key("url"):
         data.feed['planet_http_location'] = data.url
+        log.info("Updating feed %s", feed)
     elif data.status == 301 and data.has_key("entries") and len(data.entries)>0:
         log.warning("Feed has moved from <%s> to <%s>", feed, data.url)
         data.feed['planet_http_location'] = data.url
