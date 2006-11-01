@@ -5,25 +5,38 @@ sys.path.insert(0,venus_base)
 
 if __name__ == "__main__":
 
-    if sys.argv[1] == '-v' or sys.argv[1] == '--verbose':
-        import planet
-        planet.getLogger('DEBUG',None)
-        del sys.argv[1]
+    hide_planet_ns = True
 
-    from planet import config
-    config.parser = ConfigParser.ConfigParser()
-    config.parser.add_section('Planet')
-    config.parser.add_section(sys.argv[1])
+    while len(sys.argv) > 1:
+        if sys.argv[1] == '-v' or sys.argv[1] == '--verbose':
+            import planet
+            planet.getLogger('DEBUG',None)
+            del sys.argv[1]
+        elif sys.argv[1] == '-p' or sys.argv[1] == '--planet':
+            hide_planet_ns = False
+            del sys.argv[1]
+        else:
+            break
+
+    parser = ConfigParser.ConfigParser()
+    parser.add_section('Planet')
+    parser.add_section(sys.argv[1])
     work = reduce(os.path.join, ['tests','work','reconsititute'], venus_base)
     output = os.path.join(work, 'output')
     filters = os.path.join(venus_base,'filters')
-    config.parser.set('Planet','cache_directory',work)
-    config.parser.set('Planet','output_dir',output)
-    config.parser.set('Planet','filter_directories',filters)
-    config.parser.set('Planet','template_files','themes/common/atom.xml.xslt')
+    parser.set('Planet','cache_directory',work)
+    parser.set('Planet','output_dir',output)
+    parser.set('Planet','filter_directories',filters)
+    if hide_planet_ns:
+        parser.set('Planet','template_files','themes/common/atom.xml.xslt')
+    else:
+        parser.set('Planet','template_files','tests/data/reconstitute.xslt')
 
     for name, value in zip(sys.argv[2::2],sys.argv[3::2]):
-        config.parser.set(sys.argv[1], name.lstrip('-'), value)
+        parser.set(sys.argv[1], name.lstrip('-'), value)
+
+    from planet import config
+    config.parser = parser
 
     from planet import spider
     spider.spiderPlanet(only_if_new=False)
@@ -43,9 +56,30 @@ if __name__ == "__main__":
 
     from planet import splice
     doc = splice.splice()
+
+    sources = doc.getElementsByTagName('planet:source')
+    if hide_planet_ns and len(sources) == 1:
+        source = sources[0]
+        feed = source.parentNode
+        child = feed.firstChild
+        while child:
+            next = child.nextSibling
+            if child.nodeName not in ['planet:source','entry']:
+                feed.removeChild(child)
+            child = next
+        while source.hasChildNodes():
+            child = source.firstChild
+            source.removeChild(child)
+            feed.insertBefore(child, source)
+        for source in doc.getElementsByTagName('source'):
+            source.parentNode.removeChild(source)
+
     splice.apply(doc.toxml('utf-8'))
 
-    atom = open(os.path.join(output,'atom.xml')).read()
+    if hide_planet_ns:
+        atom = open(os.path.join(output,'atom.xml')).read()
+    else:
+        atom = open(os.path.join(output,'reconstitute')).read()
 
     shutil.rmtree(work)
     os.removedirs(os.path.dirname(work))
