@@ -238,6 +238,9 @@
   <!-- Feedburner detritus -->
   <xsl:template match="xhtml:div[@class='feedflare']"/>
 
+  <!-- Strip site meter -->
+  <xsl:template match="xhtml:div[comment()[. = ' Site Meter ']]"/>
+
   <!-- pass through everything else -->
   <xsl:template match="@*|node()">
     <xsl:copy>

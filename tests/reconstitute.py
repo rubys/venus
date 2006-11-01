@@ -16,8 +16,10 @@ if __name__ == "__main__":
     config.parser.add_section(sys.argv[1])
     work = reduce(os.path.join, ['tests','work','reconsititute'], venus_base)
     output = os.path.join(work, 'output')
+    filters = os.path.join(venus_base,'filters')
     config.parser.set('Planet','cache_directory',work)
     config.parser.set('Planet','output_dir',output)
+    config.parser.set('Planet','filter_directories',filters)
     config.parser.set('Planet','template_files','themes/common/atom.xml.xslt')
 
     for name, value in zip(sys.argv[2::2],sys.argv[3::2]):
