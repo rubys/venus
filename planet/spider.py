@@ -4,7 +4,7 @@ and write each as a set of entries in a cache directory.
 """
 
 # Standard library modules
-import time, calendar, re, os
+import time, calendar, re, os, urlparse
 from xml.dom import minidom
 # Planet modules
 import planet, config, feedparser, reconstitute, shell
@@ -116,8 +116,11 @@ def scrub(feed, data):
                     source.author_detail.has_key('name'):
                     source.author_detail['name'] = \
                         str(stripHtml(source.author_detail.name))
+def _is_http_uri(uri):
+    parsed = urlparse.urlparse(uri)
+    return parsed[0] in ['http', 'https']
 
-def spiderFeed(feed, only_if_new=0):
+def spiderFeed(feed, only_if_new=0, content=None, resp_headers=None):
     """ Spider (fetch) a single feed """
     log = planet.logger
 
@@ -125,6 +128,7 @@ def spiderFeed(feed, only_if_new=0):
     sources = config.cache_sources_directory()
     if not os.path.exists(sources):
         os.makedirs(sources, 0700)
+
     feed_source = filename(sources, feed)
     feed_info = feedparser.parse(feed_source)
     if feed_info.feed and only_if_new:
@@ -135,14 +139,17 @@ def spiderFeed(feed, only_if_new=0):
         return
 
     # read feed itself
-    modified = None
-    try:
-        modified=time.strptime(
-            feed_info.feed.get('planet_http_last_modified', None))
-    except:
-        pass
-    data = feedparser.parse(feed_info.feed.get('planet_http_location',feed),
-        etag=feed_info.feed.get('planet_http_etag',None), modified=modified)
+    if content:
+        data = feedparser.parse(content, resp_headers)
+    else:
+        modified = None
+        try:
+            modified=time.strptime(
+                feed_info.feed.get('planet_http_last_modified', None))
+        except:
+            pass
+        data = feedparser.parse(feed_info.feed.get('planet_http_location',feed),
+            etag=feed_info.feed.get('planet_http_etag',None), modified=modified)
 
     # capture http status
     if not data.has_key("status"):
@@ -319,12 +326,62 @@ def spiderFeed(feed, only_if_new=0):
 def spiderPlanet(only_if_new = False):
     """ Spider (fetch) an entire planet """
     log = planet.getLogger(config.log_level(),config.log_format())
-    planet.setTimeout(config.feed_timeout())
 
     global index
     index = True
 
-    for feed in config.subscriptions():
+    if config.spider_threads():
+        import Queue
+        from threading import Thread
+        import httplib2
+
+        work_queue = Queue()
+        awaiting_parsing = Queue()
+
+        def _spider_proc():
+            h = httplib2.Http(config.http_cache_directory())
+            while True:
+                # The non-blocking get will throw an exception when the queue 
+                # is empty which will terminate the thread.
+                uri = work_queue.get(block=False):
+                log.info("Fetching %s", uri)
+                (resp, content) = h.request(uri)
+                awaiting_parsing.put(block=True, (resp, content, uri))
+
+        # Load the work_queue with all the HTTP(S) uris.
+        map(work_queue.put, [uri for uri in config.subscriptions if _is_http_uri(uri)])
+
+        # Start all the worker threads
+        threads = dict([(i, Thread(target=_spider_proc)) for i in range(config.spider_threads())])
+        for t in threads.itervalues():
+            t.start()
+
+        # Process the results as they arrive
+        while work_queue.qsize() and awaiting_parsing.qsize() and threads:
+            item = awaiting_parsing.get(False)
+            if not item and threads:
+                time.sleep(1)
+            while item:
+                try:
+                    (resp_headers, content, uri) = item
+                    spiderFeed(uri, only_if_new=only_if_new, content=content, resp_headers=resp_headers)
+                except Exception, e:
+                    import sys, traceback
+                    type, value, tb = sys.exc_info()
+                    log.error('Error processing %s', feed)
+                    for line in (traceback.format_exception_only(type, value) +
+                        traceback.format_tb(tb)):
+                        log.error(line.rstrip())
+                item = awaiting_parsing.get(False)
+            for index in threads:
+                if not threads[index].isAlive():
+                    del threads[index]
+                    
+
+    planet.setTimeout(config.feed_timeout())
+    # Process non-HTTP uris if we are threading, otherwise process *all* uris here.
+    unthreaded_work_queue = [uri for uri in config.subscriptions if not config.spider_threads() or not _is_http_uri(uri)]
+    for feed in unthreaded_work_queue:
         try:
             spiderFeed(feed, only_if_new=only_if_new)
         except Exception,e:
@@ -334,3 +391,6 @@ def spiderPlanet(only_if_new = False):
             for line in (traceback.format_exception_only(type, value) +
                 traceback.format_tb(tb)):
                 log.error(line.rstrip())
+
+
+

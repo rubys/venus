@@ -100,6 +100,7 @@ def __init__():
     define_planet('owner_email', '')
     define_planet('output_theme', '')
     define_planet('output_dir', 'output')
+    define_planet('spider_threads', 0) 
 
     define_planet_list('template_files')
     define_planet_list('bill_of_materials')
@@ -282,6 +283,11 @@ def downloadReadingList(list, orig_config, callback, use_cache=True, re_read=Tru
         except:
             logger.exception("Unable to read %s readinglist", list)
 
+def http_cache_directory():
+    if parser.has_option('Planet', 'http_cache_directory'):
+        parser.get('Planet', 'http_cache_directory')
+    else:
+        return os.path.join(cache_directory(), 'sources/http')
 
 def cache_sources_directory():
     if parser.has_option('Planet', 'cache_sources_directory'):
