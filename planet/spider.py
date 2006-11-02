@@ -140,7 +140,7 @@ def spiderFeed(feed, only_if_new=0, content=None, resp_headers=None):
 
     # read feed itself
     if content:
-        data = feedparser.parse(content, resp_headers)
+        data = feedparser.parse(content, resp_headers=resp_headers)
     else:
         modified = None
         try:
@@ -338,8 +338,12 @@ def spiderPlanet(only_if_new = False):
         work_queue = Queue()
         awaiting_parsing = Queue()
 
+        http_cache = config.http_cache_directory()
+        if not os.path.exists(http_cache):
+            os.makedirs(http_cache, 0700)
+
         def _spider_proc(thread_index):
-            h = httplib2.Http(config.http_cache_directory())
+            h = httplib2.Http(http_cache)
             try:
                 while True:
                     # The non-blocking get will throw an exception when the queue 

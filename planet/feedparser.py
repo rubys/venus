@@ -11,7 +11,7 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 1.142 $"[11:16] + "-cvs"
+__version__ = "4.2-pre-" + "$Revision: 1.145 $"[11:16] + "-cvs"
 __license__ = """Copyright (c) 2002-2006, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -218,6 +218,9 @@ class FeedParserDict(UserDict):
     def __getitem__(self, key):
         if key == 'category':
             return UserDict.__getitem__(self, 'tags')[0]['term']
+        if key == 'enclosures':
+            norel = lambda link: FeedParserDict([(name,value) for (name,value) in link.items() if name!='rel'])
+            return [norel(link) for link in UserDict.__getitem__(self, 'links') if link['rel']=='enclosure']
         if key == 'categories':
             return [(tag['scheme'], tag['term']) for tag in UserDict.__getitem__(self, 'tags')]
         realkey = self.keymap.get(key, key)
@@ -1303,15 +1306,15 @@ class _FeedParserMixin:
             attrsD.setdefault('type', 'application/atom+xml')
         else:
             attrsD.setdefault('type', 'text/html')
+        context = self._getContext()
         attrsD = self._itsAnHrefDamnIt(attrsD)
         if attrsD.has_key('href'):
             attrsD['href'] = self.resolveURI(attrsD['href'])
+            if attrsD.get('rel')=='enclosure' and not context.get('id'):
+                context['id'] = attrsD.get('href')
         expectingText = self.infeed or self.inentry or self.insource
-        context = self._getContext()
         context.setdefault('links', [])
         context['links'].append(FeedParserDict(attrsD))
-        if attrsD['rel'] == 'enclosure':
-            self._start_enclosure(attrsD)
         if attrsD.has_key('href'):
             expectingText = 0
             if (attrsD.get('rel') == 'alternate') and (self.mapContentType(attrsD.get('type')) in self.html_types):
@@ -1357,6 +1360,7 @@ class _FeedParserMixin:
             self._start_content(attrsD)
         else:
             self.pushContent('description', attrsD, 'text/html', self.infeed or self.inentry or self.insource)
+    _start_dc_description = _start_description
 
     def _start_abstract(self, attrsD):
         self.pushContent('description', attrsD, 'text/plain', self.infeed or self.inentry or self.insource)
@@ -1368,6 +1372,7 @@ class _FeedParserMixin:
             value = self.popContent('description')
         self._summaryKey = None
     _end_abstract = _end_description
+    _end_dc_description = _end_description
 
     def _start_info(self, attrsD):
         self.pushContent('info', attrsD, 'text/plain', 1)
@@ -1427,7 +1432,8 @@ class _FeedParserMixin:
     def _start_enclosure(self, attrsD):
         attrsD = self._itsAnHrefDamnIt(attrsD)
         context = self._getContext()
-        context.setdefault('enclosures', []).append(FeedParserDict(attrsD))
+        attrsD['rel']='enclosure'
+        context.setdefault('links', []).append(FeedParserDict(attrsD))
         href = attrsD.get('href')
         if href and not context.get('id'):
             context['id'] = href
