@@ -372,8 +372,9 @@ def spiderPlanet(only_if_new = False):
                 item = awaiting_parsing.get(False)
                 try:
                     (resp_headers, content, uri) = item
-                    log.info("Parsing pre-fetched %s", uri)
-                    spiderFeed(uri, only_if_new=only_if_new, content=content, resp_headers=resp_headers)
+                    if not resp_headers.fromcache:
+                        log.info("Parsing pre-fetched %s", uri)
+                        spiderFeed(uri, only_if_new=only_if_new, content=content, resp_headers=resp_headers)
                 except Exception, e:
                     import sys, traceback
                     type, value, tb = sys.exc_info()
