@@ -35,6 +35,7 @@ import random
 import sha
 import hmac
 from gettext import gettext as _
+from socket import gaierror
 
 __all__ = ['Http', 'Response', 'HttpLib2Error',
   'RedirectMissingLocation', 'RedirectLimit', 'FailedToDecompressContent', 
@@ -704,13 +705,13 @@ a string that contains the response entity body.
             cachekey = md5.new(defrag_uri).hexdigest()
             cached_value = self.cache.get(cachekey)
             if cached_value:
-                #try:
-                f = StringIO.StringIO(cached_value)
-                info = rfc822.Message(f)
-                content = cached_value.split('\r\n\r\n', 1)[1]
-                #except:
-                #    self.cache.delete(cachekey)
-                #    cachekey = None
+                try:
+                    f = StringIO.StringIO(cached_value)
+                    info = rfc822.Message(f)
+                    content = cached_value.split('\r\n\r\n', 1)[1]
+                except:
+                    self.cache.delete(cachekey)
+                    cachekey = None
         else:
             cachekey = None
                     
@@ -769,7 +770,11 @@ a string that contains the response entity body.
                 merged_response = Response(info)
                 if hasattr(response, "_stale_digest"):
                     merged_response._stale_digest = response._stale_digest
-                _updateCache(headers, merged_response, content, self.cache, cachekey)
+                try:
+                    _updateCache(headers, merged_response, content, self.cache, cachekey)
+                except:
+                    print locals()
+                    raise 
                 response = merged_response
                 response.status = 200
                 response.fromcache = True 

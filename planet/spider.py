@@ -334,6 +334,7 @@ def spiderPlanet(only_if_new = False):
         from Queue import Queue, Empty
         from threading import Thread
         import httplib2
+        from socket import gaierror
 
         work_queue = Queue()
         awaiting_parsing = Queue()
@@ -350,8 +351,11 @@ def spiderPlanet(only_if_new = False):
                     # is empty which will terminate the thread.
                     uri = work_queue.get(block=False)
                     log.info("Fetching %s via %d", uri, thread_index)
-                    (resp, content) = h.request(uri)
-                    awaiting_parsing.put(block=True, item=(resp, content, uri))
+                    try:
+                        (resp, content) = h.request(uri)
+                        awaiting_parsing.put(block=True, item=(resp, content, uri))
+                    except gaierror:
+                        log.error("Fail to resolve server name %s via %d", uri, thread_index)
             except Empty, e:
                 log.info("Thread %d finished", thread_index)
                 pass
@@ -373,8 +377,11 @@ def spiderPlanet(only_if_new = False):
                 try:
                     (resp_headers, content, uri) = item
                     if not resp_headers.fromcache:
-                        log.info("Parsing pre-fetched %s", uri)
-                        spiderFeed(uri, only_if_new=only_if_new, content=content, resp_headers=resp_headers)
+                        if resp_headers.status < 300:
+                            log.info("Parsing pre-fetched %s", uri)
+                            spiderFeed(uri, only_if_new=only_if_new, content=content, resp_headers=resp_headers)
+                        else:
+                            log.error("Status code %d from %s", resp_headers.status, uri)
                 except Exception, e:
                     import sys, traceback
                     type, value, tb = sys.exc_info()
