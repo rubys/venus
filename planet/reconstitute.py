@@ -178,10 +178,7 @@ def source(xsource, source, bozo, format):
     for tag in source.get('tags',[]):
         category(xsource, tag)
 
-    author_detail = source.get('author_detail',{})
-    if not author_detail.has_key('name') and source.has_key('planet_name'):
-        author_detail['name'] = source['planet_name']
-    author(xsource, 'author', author_detail)
+    author(xsource, 'author', source.get('author_detail',{}))
     for contributor in source.get('contributors',[]):
         author(xsource, 'contributor', contributor)
 
@@ -230,12 +227,23 @@ def reconstitute(feed, entry):
     for tag in entry.get('tags',[]):
         category(xentry, tag)
 
-    author(xentry, 'author', entry.get('author_detail',None))
+    author_detail = entry.get('author_detail',{})
+    if author_detail and not author_detail.has_key('name') and \
+        feed.feed.has_key('planet_name'):
+        author_detail['name'] = feed.feed['planet_name']
+    author(xentry, 'author', author_detail)
     for contributor in entry.get('contributors',[]):
         author(xentry, 'contributor', contributor)
 
     xsource = xdoc.createElement('source')
-    source(xsource, entry.get('source') or feed.feed, bozo, feed.version)
+    src = entry.get('source') or feed.feed
+    src_author = src.get('author_detail',{})
+    if (not author_detail or not author_detail.has_key('name')) and \
+       not src_author.has_key('name') and  feed.feed.has_key('planet_name'):
+       if src_author: src_author - src_author.__class__(src_author.copy())
+       src['author_detail'] = src_author
+       src_author['name'] = feed.feed['planet_name']
+    source(xsource, src, bozo, feed.version)
     xentry.appendChild(xsource)
 
     return xdoc
