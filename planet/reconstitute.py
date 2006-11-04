@@ -25,7 +25,11 @@ illegal_xml_chars = re.compile("[\x01-\x08\x0B\x0C\x0E-\x1F]")
 def createTextElement(parent, name, value):
     """ utility function to create a child element with the specified text"""
     if not value: return
-    if isinstance(value,str): value=value.decode('utf-8')
+    if isinstance(value,str):
+        try:
+            value=value.decode('utf-8')
+        except:
+            value=value.decode('iso-8859-1')
     xdoc = parent.ownerDocument
     xelement = xdoc.createElement(name)
     xelement.appendChild(xdoc.createTextNode(value))
