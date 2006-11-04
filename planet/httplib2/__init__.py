@@ -627,6 +627,12 @@ class Http:
                 if redirections:
                     if not response.has_key('location') and response.status != 300:
                         raise RedirectMissingLocation( _("Redirected but the response is missing a Location: header."))
+                    # Fix-up relative redirects (which violate an RFC 2616 MUST)
+                    if response.has_key('location'):
+                        location = response['location']
+                        (scheme, authority, path, query, fragment) = parse_uri(location)
+                        if authority == None:
+                            response['location'] = urlparse.urljoin(absolute_uri, location)
                     if response.status == 301 and method in ["GET", "HEAD"]:
                         response['-x-permanent-redirect-url'] = response['location']
                         _updateCache(headers, response, content, self.cache, cachekey)
@@ -635,11 +641,8 @@ class Http:
                     if headers.has_key('if-modified-since'):
                         del headers['if-modified-since']
                     if response.has_key('location'):
-                        old_response = copy.deepcopy(response)
                         location = response['location']
-                        (scheme, authority, path, query, fragment) = parse_uri(location)
-                        if authority == None:
-                            location = urlparse.urljoin(absolute_uri, location)
+                        old_response = copy.deepcopy(response)
                         redirect_method = ((response.status == 303) and (method not in ["GET", "HEAD"])) and "GET" or method
                         (response, content) = self.request(location, redirect_method, body=body, headers = headers, redirections = redirections - 1)
                         response.previous = old_response
