@@ -244,7 +244,7 @@ def reconstitute(feed, entry):
     src_author = src.get('author_detail',{})
     if (not author_detail or not author_detail.has_key('name')) and \
        not src_author.has_key('name') and  feed.feed.has_key('planet_name'):
-       if src_author: src_author - src_author.__class__(src_author.copy())
+       if src_author: src_author = src_author.__class__(src_author.copy())
        src['author_detail'] = src_author
        src_author['name'] = feed.feed['planet_name']
     source(xsource, src, bozo, feed.version)

@@ -159,7 +159,10 @@ def spiderFeed(feed, only_if_new=0):
     # process based on the HTTP status code
     if data.status == 200 and data.has_key("url"):
         data.feed['planet_http_location'] = data.url
-        log.info("Updating feed %s @ %s", feed, data.url)
+        if feed == data.url:
+            log.info("Updating feed %s", feed)
+        else:
+            log.info("Updating feed %s @ %s", feed, data.url)
     elif data.status == 301 and data.has_key("entries") and len(data.entries)>0:
         log.warning("Feed has moved from <%s> to <%s>", feed, data.url)
         data.feed['planet_http_location'] = data.url
