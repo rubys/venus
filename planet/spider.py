@@ -244,9 +244,12 @@ def spiderFeed(feed, only_if_new=0):
         if not entry.has_key('updated_parsed'):
             if entry.has_key('published_parsed'):
                 entry['updated_parsed'] = entry.published_parsed
-        if entry.has_key('updated_parsed'):
-            mtime = calendar.timegm(entry.updated_parsed)
-            if mtime > time.time(): mtime = None
+        if entry.has_key('updated_parsed') and entry['updated_parsed']:
+            try:
+                mtime = calendar.timegm(entry.updated_parsed)
+                if mtime > time.time(): mtime = None
+            except:
+                pass
         if not mtime:
             try:
                 mtime = os.stat(cache_file).st_mtime
