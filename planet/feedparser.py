@@ -11,7 +11,7 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 1.145 $"[11:16] + "-cvs"
+__version__ = "4.2-pre-" + "$Revision: 1.146 $"[11:16] + "-cvs"
 __license__ = """Copyright (c) 2002-2006, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -3254,7 +3254,7 @@ def _stripDoctype(data):
 
     return version, data, dict(replacement and safe_pattern.findall(replacement))
     
-def parse(url_file_stream_or_string, etag=None, modified=None, agent=None, referrer=None, handlers=[], resp_headers=None):
+def parse(url_file_stream_or_string, etag=None, modified=None, agent=None, referrer=None, handlers=[]):
     '''Parse a feed from a URL, file, stream, or string'''
     result = FeedParserDict()
     result['feed'] = FeedParserDict()
@@ -3263,9 +3263,6 @@ def parse(url_file_stream_or_string, etag=None, modified=None, agent=None, refer
         result['bozo'] = 0
     if type(handlers) == types.InstanceType:
         handlers = [handlers]
-    if resp_headers:
-       f = None
-       data = url_file_stream_or_string
     try:
         f = _open_resource(url_file_stream_or_string, etag, modified, agent, referrer, handlers)
         data = f.read()
@@ -3310,8 +3307,6 @@ def parse(url_file_stream_or_string, etag=None, modified=None, agent=None, refer
         result['status'] = f.status
     if hasattr(f, 'headers'):
         result['headers'] = f.headers.dict
-    if resp_headers:
-        result['headers'] = resp_headers 
     if hasattr(f, 'close'):
         f.close()
 

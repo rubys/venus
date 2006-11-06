@@ -715,6 +715,7 @@ a string that contains the response entity body.
                 except:
                     self.cache.delete(cachekey)
                     cachekey = None
+                    cached_value = None
         else:
             cachekey = None
                     
@@ -726,7 +727,7 @@ a string that contains the response entity body.
             # RFC 2616 Section 13.10
             self.cache.delete(cachekey)
 
-        if method in ["GET", "HEAD"] and self.cache and 'range' not in headers:
+        if cached_value and method in ["GET", "HEAD"] and self.cache and 'range' not in headers:
             if info.has_key('-x-permanent-redirect-url'):
                 # Should cached permanent redirects be counted in our redirection count? For now, yes.
                 (response, new_content) = self.request(info['-x-permanent-redirect-url'], "GET", headers = headers, redirections = redirections - 1)
@@ -824,5 +825,12 @@ class Response(dict):
             for key, value in info.items(): 
                 self[key] = value 
             self.status = int(self['status'])
+
+    def __getattr__(self, name):
+        if name == 'dict':
+            return self 
+        else:  
+            raise AttributeError, name 
+
 
 

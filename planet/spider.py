@@ -8,6 +8,7 @@ import time, calendar, re, os, urlparse
 from xml.dom import minidom
 # Planet modules
 import planet, config, feedparser, reconstitute, shell
+from StringIO import StringIO 
 
 # Regular expressions to sanitise cache filenames
 re_url_scheme    = re.compile(r'^\w+:/*(\w+:|www\.)?')
@@ -140,7 +141,11 @@ def spiderFeed(feed, only_if_new=0, content=None, resp_headers=None):
 
     # read feed itself
     if content:
-        data = feedparser.parse(content, resp_headers=resp_headers)
+        f = StringIO(content) 
+        setattr(f, 'url', feed)
+        if resp_headers:
+            setattr(f, 'headers', resp_headers)
+        data = feedparser.parse(f)
     else:
         modified = None
         try:
@@ -334,7 +339,7 @@ def spiderPlanet(only_if_new = False):
         from Queue import Queue, Empty
         from threading import Thread
         import httplib2
-        from socket import gaierror
+        from socket import gaierror, error 
 
         work_queue = Queue()
         awaiting_parsing = Queue()
@@ -356,6 +361,16 @@ def spiderPlanet(only_if_new = False):
                         awaiting_parsing.put(block=True, item=(resp, content, uri))
                     except gaierror:
                         log.error("Fail to resolve server name %s via %d", uri, thread_index)
+                    except error, e:
+                        log.error("HTTP Error: %s in thread-%d", str(e), thread_index)
+                    except Exception, e:
+                        import sys, traceback
+                        type, value, tb = sys.exc_info()
+                        log.error('Error processing %s', uri)
+                        for line in (traceback.format_exception_only(type, value) +
+                            traceback.format_tb(tb)):
+                            log.error(line.rstrip())
+ 
             except Empty, e:
                 log.info("Thread %d finished", thread_index)
                 pass
@@ -385,7 +400,7 @@ def spiderPlanet(only_if_new = False):
                 except Exception, e:
                     import sys, traceback
                     type, value, tb = sys.exc_info()
-                    log.error('Error processing %s', feed)
+                    log.error('Error processing %s', uri)
                     for line in (traceback.format_exception_only(type, value) +
                         traceback.format_tb(tb)):
                         log.error(line.rstrip())
