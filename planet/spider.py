@@ -144,7 +144,7 @@ def spiderFeed(feed, only_if_new=0, content=None, resp_headers=None):
         # httplib2 was used to get the content, so prepare a 
         # proper object to pass to feedparser.
         f = StringIO(content) 
-        setattr(f, 'url', feed)
+        setattr(f, 'url', resp_headers.get('-location', feed))
         if resp_headers:
             if resp_headers.has_key('content-encoding'):
                 del resp_headers['content-encoding']
