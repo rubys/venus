@@ -7,7 +7,7 @@ and write each as a set of entries in a cache directory.
 import time, calendar, re, os, urlparse
 from xml.dom import minidom
 # Planet modules
-import planet, config, feedparser, reconstitute, shell
+import planet, config, feedparser, reconstitute, shell, socket
 from StringIO import StringIO 
 
 # Regular expressions to sanitise cache filenames
@@ -338,6 +338,7 @@ def spiderPlanet(only_if_new = False):
 
     global index
     index = True
+    socket.setdefaulttimeout(float(config.feed_timeout()))
 
     if int(config.spider_threads()):
         from Queue import Queue, Empty
@@ -414,7 +415,6 @@ def spiderPlanet(only_if_new = False):
     log.info("Finished threaded part of processing.")
                     
 
-    planet.setTimeout(config.feed_timeout())
     # Process non-HTTP uris if we are threading, otherwise process *all* uris here.
     unthreaded_work_queue = [uri for uri in config.subscriptions() if not int(config.spider_threads()) or not _is_http_uri(uri)]
     for feed in unthreaded_work_queue:
