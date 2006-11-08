@@ -56,6 +56,7 @@
                   </xsl:choose>
                   <img src="images/feed-icon-10x10.png" alt="(feed)"/>
                 </a>
+                <xsl:text> </xsl:text>
 
                 <!-- name -->
                 <a href="{atom:link[@rel='alternate']/@href}">
