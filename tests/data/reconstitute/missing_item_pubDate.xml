@@ -1,0 +1,14 @@
+<!--
+Description:  if item pubdate is missing, use to channel level date
+Expect:       updated_parsed == (2006, 6, 21, 13, 16, 41, 2, 172, 0)
+-->
+
+<rss version="0.91">
+  <channel>
+    <pubDate>Wed, 21 Jun 2006 14:16:41 +0100</pubDate>
+    <item/>
+  </channel>
+</rss>
+
+
+
