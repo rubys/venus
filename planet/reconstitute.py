@@ -225,7 +225,7 @@ def reconstitute(feed, entry):
     content(xentry, 'content', entry.get('content',[None])[0], bozo)
     content(xentry, 'rights', entry.get('rights_detail',None), bozo)
 
-    date(xentry, 'updated', entry.get('updated_parsed',time.gmtime()))
+    date(xentry, 'updated', entry_updated(feed.feed, entry, time.gmtime()))
     date(xentry, 'published', entry.get('published_parsed',None))
 
     for tag in entry.get('tags',[]):
@@ -251,3 +251,12 @@ def reconstitute(feed, entry):
     xentry.appendChild(xsource)
 
     return xdoc
+
+def entry_updated(feed, entry, default = None):
+    chks = ((entry, 'updated_parsed'),
+            (entry, 'published_parsed'),
+            (feed,  'updated_parsed'),)
+    for node, field in chks:
+        if node.has_key(field) and node[field]:
+            return node[field]
+    return default
