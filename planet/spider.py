@@ -241,19 +241,24 @@ def spiderFeed(feed, only_if_new=0):
 
         # get updated-date either from the entry or the cache (default to now)
         mtime = None
-        entry['updated_parsed'] = reconstitute.entry_updated(data.feed, entry)
-        if entry['updated_parsed']:
+        if not entry.has_key('updated_parsed'):
+            if entry.has_key('published_parsed'):
+                entry['updated_parsed'] = entry['published_parsed']
+        if not entry.has_key('updated_parsed'):
             try:
                 mtime = calendar.timegm(entry.updated_parsed)
-                if mtime > time.time(): mtime = None
             except:
                 pass
         if not mtime:
             try:
                 mtime = os.stat(cache_file).st_mtime
             except:
-                mtime = time.time()
-            entry['updated_parsed'] = time.gmtime(mtime)
+                if data.feed.has_key('updated_parsed'):
+                    mtime = calendar.timegm(data.feed.updated_parsed)
+                else:
+                    mtime = time.time()
+        if mtime > time.time(): mtime = None
+        entry['updated_parsed'] = time.gmtime(mtime)
 
         # apply any filters
         xdoc = reconstitute.reconstitute(data, entry)
