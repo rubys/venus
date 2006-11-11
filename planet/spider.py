@@ -255,9 +255,7 @@ def spiderFeed(feed, only_if_new=0):
             except:
                 if data.feed.has_key('updated_parsed'):
                     mtime = calendar.timegm(data.feed.updated_parsed)
-                else:
-                    mtime = time.time()
-        if mtime > time.time(): mtime = None
+        if not mtime or mtime > time.time(): mtime = time.time()
         entry['updated_parsed'] = time.gmtime(mtime)
 
         # apply any filters
