@@ -14,14 +14,18 @@
   <xsl:template match="atom:link[@rel='service.post']"/>
   <xsl:template match="atom:link[@rel='service.feed']"/>
 
-   <!-- Feedburner detritus -->
-   <xsl:template match="xhtml:div[@class='feedflare']"/>
+  <!-- Feedburner detritus -->
+  <xsl:template match="xhtml:div[@class='feedflare']"/>
+
+  <!-- Strip site meter -->
+  <xsl:template match="xhtml:div[comment()[. = ' Site Meter ']]"/>
 
   <!-- add Google/LiveJournal-esque noindex directive -->
   <xsl:template match="atom:feed">
     <xsl:copy>
       <xsl:attribute name="indexing:index">no</xsl:attribute>
       <xsl:apply-templates select="@*|node()"/>
+      <xsl:text>&#10;</xsl:text>
     </xsl:copy>
   </xsl:template>
 

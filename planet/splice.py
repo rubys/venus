@@ -4,11 +4,12 @@ from xml.dom import minidom
 import planet, config, feedparser, reconstitute, shell
 from reconstitute import createTextElement, date
 from spider import filename
+from planet import idindex
 
 def splice():
     """ Splice together a planet from a cache of entries """
     import planet
-    log = planet.getLogger(config.log_level())
+    log = planet.getLogger(config.log_level(),config.log_format())
 
     log.info("Loading cached data")
     cache = config.cache_directory()
@@ -62,9 +63,15 @@ def splice():
         reconstitute.source(xdoc.documentElement, data.feed, None, None)
         feed.appendChild(xdoc.documentElement)
 
+    index = idindex.open()
+
     # insert entry information
     items = 0
     for mtime,file in dir:
+        if index:
+            base = file.split('/')[-1]
+            if index.has_key(base) and index[base] not in sub_ids: continue
+
         try:
             entry=minidom.parse(file)
 
@@ -83,12 +90,14 @@ def splice():
         except:
             log.error("Error parsing %s", file)
 
+    if index: index.close()
+
     return doc
 
 def apply(doc):
     output_dir = config.output_dir()
     if not os.path.exists(output_dir): os.makedirs(output_dir)
-    log = planet.getLogger(config.log_level())
+    log = planet.getLogger(config.log_level(),config.log_format())
 
     # Go-go-gadget-template
     for template_file in config.template_files():

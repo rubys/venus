@@ -1,0 +1,11 @@
+<!--
+Description:  link relationship
+Expect:       Items[0]['enclosure_href'] == 'http://example.com/music.mp3'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <link rel="enclosure" href="http://example.com/music.mp3"/>
+  </entry>
+</feed>
+

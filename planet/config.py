@@ -32,7 +32,7 @@ from urlparse import urljoin
 
 parser = ConfigParser()
 
-planet_predefined_options = []
+planet_predefined_options = ['filters']
 
 def __init__():
     """define the struture of an ini file"""
@@ -43,6 +43,8 @@ def __init__():
         if section and parser.has_option(section, option):
             return parser.get(section, option)
         elif parser.has_option('Planet', option):
+            if option == 'log_format':
+                return parser.get('Planet', option, raw=True)
             return parser.get('Planet', option)
         else:
             return default
@@ -69,8 +71,8 @@ def __init__():
         planet_predefined_options.append(name)
 
     # define a list planet-level variable
-    def define_planet_list(name):
-        setattr(config, name, lambda : expand(get(None,name,'')))
+    def define_planet_list(name, default=''):
+        setattr(config, name, lambda : expand(get(None,name,default)))
         planet_predefined_options.append(name)
 
     # define a string template-level variable
@@ -88,6 +90,7 @@ def __init__():
     define_planet('link', '')
     define_planet('cache_directory', "cache")
     define_planet('log_level', "WARNING")
+    define_planet('log_format', "%(levelname)s:%(name)s:%(message)s")
     define_planet('feed_timeout', 20)
     define_planet('date_format', "%B %d, %Y %I:%M %p")
     define_planet('new_date_format', "%B %d, %Y")
@@ -100,7 +103,7 @@ def __init__():
 
     define_planet_list('template_files')
     define_planet_list('bill_of_materials')
-    define_planet_list('template_directories')
+    define_planet_list('template_directories', '.')
     define_planet_list('filter_directories')
 
     # template options
@@ -123,7 +126,7 @@ def load(config_file):
 
     import config, planet
     from planet import opml, foaf
-    log = planet.getLogger(config.log_level())
+    log = planet.getLogger(config.log_level(),config.log_format())
 
     # Theme support
     theme = config.output_theme()
@@ -146,10 +149,11 @@ def load(config_file):
 
                 # complete search list for theme directories
                 dirs += [os.path.join(theme_dir,dir) for dir in 
-                    config.template_directories()]
+                    config.template_directories() if dir not in dirs]
 
                 # merge configurations, allowing current one to override theme
                 template_files = config.template_files()
+                parser.set('Planet','template_files','')
                 parser.read(config_file)
                 for file in config.bill_of_materials():
                     if not file in bom: bom.append(file)
@@ -178,6 +182,12 @@ def load(config_file):
                     opml.opml2config(data, cached_config)
                 elif content_type(list).find('foaf')>=0:
                     foaf.foaf2config(data, cached_config)
+                else:
+                    from planet import shell
+                    import StringIO
+                    cached_config.readfp(StringIO.StringIO(shell.run(
+                        content_type(list), data.getvalue(), mode="filter")))
+
                 if cached_config.sections() in [[], [list]]: 
                     raise Exception
 
@@ -314,7 +324,7 @@ def reading_lists():
     for section in parser.sections():
         if parser.has_option(section, 'content_type'):
             type = parser.get(section, 'content_type')
-            if type.find('opml')>=0 or type.find('foaf')>=0:
+            if type.find('opml')>=0 or type.find('foaf')>=0 or type.find('.')>=0:
                 result.append(section)
     return result
 
@@ -328,7 +338,8 @@ def filters(section=None):
 
 def planet_options():
     """ dictionary of planet wide options"""
-    return dict(map(lambda opt: (opt, parser.get('Planet',opt)),
+    return dict(map(lambda opt: (opt,
+        parser.get('Planet', opt, raw=(opt=="log_format"))),
         parser.options('Planet')))
 
 def feed_options(section):

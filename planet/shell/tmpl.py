@@ -97,6 +97,9 @@ Items = [
     ['date_822', Rfc822, 'updated_parsed'],
     ['date_iso', Rfc3399, 'published_parsed'],
     ['date_iso', Rfc3399, 'updated_parsed'],
+    ['enclosure_href', String, 'links', {'rel': 'enclosure'}, 'href'],
+    ['enclosure_length', String, 'links', {'rel': 'enclosure'}, 'length'],
+    ['enclosure_type', String, 'links', {'rel': 'enclosure'}, 'type'],
     ['id', String, 'id'],
     ['link', String, 'links', {'rel': 'alternate'}, 'href'],
     ['new_channel', String, 'id'],
@@ -189,6 +192,13 @@ def template_info(source):
         output['Channels'].append(tmpl_mapper(feed, Base))
     for entry in data.entries:
         output['Items'].append(tmpl_mapper(entry, Items))
+
+    # synthesize isPermaLink attribute
+    for item in output['Items']:
+        if item.get('id') == item.get('link'):
+            item['guid_isPermaLink']='true'
+        else:
+            item['guid_isPermaLink']='false'
 
     # feed level information
     output['generator'] = config.generator_uri()

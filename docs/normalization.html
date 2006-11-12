@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC
+    "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN"
+    "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script type="text/javascript" src="docs.js"></script>
+<link rel="stylesheet" type="text/css" href="docs.css"/>
+<title>Venus Normalization</title>
+</head>
+<body>
+<h2>Normalization</h2>
+<p>Venus builds on, and extends, the <a
+href="http://www.feedparser.org/">Universal Feed Parser</a> and <a
+href="http://www.crummy.com/software/BeautifulSoup/">BeautifulSoup</a> to
+convert all feeds into Atom 1.0, with well formed XHTML, and encoded as UTF-8,
+meaning that you don't have to worry about funky feeds, tag soup, or character
+encoding.</p>
+<h3>Encoding</h3>
+<p>Input data in feeds may be encoded in a variety of formats, most commonly
+ASCII, ISO-8859-1, WIN-1252, AND UTF-8.  Additionally, many feeds make use of
+the wide range of
+<a href="http://www.w3.org/TR/html401/sgml/entities.html">character entity
+references</a> provided by HTML.  Each is converted to UTF-8, an encoding
+which is a proper superset of ASCII, supports the entire range of Unicode
+characters, and is one of 
+<a href="http://www.w3.org/TR/2006/REC-xml-20060816/#charsets">only two</a>
+encodings required to be supported by all conformant XML processors.</p>
+<p>Encoding problems are one of the more common feed errors, and every
+attempt is made to correct common errors, such as the inclusion of
+the so-called
+<a href="http://www.fourmilab.ch/webtools/demoroniser/">moronic</a> versions
+of smart-quotes.  In rare cases where individual characters can not be
+converted to valid UTF-8 or into
+<a href="http://www.w3.org/TR/xml/#charsets">characters allowed in XML 1.0
+documents</a>, such characters will be replaced with the Unicode
+<a href="http://www.fileformat.info/info/unicode/char/fffd/index.htm">Replacement character</a>, with a title that describes the original character whenever possible.</p>
+<p>In order to support the widest range of inputs, use of Python 2.3 or later,
+as well as the installation of the python <code>iconvcodec</code>, is
+recommended.</p>
+<h3>HTML</h3>
+<p>A number of different normalizations of HTML are performed.  For starters,
+the HTML is
+<a href="http://www.feedparser.org/docs/html-sanitization.html">sanitized</a>,
+meaning that HTML tags and attributes that could introduce javascript or
+other security risks are removed.</p>
+<p>Then,
+<a href="http://www.feedparser.org/docs/resolving-relative-links.html">relative
+links are resolved</a> within the HTML.  This is also done for links
+in other areas in the feed too.</p>
+<p>Finally, unmatched tags are closed.  This is done with a
+<a href="http://www.crummy.com/software/BeautifulSoup/documentation.html#Parsing%20HTML">knowledge of the semantics of HTML</a>.  Additionally, a
+<a href="http://golem.ph.utexas.edu/~distler/blog/archives/000165.html#sanitizespec">large
+subset of MathML</a>, as well as a
+<a href="http://www.w3.org/TR/SVGMobile/">tiny profile of SVG</a>
+is also supported.</p>
+<h3>Atom 1.0</h3>
+<p>The Universal Feed Parser also
+<a href="http://www.feedparser.org/docs/content-normalization.html">normalizes the content of feeds</a>.  This involves a
+<a href="http://www.feedparser.org/docs/reference.html">large number of elements</a>; the best place to start is to look at
+<a href="http://www.feedparser.org/docs/annotated-examples.html">annotated examples</a>.  Among other things a wide variety of
+<a href="http://www.feedparser.org/docs/date-parsing.html">date formats</a>
+are converted into
+<a href="http://www.ietf.org/rfc/rfc3339.txt">RFC 3339</a> formatted dates.</p>
+<p>If no <a href="http://www.feedparser.org/docs/reference-entry-id.html">ids</a> are found in entries, attempts are made to synthesize one using (in order):</p>
+<ul>
+<li><a href="http://www.feedparser.org/docs/reference-entry-link.html">link</a></li>
+<li><a href="http://www.feedparser.org/docs/reference-entry-title.html">title</a></li>
+<li><a href="http://www.feedparser.org/docs/reference-entry-summary.html">summary</a></li>
+<li><a href="http://www.feedparser.org/docs/reference-entry-content.html">content</a></li>
+</ul>
+<p>If no <a href="http://www.feedparser.org/docs/reference-feed-
+updated.html">updated</a> dates are found in an entry, or if the dates found
+are in the future, the current time is substituted.</p>
+<h3 id="overrides">Overrides</h3>
+<p>All of the above describes what Venus does automatically, either directly
+or through its dependencies.  There are a number of errors which can not
+be corrected automatically, and for these, there are configuration parameters
+that can be used to help.</p>
+<ul>
+<li><code>ignore_in_feed</code> allows you to list any number of elements
+or attributes which are to be ignored in feeds.  This is often handy in the
+case of feeds where the <code>id</code>, <code>updated</code> or
+<code>xml:lang</code> values can't be trusted.</li>
+<li><code>title_type</code>, <code>summary_type</code>,
+<code>content_type</code> allow you to override the 
+<a href="http://www.feedparser.org/docs/reference-entry-title_detail.html#reference.entry.title_detail.type"><code>type</code></a>
+attributes on these elements.</li>
+<li><code>name_type</code> does something similar for
+<a href="http://www.feedparser.org/docs/reference-entry-author_detail.html#reference.entry.author_detail.name">author names</a></li>
+</ul>
+</body>
+</html>

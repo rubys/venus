@@ -4,7 +4,7 @@ import unittest
 from planet import config
 from os.path import split
 
-class ConfigTest(unittest.TestCase):
+class ThemesTest(unittest.TestCase):
     def setUp(self):
         config.load('tests/data/config/themed.ini')
 
@@ -17,7 +17,8 @@ class ConfigTest(unittest.TestCase):
     # administrivia
 
     def test_template(self):
-        self.assertTrue('index.html.xslt' in config.template_files())
+        self.assertEqual(1, len([1 for file in config.template_files()
+            if file == 'index.html.xslt']))
 
     def test_feeds(self):
         feeds = config.subscriptions()

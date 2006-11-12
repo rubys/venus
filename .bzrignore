@@ -1,1 +1,3 @@
 *.tmplc
+.DS_Store
+cache

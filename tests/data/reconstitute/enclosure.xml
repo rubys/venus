@@ -1,0 +1,13 @@
+<!--
+Description:  enclosure
+Expect:       links[0].rel == 'enclosure' and id == 'http://example.com/1'
+-->
+
+<rss>
+  <channel>
+    <item>
+      <enclosure href="http://example.com/1"/>
+    </item>
+  </channel>
+</rss>
+

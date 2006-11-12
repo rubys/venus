@@ -1,0 +1,12 @@
+<!--
+Description:  logo
+Expect:       source.logo == 'http://example.com/logo.jpg'
+-->
+
+<rss version="2.0">
+  <channel>
+    <image><url>http://example.com/logo.jpg</url></image>
+    <item/>
+  </channel>
+</rss>
+

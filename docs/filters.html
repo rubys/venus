@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC
+    "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN"
+    "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script type="text/javascript" src="docs.js"></script>
+<link rel="stylesheet" type="text/css" href="docs.css"/>
+<title>Venus Filters</title>
+</head>
+<body>
+<h2>Filters</h2>
+<p>Filters are simple Unix pipes.  Input comes in <code>stdin</code>,
+parameters come from the config file, and output goes to <code>stdout</code>.
+Anything written to <code>stderr</code> is logged as an ERROR message.  If no
+<code>stdout</code> is produced, the entry is not written to the cache or
+processed further.</p>
+
+<p>Input to a filter is a aggressively
+<a href="normalization.html">normalized</a> entry.  For
+example, if a feed is RSS 1.0 with 10 items, the filter will be called ten
+times, each with a single Atom 1.0 entry, with all textConstructs
+expressed as XHTML, and everything encoded as UTF-8.</p>
+
+<p>You will find a small set of example filters in the <a
+href="../filters">filters</a> directory.  The <a
+href="../filters/coral_cdn_filter.py">coral cdn filter</a> will change links
+to images in the entry itself.  The filters in the <a
+href="../filters/stripAd/">stripAd</a> subdirectory will strip specific
+types of advertisements that you may find in feeds.</p>
+
+<p>The <a href="../filters/excerpt.py">excerpt</a> filter adds metadata (in
+the form of a <code>planet:excerpt</code> element) to the feed itself.  You
+can see examples of how parameters are passed to this program in either
+<a href="../tests/data/filter/excerpt-images.ini">excerpt-images</a> or 
+<a href="../examples/opml-top100.ini">opml-top100.ini</a>.
+Alternately parameters may be passed
+<abbr title="Uniform Resource Identifier">URI</abbr> style, for example: 
+<a href="../tests/data/filter/excerpt-images2.ini">excerpt-images2</a>.
+</p>
+
+<p>The <a href="../filters/xpath_sifter.py">xpath sifter</a> is a variation of
+the above, including or excluding feeds based on the presence (or absence) of
+data specified by <a href="http://www.w3.org/TR/xpath20/">xpath</a>
+expressions.  Again, parameters can be passed as
+<a href="../tests/data/filter/xpath-sifter.ini">config options</a> or 
+<a href="../tests/data/filter/xpath-sifter2.ini">URI style</a>.
+</p>
+
+<h3>Notes</h3>
+
+<ul>
+
+<li>The file extension of the filter is significant.  <code>.py</code> invokes
+python. <code>.xslt</code> involkes XSLT.  <code>.sed</code> and
+<code>.tmpl</code> (a.k.a. htmltmp) are also options. Other languages, like
+perl or ruby or class/jar (java), aren't supported at the moment, but these
+would be easy to add.</li>
+
+<li>Any filters listed in the <code>[planet]</code> section of your config.ini
+will be invoked on all feeds.  Filters listed in individual
+<code>[feed]</code> sections will only be invoked on those feeds.</li>
+
+<li>Filters are simply invoked in the order they are listed in the
+configuration file (think unix pipes). Planet wide filters are executed before
+feed specific filters.</li>
+
+<li>Templates written using htmltmpl currently only have access to a fixed set
+of fields, whereas XSLT templates have access to everything.</li>
+</ul>
+</body>
+</html>

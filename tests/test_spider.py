@@ -13,7 +13,7 @@ class SpiderTest(unittest.TestCase):
     def setUp(self):
         # silence errors
         planet.logger = None
-        planet.getLogger('CRITICAL')
+        planet.getLogger('CRITICAL',None)
 
         try:
              os.makedirs(workdir)
@@ -58,6 +58,8 @@ class SpiderTest(unittest.TestCase):
 
         # verify that the file timestamps match atom:updated
         data = feedparser.parse(files[2])
+        self.assertEqual(['application/atom+xml'], [link.type
+            for link in data.entries[0].source.links if link.rel=='self'])
         self.assertEqual('one', data.entries[0].source.planet_name)
         self.assertEqual(os.stat(files[2]).st_mtime,
             calendar.timegm(data.entries[0].updated_parsed))
@@ -82,5 +84,7 @@ class SpiderTest(unittest.TestCase):
 
         data = feedparser.parse(workdir + 
             '/planet.intertwingly.net,2006,testfeed3,1')
+        self.assertEqual(['application/rss+xml'], [link.type
+            for link in data.entries[0].source.links if link.rel=='self'])
         self.assertEqual('three', data.entries[0].source.author_detail.name)
 

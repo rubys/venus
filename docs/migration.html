@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC
+    "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN"
+    "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script type="text/javascript" src="docs.js"></script>
+<link rel="stylesheet" type="text/css" href="docs.css"/>
+<title>Venus Migration</title>
+</head>
+<body>
+<h2>Migration from Planet 2.0</h2>
+<p>The intent is that existing Planet 2.0 users should be able to reuse
+their existing <code>config.ini</code> and <code>.tmpl</code> files,
+but the reality is that users will need to be aware of the following:</p>
+<ul>
+<li>You will need to start over with a new cache directory as the format
+of the cache has changed dramatically.</li>
+<li>Existing <code>.tmpl</code> and <code>.ini</code> files should work,
+though some <a href="config.html">configuration</a> options (e.g.,
+<code>days_per_page</code>) have not yet been implemented</li>
+<li>No testing has been done on Python 2.1, and it is presumed not to work.</li>
+<li>To take advantage of all features, you should install the optional
+XML and RDF libraries described on
+the <a href="installation.html">Installation</a> page.</li>
+</ul>
+
+<p>
+Common changes to config.ini include:
+</p>
+<ul>
+ <li><p>Filename changes:</p>
+<pre>
+examples/fancy/index.html.tmpl => themes/classic_fancy/index.html.tmpl
+examples/atom.xml.tmpl         => themes/common/atom.xml.xslt
+examples/rss20.xml.tmpl        => themes/common/rss20.xml.tmpl
+examples/rss10.xml.tmpl        => themes/common/rss10.xml.tmpl
+examples/opml.xml.tmpl         => themes/common/opml.xml.xslt
+examples/foafroll.xml.tmpl     => themes/common/foafroll.xml.xslt
+</pre></li>
+</ul>
+</body>
+</html>

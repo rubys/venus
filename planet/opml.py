@@ -48,6 +48,10 @@ class OpmlParser(ContentHandler,SGMLParser):
         # this is an entry in a subscription list, but some leave this
         # attribute off, and others have placed 'atom' in here
         if attrs.has_key('type'):
+            if attrs['type'] == 'link' and not attrs.has_key('url'):
+                # Auto-correct WordPress link manager OPML files
+                attrs = dict(attrs.items())
+                attrs['type'] = 'rss'
             if attrs['type'].lower() not in['rss','atom']: return
 
         # The feed itself is supposed to be in an attribute named 'xmlUrl'

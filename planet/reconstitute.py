@@ -25,7 +25,11 @@ illegal_xml_chars = re.compile("[\x01-\x08\x0B\x0C\x0E-\x1F]")
 def createTextElement(parent, name, value):
     """ utility function to create a child element with the specified text"""
     if not value: return
-    if isinstance(value,str): value=value.decode('utf-8')
+    if isinstance(value,str):
+        try:
+            value=value.decode('utf-8')
+        except:
+            value=value.decode('iso-8859-1')
     xdoc = parent.ownerDocument
     xelement = xdoc.createElement(name)
     xelement.appendChild(xdoc.createTextNode(value))
@@ -100,6 +104,8 @@ def links(xentry, entry):
             xlink.setAttribute('type', link.get('type'))
         if link.has_key('rel'):
             xlink.setAttribute('rel', link.get('rel',None))
+        if link.has_key('length'):
+            xlink.setAttribute('length', link.get('length'))
         xentry.appendChild(xlink)
 
 def date(xentry, name, parsed):
@@ -157,7 +163,7 @@ def content(xentry, name, detail, bozo):
         xcontent.setAttribute('type', 'html')
         xcontent.appendChild(xdoc.createTextNode(detail.value.decode('utf-8')))
 
-    if detail.language:
+    if detail.get("language"):
         xcontent.setAttribute('xml:lang', detail.language)
 
     xentry.appendChild(xcontent)
@@ -170,13 +176,13 @@ def source(xsource, source, bozo, format):
     createTextElement(xsource, 'icon', source.get('icon', None))
     createTextElement(xsource, 'logo', source.get('logo', None))
 
+    if not source.has_key('logo') and source.has_key('image'):
+        createTextElement(xsource, 'logo', source.image.get('href',None))
+
     for tag in source.get('tags',[]):
         category(xsource, tag)
 
-    author_detail = source.get('author_detail',{})
-    if not author_detail.has_key('name') and source.has_key('planet_name'):
-        author_detail['name'] = source['planet_name']
-    author(xsource, 'author', author_detail)
+    author(xsource, 'author', source.get('author_detail',{}))
     for contributor in source.get('contributors',[]):
         author(xsource, 'contributor', contributor)
 
@@ -204,6 +210,8 @@ def reconstitute(feed, entry):
 
     if entry.has_key('language'):
         xentry.setAttribute('xml:lang', entry.language)
+    elif feed.feed.has_key('language'):
+        xentry.setAttribute('xml:lang', feed.feed.language)
 
     id(xentry, entry)
     links(xentry, entry)
@@ -217,18 +225,46 @@ def reconstitute(feed, entry):
     content(xentry, 'content', entry.get('content',[None])[0], bozo)
     content(xentry, 'rights', entry.get('rights_detail',None), bozo)
 
-    date(xentry, 'updated', entry.get('updated_parsed',time.gmtime()))
+    date(xentry, 'updated', entry_updated(feed.feed, entry, time.gmtime()))
     date(xentry, 'published', entry.get('published_parsed',None))
 
     for tag in entry.get('tags',[]):
         category(xentry, tag)
 
-    author(xentry, 'author', entry.get('author_detail',None))
+    # known, simple text extensions
+    for ns,name in [('feedburner','origlink')]:
+        if entry.has_key('%s_%s' % (ns,name)) and \
+            feed.namespaces.has_key(ns):
+            xoriglink = createTextElement(xentry, '%s:%s' % (ns,name),
+                entry['%s_%s' % (ns,name)])
+            xoriglink.setAttribute('xmlns:%s' % ns, feed.namespaces[ns])
+
+    author_detail = entry.get('author_detail',{})
+    if author_detail and not author_detail.has_key('name') and \
+        feed.feed.has_key('planet_name'):
+        author_detail['name'] = feed.feed['planet_name']
+    author(xentry, 'author', author_detail)
     for contributor in entry.get('contributors',[]):
         author(xentry, 'contributor', contributor)
 
     xsource = xdoc.createElement('source')
-    source(xsource, entry.get('source') or feed.feed, bozo, feed.version)
+    src = entry.get('source') or feed.feed
+    src_author = src.get('author_detail',{})
+    if (not author_detail or not author_detail.has_key('name')) and \
+       not src_author.has_key('name') and  feed.feed.has_key('planet_name'):
+       if src_author: src_author = src_author.__class__(src_author.copy())
+       src['author_detail'] = src_author
+       src_author['name'] = feed.feed['planet_name']
+    source(xsource, src, bozo, feed.version)
     xentry.appendChild(xsource)
 
     return xdoc
+
+def entry_updated(feed, entry, default = None):
+    chks = ((entry, 'updated_parsed'),
+            (entry, 'published_parsed'),
+            (feed,  'updated_parsed'),)
+    for node, field in chks:
+        if node.has_key(field) and node[field]:
+            return node[field]
+    return default

@@ -1,0 +1,14 @@
+<!--
+Description:  link relationship
+Expect:       title_detail.language == 'en'
+-->
+
+<rss version="2.0">
+  <channel>
+    <language>en</language>
+    <item>
+      <title>foo</title>
+    </item>
+  </channel>
+</rss>
+

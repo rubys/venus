@@ -1090,7 +1090,7 @@ Logger.manager = Manager(Logger.root)
 
 BASIC_FORMAT = "%(levelname)s:%(name)s:%(message)s"
 
-def basicConfig():
+def basicConfig(format=BASIC_FORMAT):
     """
     Do basic configuration for the logging system by creating a
     StreamHandler with a default Formatter and adding it to the
@@ -1098,7 +1098,7 @@ def basicConfig():
     """
     if len(root.handlers) == 0:
         hdlr = StreamHandler()
-        fmt = Formatter(BASIC_FORMAT)
+        fmt = Formatter(format)
         hdlr.setFormatter(fmt)
         root.addHandler(hdlr)
 

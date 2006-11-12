@@ -1,0 +1,37 @@
+This filter is released under the same licence as Python
+see http://www.intertwingly.net/code/venus/LICENCE.
+
+Author: Eric van der Vlist <vdv@dyomedea.com>
+  
+This filter guesses whether an Atom entry is written
+in English or French. It should be trivial to chose between
+two other languages, easy to extend to more than two languages
+and useful to pass these languages as Venus configuration
+parameters.
+
+The code used to guess the language is the one that has been
+described by Douglas Bagnall as the Python recipe titled
+"Language detection using character trigrams"
+http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/326576.
+
+To add support for a new language, this language must first be
+"learned" using learn-language.py. This learning phase is nothing
+more than saving a pickled version of the Trigram object for this
+language. 
+
+To learn Finnish, you would execute:
+
+$ ./learn-language.py http://gutenberg.net/dirs/1/0/4/9/10492/10492-8.txt fi.data
+
+where http://gutenberg.net/dirs/1/0/4/9/10492/10492-8.txt is a text
+representative of the Finnish language and "fi.data" is the name of the
+data file for "fi" (ISO code for Finnish).
+
+To install this filter, copy this directory under the Venus
+filter directory and declare it in your filters list, for instance:
+
+filters= categories.xslt guess-language/guess-language.py
+
+NOTE: this filter depends on Amara 
+(http://uche.ogbuji.net/tech/4suite/amara/)
+

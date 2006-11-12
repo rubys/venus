@@ -11,9 +11,11 @@ import planet, config, feedparser, reconstitute, shell
 
 # Regular expressions to sanitise cache filenames
 re_url_scheme    = re.compile(r'^\w+:/*(\w+:|www\.)?')
-re_slash         = re.compile(r'[?/:]+')
+re_slash         = re.compile(r'[?/:|]+')
 re_initial_cruft = re.compile(r'^[,.]*')
 re_final_cruft   = re.compile(r'[,.]*$')
+
+index = True
 
 def filename(directory, filename):
     """Return a filename suitable for the cache.
@@ -29,6 +31,8 @@ def filename(directory, filename):
                 filename=filename.encode('idna')
     except:
         pass
+    if isinstance(filename,unicode):
+        filename=filename.encode('utf-8')
     filename = re_url_scheme.sub("", filename)
     filename = re_slash.sub(",", filename)
     filename = re_initial_cruft.sub("", filename)
@@ -59,10 +63,16 @@ def scrub(feed, data):
 
     # some data is not trustworthy
     for tag in config.ignore_in_feed(feed).split():
+        if tag.find('lang')>=0: tag='language'
+        if data.feed.has_key(tag): del data.feed[tag]
         for entry in data.entries:
             if entry.has_key(tag): del entry[tag]
             if entry.has_key(tag + "_detail"): del entry[tag + "_detail"]
             if entry.has_key(tag + "_parsed"): del entry[tag + "_parsed"]
+            for key in entry.keys():
+                if not key.endswith('_detail'): continue
+                for detail in entry[key].copy():
+                    if detail == tag: del entry[key][detail]
 
     # adjust title types
     if config.title_type(feed):
@@ -107,15 +117,22 @@ def scrub(feed, data):
                     source.author_detail['name'] = \
                         str(stripHtml(source.author_detail.name))
 
-def spiderFeed(feed):
+def spiderFeed(feed, only_if_new=0):
     """ Spider (fetch) a single feed """
     log = planet.logger
 
     # read cached feed info
     sources = config.cache_sources_directory()
+    if not os.path.exists(sources):
+        os.makedirs(sources, 0700)
     feed_source = filename(sources, feed)
     feed_info = feedparser.parse(feed_source)
-    if feed_info.feed.get('planet_http_status',None) == '410': return
+    if feed_info.feed and only_if_new:
+        log.info("Feed %s already in cache", feed)
+        return
+    if feed_info.feed.get('planet_http_status',None) == '410':
+        log.info("Feed %s gone", feed)
+        return
 
     # read feed itself
     modified = None
@@ -142,6 +159,10 @@ def spiderFeed(feed):
     # process based on the HTTP status code
     if data.status == 200 and data.has_key("url"):
         data.feed['planet_http_location'] = data.url
+        if feed == data.url:
+            log.info("Updating feed %s", feed)
+        else:
+            log.info("Updating feed %s @ %s", feed, data.url)
     elif data.status == 301 and data.has_key("entries") and len(data.entries)>0:
         log.warning("Feed has moved from <%s> to <%s>", feed, data.url)
         data.feed['planet_http_location'] = data.url
@@ -171,6 +192,7 @@ def spiderFeed(feed):
     if not data.version and feed_info.version:
         data.feed = feed_info.feed
         data.bozo = feed_info.feed.get('planet_bozo','true') == 'true'
+        data.version = feed_info.feed.get('planet_format')
     data.feed['planet_http_status'] = str(data.status)
 
     # capture etag and last-modified information
@@ -184,17 +206,27 @@ def spiderFeed(feed):
                 data.feed['planet_http_last_modified'])
 
     # capture feed and data from the planet configuration file
-    if not data.feed.has_key('links'): data.feed['links'] = list()
-    for link in data.feed.links:
-        if link.rel == 'self': break
-    else:
-        data.feed.links.append(feedparser.FeedParserDict(
-            {'rel':'self', 'type':'application/atom+xml', 'href':feed}))
+    if data.version:
+        if not data.feed.has_key('links'): data.feed['links'] = list()
+        feedtype = 'application/atom+xml'
+        if data.version.startswith('rss'): feedtype = 'application/rss+xml'
+        if data.version in ['rss090','rss10']: feedtype = 'application/rdf+xml'
+        for link in data.feed.links:
+            if link.rel == 'self':
+                link['type'] = feedtype
+                break
+        else:
+            data.feed.links.append(feedparser.FeedParserDict(
+                {'rel':'self', 'type':feedtype, 'href':feed}))
     for name, value in config.feed_options(feed).items():
         data.feed['planet_'+name] = value
 
     # perform user configured scrub operations on the data
     scrub(feed, data)
+
+    from planet import idindex
+    global index
+    if index != None: index = idindex.open()
 
     # write each entry to the cache
     cache = config.cache_directory()
@@ -211,16 +243,20 @@ def spiderFeed(feed):
         mtime = None
         if not entry.has_key('updated_parsed'):
             if entry.has_key('published_parsed'):
-                entry['updated_parsed'] = entry.published_parsed
-        if entry.has_key('updated_parsed'):
-            mtime = calendar.timegm(entry.updated_parsed)
-            if mtime > time.time(): mtime = None
+                entry['updated_parsed'] = entry['published_parsed']
+        if not entry.has_key('updated_parsed'):
+            try:
+                mtime = calendar.timegm(entry.updated_parsed)
+            except:
+                pass
         if not mtime:
             try:
                 mtime = os.stat(cache_file).st_mtime
             except:
-                mtime = time.time()
-            entry['updated_parsed'] = time.gmtime(mtime)
+                if data.feed.has_key('updated_parsed'):
+                    mtime = calendar.timegm(data.feed.updated_parsed)
+        if not mtime or mtime > time.time(): mtime = time.time()
+        entry['updated_parsed'] = time.gmtime(mtime)
 
         # apply any filters
         xdoc = reconstitute.reconstitute(data, entry)
@@ -228,12 +264,22 @@ def spiderFeed(feed):
         xdoc.unlink()
         for filter in config.filters(feed):
             output = shell.run(filter, output, mode="filter")
-            if not output: return
+            if not output: break
+        if not output: continue
 
         # write out and timestamp the results
         write(output, cache_file) 
         os.utime(cache_file, (mtime, mtime))
     
+        # optionally index
+        if index != None: 
+            feedid = data.feed.get('id', data.feed.get('link',None))
+            if feedid:
+                if type(feedid) == unicode: feedid = feedid.encode('utf-8')
+                index[filename('', entry.id)] = feedid
+
+    if index: index.close()
+
     # identify inactive feeds
     if config.activity_threshold(feed):
         updated = [entry.updated_parsed for entry in data.entries
@@ -254,6 +300,8 @@ def spiderFeed(feed):
     # report channel level errors
     if data.status == 226:
         if data.feed.has_key('planet_message'): del data.feed['planet_message']
+        if feed_info.feed.has_key('planet_updated'):
+            data.feed['planet_updated'] = feed_info.feed['planet_updated']
     elif data.status == 403:
         data.feed['planet_message'] = "403: forbidden"
     elif data.status == 404:
@@ -275,14 +323,17 @@ def spiderFeed(feed):
     write(xdoc.toxml('utf-8'), filename(sources, feed))
     xdoc.unlink()
 
-def spiderPlanet():
+def spiderPlanet(only_if_new = False):
     """ Spider (fetch) an entire planet """
-    log = planet.getLogger(config.log_level())
+    log = planet.getLogger(config.log_level(),config.log_format())
     planet.setTimeout(config.feed_timeout())
+
+    global index
+    index = True
 
     for feed in config.subscriptions():
         try:
-            spiderFeed(feed)
+            spiderFeed(feed, only_if_new=only_if_new)
         except Exception,e:
             import sys, traceback
             type, value, tb = sys.exc_info()

@@ -23,7 +23,7 @@ modules = map(fullmodname, glob.glob(os.path.join('tests', 'test_*.py')))
 
 # enable warnings
 import planet
-planet.getLogger("WARNING")
+planet.getLogger("WARNING",None)
 
 # load all of the tests into a suite
 try:
@@ -33,5 +33,11 @@ except Exception, exception:
     for module in modules: __import__(module)
     raise
 
+verbosity = 1
+if "-q" in sys.argv or '--quiet' in sys.argv:
+    verbosity = 0
+if "-v" in sys.argv or '--verbose' in sys.argv:
+    verbosity = 2
+
 # run test suite
-unittest.TextTestRunner().run(suite)
+unittest.TextTestRunner(verbosity=verbosity).run(suite)

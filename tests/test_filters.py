@@ -14,10 +14,16 @@ class FilterTests(unittest.TestCase):
         imgsrc = dom.getElementsByTagName('img')[0].getAttribute('src')
         self.assertEqual('http://example.com.nyud.net:8080/foo.png', imgsrc)
 
-    def test_excerpt_images(self):
-        testfile = 'tests/data/filter/excerpt-images.xml'
+    def test_excerpt_images1(self):
         config.load('tests/data/filter/excerpt-images.ini')
+        self.verify_images()
 
+    def test_excerpt_images2(self):
+        config.load('tests/data/filter/excerpt-images2.ini')
+        self.verify_images()
+
+    def verify_images(self):
+        testfile = 'tests/data/filter/excerpt-images.xml'
         output = open(testfile).read()
         for filter in config.filters():
             output = shell.run(filter, output, mode="filter")
@@ -58,8 +64,15 @@ class FilterTests(unittest.TestCase):
         self.assertEqual(u'before--after',
             excerpt.firstChild.firstChild.nodeValue)
 
-    def test_xpath_filter(self):
+    def test_xpath_filter1(self):
         config.load('tests/data/filter/xpath-sifter.ini')
+        self.verify_xpath()
+
+    def test_xpath_filter2(self):
+        config.load('tests/data/filter/xpath-sifter2.ini')
+        self.verify_xpath()
+
+    def verify_xpath(self):
         testfile = 'tests/data/filter/category-one.xml'
 
         output = open(testfile).read()
@@ -89,9 +102,10 @@ try:
         import libxml2
     except:
         logger.warn("libxml2 is not available => can't test xpath_sifter")
-        del FilterTests.test_xpath_filter
+        del FilterTests.test_xpath_filter1
+        del FilterTests.test_xpath_filter2
 
 except ImportError:
-    logger.warn("Popen is not available => can't test filters")
+    logger.warn("Popen is not available => can't test standard filters")
     for method in dir(FilterTests):
         if method.startswith('test_'):  delattr(FilterTests,method)
