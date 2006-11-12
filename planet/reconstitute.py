@@ -231,6 +231,14 @@ def reconstitute(feed, entry):
     for tag in entry.get('tags',[]):
         category(xentry, tag)
 
+    # known, simple text extensions
+    for ns,name in [('feedburner','origlink')]:
+        if entry.has_key('%s_%s' % (ns,name)) and \
+            feed.namespaces.has_key(ns):
+            xoriglink = createTextElement(xentry, '%s:%s' % (ns,name),
+                entry['%s_%s' % (ns,name)])
+            xoriglink.setAttribute('xmlns:%s' % ns, feed.namespaces[ns])
+
     author_detail = entry.get('author_detail',{})
     if author_detail and not author_detail.has_key('name') and \
         feed.feed.has_key('planet_name'):

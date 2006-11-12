@@ -1,0 +1,12 @@
+<!--
+Description:  feedburner origlink relationship
+Expect:       feedburner_origlink == 'http://example.com/1'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom"
+  xmlns:feedburner="http://rssnamespace.org/feedburner/ext/1.0">
+  <entry>
+    <feedburner:origlink>http://example.com/1</feedburner:origlink>
+  </entry>
+</feed>
+
