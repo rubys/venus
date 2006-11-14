@@ -54,7 +54,10 @@ if __name__ == "__main__":
 
     if not offline:
         from planet import spider
-        spider.spiderPlanet(only_if_new=only_if_new)
+        try:
+            spider.spiderPlanet(only_if_new=only_if_new)
+        except Exception, e:
+            print e
 
     from planet import splice
     doc = splice.splice()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import unittest, os, glob, calendar, shutil
+import unittest, os, glob, calendar, shutil, time
 from planet.spider import filename, spiderFeed, spiderPlanet
 from planet import feedparser, config
 import planet
@@ -43,9 +43,7 @@ class SpiderTest(unittest.TestCase):
         self.assertEqual(os.path.join('.', 'xn--8ws00zhy3a.com'),
             filename('.', u'http://www.\u8a79\u59c6\u65af.com/'))
 
-    def test_spiderFeed(self):
-        config.load(configfile)
-        spiderFeed(testfeed % '1b')
+    def verify_spiderFeed(self):
         files = glob.glob(workdir+"/*")
         files.sort()
 
@@ -64,13 +62,18 @@ class SpiderTest(unittest.TestCase):
         self.assertEqual(os.stat(files[2]).st_mtime,
             calendar.timegm(data.entries[0].updated_parsed))
 
-    def test_spiderUpdate(self):
-        spiderFeed(testfeed % '1a')
-        self.test_spiderFeed()
-
-    def test_spiderPlanet(self):
+    def test_spiderFeed(self):
         config.load(configfile)
-        spiderPlanet()
+        spiderFeed(testfeed % '1b')
+        self.verify_spiderFeed()
+
+    def test_spiderUpdate(self):
+        config.load(configfile)
+        spiderFeed(testfeed % '1a')
+        spiderFeed(testfeed % '1b')
+        self.verify_spiderFeed()
+
+    def verify_spiderPlanet(self):
         files = glob.glob(workdir+"/*")
 
         # verify that exactly eight files + 1 source dir were produced
@@ -88,3 +91,48 @@ class SpiderTest(unittest.TestCase):
             for link in data.entries[0].source.links if link.rel=='self'])
         self.assertEqual('three', data.entries[0].source.author_detail.name)
 
+    def test_spiderPlanet(self):
+        config.load(configfile)
+        spiderPlanet()
+        self.verify_spiderPlanet()
+
+    def test_spiderThreads(self):
+        config.load(configfile.replace('config','threaded'))
+        _PORT = config.parser.getint('Planet','test_port')
+
+        log = []
+        from SimpleHTTPServer import SimpleHTTPRequestHandler
+        class TestRequestHandler(SimpleHTTPRequestHandler):
+            def log_message(self, format, *args):
+                log.append(args)
+
+        from threading import Thread
+        class TestServerThread(Thread):
+          def __init__(self):
+              self.ready = 0
+              self.done = 0
+              Thread.__init__(self)
+          def run(self):
+              from BaseHTTPServer import HTTPServer
+              httpd = HTTPServer(('',_PORT), TestRequestHandler)
+              self.ready = 1
+              while not self.done:
+                  httpd.handle_request()
+
+        httpd = TestServerThread()
+        httpd.start()
+        while not httpd.ready:
+            time.sleep(0.1)
+
+        try:
+            spiderPlanet()
+        finally:
+            httpd.done = 1
+            import urllib
+            urllib.urlopen('http://127.0.0.1:%d/' % _PORT).read()
+
+        status = [int(rec[1]) for rec in log if str(rec[0]).startswith('GET ')]
+        status.sort()
+        self.assertEqual([200,200,200,200,404], status)
+
+        self.verify_spiderPlanet()

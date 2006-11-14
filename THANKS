@@ -4,7 +4,7 @@ Elias Torres    - FOAF OnlineAccounts
 Jacques Distler - Template patches
 Michael Koziarski - HTTP Auth fix
 Brian Ewins     - Win32 / Portalocker
-Joe Gregorio    - Invoke same version of Python for filters
+Joe Gregorio    - python versioning for filters, verbose tests, spider_threads
 Harry Fuecks    - Pipe characters in file names, filter bug
 Eric van der Vlist - Filters to add language, category information
 Chris Dolan     - mkdir cache; default template_dirs; fix xsltproc
