@@ -16,10 +16,11 @@ def getLogger(level, format):
 
     try:
         import logging
+        logging.basicConfig(format=format)
     except:
         import compat_logging as logging
+        logging.basicConfig(format=format)
 
-    logging.basicConfig(format=format)
     logging.getLogger().setLevel(logging.getLevelName(level))
     logger = logging.getLogger("planet.runner")
     try:

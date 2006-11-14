@@ -69,7 +69,7 @@ right directory.</p></li>
 <p>Build your own themes, templates, or filters!  And share!</p></li>
 </ol>
 
-<h3>Mac OS X and Fink Instructions</h3>
+<h3 id="macosx">Mac OS X and Fink Instructions</h3>
 
 <p>
 The <a href="http://fink.sourceforge.net/">Fink Project</a> packages
@@ -101,12 +101,20 @@ not yet ported to the newer python so Venus will be less featureful.
         may want to explicitly specify <code>python2.4</code>.</p></li>
 </ol>
 
-<h3>Ubuntu Linux (Edgy Eft) instructions</h3>
+<h3 id="ubuntu">Ubuntu Linux (Edgy Eft) instructions</h3>
 
 <p>Before starting, issue the following command:</p>
-<ul>
-<li><code>sudo apt-get install bzr python2.4-librdf</code></li>
-</ul>
+
+<blockquote><pre>sudo apt-get install bzr python2.4-librdf</pre></blockquote>
+
+<h3 id="python22">Python 2.2 instructions</h3>
+
+<p>If you are running Python 2.2, you may also need to install <a href="http://pyxml.sourceforge.net/">pyxml</a>.  If the
+following runs without error, you do <b>not</b> have the problem.</p>
+<blockquote><pre>python -c "__import__('xml.dom.minidom').dom.minidom.parseString('&lt;entry xml:lang=\"en\"/&gt;')"</pre></blockquote>
+<p>Installation of pyxml varies by platform.  For Ubuntu Linux (Dapper Drake), issue the following command:</p>
+
+<blockquote><pre>sudo apt-get install python2.2-xml</pre></blockquote>
 
 </body>
 </html>

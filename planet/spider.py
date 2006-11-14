@@ -260,7 +260,7 @@ def spiderFeed(feed, only_if_new=0):
 
         # apply any filters
         xdoc = reconstitute.reconstitute(data, entry)
-        output = xdoc.toxml('utf-8')
+        output = xdoc.toxml().encode('utf-8')
         xdoc.unlink()
         for filter in config.filters(feed):
             output = shell.run(filter, output, mode="filter")
@@ -320,7 +320,7 @@ def spiderFeed(feed, only_if_new=0):
     xdoc=minidom.parseString('''<feed xmlns:planet="%s"
       xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
     reconstitute.source(xdoc.documentElement,data.feed,data.bozo,data.version)
-    write(xdoc.toxml('utf-8'), filename(sources, feed))
+    write(xdoc.toxml().encode('utf-8'), filename(sources, feed))
     xdoc.unlink()
 
 def spiderPlanet(only_if_new = False):
