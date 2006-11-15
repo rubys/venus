@@ -257,9 +257,8 @@ def spiderFeed(feed, only_if_new=0, content=None, resp_headers=None):
 
         # get updated-date either from the entry or the cache (default to now)
         mtime = None
-        if not entry.has_key('updated_parsed'):
-            if entry.has_key('published_parsed'):
-                entry['updated_parsed'] = entry['published_parsed']
+        if not entry.has_key('updated_parsed') or not entry['updated_parsed']:
+            entry['updated_parsed'] = entry.get('published_parsed',None)
         if not entry.has_key('updated_parsed'):
             try:
                 mtime = calendar.timegm(entry.updated_parsed)
@@ -270,7 +269,10 @@ def spiderFeed(feed, only_if_new=0, content=None, resp_headers=None):
                 mtime = os.stat(cache_file).st_mtime
             except:
                 if data.feed.has_key('updated_parsed'):
-                    mtime = calendar.timegm(data.feed.updated_parsed)
+                    try:
+                        mtime = calendar.timegm(data.feed.updated_parsed)
+                    except:
+                        pass
         if not mtime or mtime > time.time(): mtime = time.time()
         entry['updated_parsed'] = time.gmtime(mtime)
 
