@@ -59,6 +59,7 @@ class SpiderTest(unittest.TestCase):
         self.assertEqual(['application/atom+xml'], [link.type
             for link in data.entries[0].source.links if link.rel=='self'])
         self.assertEqual('one', data.entries[0].source.planet_name)
+        self.assertEqual('2006-01-01T00:00:00Z', data.entries[0].updated)
         self.assertEqual(os.stat(files[2]).st_mtime,
             calendar.timegm(data.entries[0].updated_parsed))
 
