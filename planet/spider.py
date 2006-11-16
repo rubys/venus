@@ -259,7 +259,7 @@ def spiderFeed(feed, only_if_new=0, content=None, resp_headers=None):
         mtime = None
         if not entry.has_key('updated_parsed') or not entry['updated_parsed']:
             entry['updated_parsed'] = entry.get('published_parsed',None)
-        if not entry.has_key('updated_parsed'):
+        if entry.has_key('updated_parsed'):
             try:
                 mtime = calendar.timegm(entry.updated_parsed)
             except:
