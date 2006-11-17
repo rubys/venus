@@ -50,6 +50,15 @@ def ncr2c(value):
         value=unichr(int(value))
     return value
 
+nonalpha=re.compile('\W+',re.UNICODE)
+def cssid(name):
+    """ generate a css id from a name """
+    try:
+        name = nonalpha.sub('-',name.decode('utf-8')).lower().encode('utf-8')
+    except:
+        name = nonalpha.sub('-',name).lower()
+    return name.strip('-')
+
 def normalize(text, bozo):
     """ convert everything to well formed XML """
     if text.has_key('type'):
@@ -198,6 +207,8 @@ def source(xsource, source, bozo, format):
     if not bozo == None: source['planet_bozo'] = bozo and 'true' or 'false'
 
     # propagate planet inserted information
+    if source.has_key('planet_name') and not source.has_key('planet_css-id'):
+        source['planet_css-id'] = cssid(source['planet_name'])
     for key, value in source.items():
         if key.startswith('planet_'):
             createTextElement(xsource, key.replace('_',':',1), value)

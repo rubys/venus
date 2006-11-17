@@ -159,7 +159,8 @@ function findEntries() {
       var date = localizeDate(span[i]);
 
       var parent = span[i];
-      while (parent && parent.className != 'news') {
+      while (parent && 
+        (!parent.className || parent.className.split(' ')[0] != 'news')) {
         parent = parent.parentNode;
       }
 

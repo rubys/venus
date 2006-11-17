@@ -91,6 +91,7 @@ class SpiderTest(unittest.TestCase):
         self.assertEqual(['application/rss+xml'], [link.type
             for link in data.entries[0].source.links if link.rel=='self'])
         self.assertEqual('three', data.entries[0].source.author_detail.name)
+        self.assertEqual('three', data.entries[0].source['planet_css-id'])
 
     def test_spiderPlanet(self):
         config.load(configfile)

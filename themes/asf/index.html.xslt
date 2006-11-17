@@ -1,4 +1,5 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
+                xmlns:fn="http://www.w3.org/2005/xpath-functions/"
                 xmlns:atom="http://www.w3.org/2005/Atom"
                 xmlns:xhtml="http://www.w3.org/1999/xhtml"
                 xmlns:planet="http://planet.intertwingly.net/"
@@ -139,7 +140,7 @@
     </xsl:if>
 
     <xsl:text>&#10;&#10;</xsl:text>
-    <div class="news">
+    <div class="news {atom:source/planet:css-id}">
 
       <xsl:if test="@xml:lang">
         <xsl:attribute name="xml:lang">
