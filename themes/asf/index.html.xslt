@@ -1,9 +1,9 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
-                xmlns:fn="http://www.w3.org/2005/xpath-functions/"
                 xmlns:atom="http://www.w3.org/2005/Atom"
                 xmlns:xhtml="http://www.w3.org/1999/xhtml"
                 xmlns:planet="http://planet.intertwingly.net/"
-                xmlns="http://www.w3.org/1999/xhtml">
+                xmlns="http://www.w3.org/1999/xhtml"
+                exclude-result-prefixes="atom planet xhtml">
  
   <xsl:template match="atom:feed">
     <html xmlns="http://www.w3.org/1999/xhtml">
