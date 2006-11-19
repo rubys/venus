@@ -30,12 +30,52 @@
         <xsl:text>&#10;</xsl:text>
         <h1><xsl:value-of select="atom:title"/></h1>
 
-        <xsl:text>&#10;</xsl:text>
-        <div id="sidebar">
-
+        <xsl:text>&#10;&#10;</xsl:text>
+        <div id="body">
+          <xsl:apply-templates select="atom:entry"/>
           <xsl:text>&#10;&#10;</xsl:text>
-          <h2>Subscriptions</h2>
-          <xsl:text>&#10;</xsl:text>
+        </div>
+
+        <h1>Subscriptions </h1>
+        <xsl:text>&#10;&#10;</xsl:text>
+
+        <div id="sidebar">
+          <h2>Info</h2>
+
+          <dl>
+            <dt>Last updated:</dt>
+            <dd>
+              <span class="date" title="GMT">
+                <xsl:value-of select="atom:updated/@planet:format"/>
+              </span>
+            </dd>
+            <dt>Powered by:</dt>
+            <dd>
+              <a href="http://intertwingly.net/code/venus/">
+                <img src="images/venus.png" width="80" height="15"
+                  alt="Venus" border="0"/>
+              </a>
+            </dd>
+            <dt>Export:</dt>
+            <dd>
+              <ul>
+                <li>
+                  <a href="opml.xml">
+                    <img src="images/opml.png" alt="OPML"/>
+                  </a>
+                </li>
+                <li>
+                  <a href="foafroll.xml">
+                    <img src="images/foaf.png" alt="FOAF"/>
+                  </a>
+                </li>
+              </ul>
+            </dd>
+          </dl>
+        </div>
+
+        <xsl:text>&#10;&#10;</xsl:text>
+        <div id="footer">
           <ul>
             <xsl:for-each select="planet:source">
               <xsl:sort select="planet:name"/>
@@ -80,48 +120,9 @@
             </xsl:for-each>
             <xsl:text>&#10;</xsl:text>
           </ul>
-
-          <xsl:text>&#10;&#10;</xsl:text>
-          <h2>Info</h2>
-
-          <dl>
-            <dt>Last updated:</dt>
-            <dd>
-              <span class="date" title="GMT">
-                <xsl:value-of select="atom:updated/@planet:format"/>
-              </span>
-            </dd>
-            <dt>Powered by:</dt>
-            <dd>
-              <a href="http://intertwingly.net/code/venus/">
-                <img src="images/venus.png" width="80" height="15"
-                  alt="Venus" border="0"/>
-              </a>
-            </dd>
-            <dt>Export:</dt>
-            <dd>
-              <ul>
-                <li>
-                  <a href="opml.xml">
-                    <img src="images/opml.png" alt="OPML"/>
-                  </a>
-                </li>
-                <li>
-                  <a href="foafroll.xml">
-                    <img src="images/foaf.png" alt="FOAF"/>
-                  </a>
-                </li>
-              </ul>
-            </dd>
-          </dl>
-
         </div>
 
-        <xsl:text>&#10;&#10;</xsl:text>
-        <div id="body">
-          <xsl:apply-templates select="atom:entry"/>
-          <xsl:text>&#10;&#10;</xsl:text>
-        </div>
+        <xsl:text>&#10;</xsl:text>
       </body>
     </html>
   </xsl:template>

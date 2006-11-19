@@ -146,6 +146,10 @@ h1 {
         display: inline;
 }
 
+#footer img {
+        display: none;
+}
+
 /* ----------------------------- Body ---------------------------- */
 
 #body {
