@@ -1,3 +1,4 @@
+from __future__ import generators
 """
 httplib2
 
@@ -8,21 +9,22 @@ Requires Python 2.3 or later
 
 """
 
-from __future__ import generators
-
 __author__ = "Joe Gregorio (joe@bitworking.org)"
 __copyright__ = "Copyright 2006, Joe Gregorio"
 __contributors__ = ["Thomas Broyer (t.broyer@ltgt.net)",
     "James Antill",
     "Xavier Verges Farrero",
     "Jonathan Feinberg",
-    "Blair Zajac"]
+    "Blair Zajac",
+    "Sam Ruby"]
 __license__ = "MIT"
-__version__ = "$Rev: 209 $"
+__version__ = "$Rev: 217 $"
 
 import re 
 import md5
-import rfc822
+import email
+import email.Utils
+import email.Message
 import StringIO
 import gzip
 import zlib
@@ -113,6 +115,49 @@ def parse_uri(uri):
     """
     groups = URI.match(uri).groups()
     return (groups[1], groups[3], groups[4], groups[6], groups[8])
+
+def urlnorm(uri):
+    (scheme, authority, path, query, fragment) = parse_uri(uri)
+    authority = authority.lower()
+    scheme = scheme.lower()
+    if not path: 
+        path = "/"
+    # Could do syntax based normalization of the URI before
+    # computing the digest. See Section 6.2.2 of Std 66.
+    request_uri = query and "?".join([path, query]) or path
+    defrag_uri = scheme + "://" + authority + request_uri
+    return scheme, authority, request_uri, defrag_uri
+
+
+# Cache filename construction (original borrowed from Venus http://intertwingly.net/code/venus/)
+re_url_scheme    = re.compile(r'^\w+://')
+re_slash         = re.compile(r'[?/:|]+')
+
+def safename(filename):
+    """Return a filename suitable for the cache.
+
+    Strips dangerous and common characters to create a filename we
+    can use to store the cache in.
+    """
+
+    try:
+        if re_url_scheme.match(filename):
+            if isinstance(filename,str):
+                filename=filename.decode('utf-8').encode('idna')
+            else:
+                filename=filename.encode('idna')
+    except:
+        pass
+    if isinstance(filename,unicode):
+        filename=filename.encode('utf-8')
+    filemd5 = md5.new(filename).hexdigest()
+    filename = re_url_scheme.sub("", filename)
+    filename = re_slash.sub(",", filename)
+
+    # limit length of filename
+    if len(filename)>200:
+        filename=filename[:200]
+    return ",".join((filename, filemd5))
 
 NORMALIZE_SPACE = re.compile(r'(?:\r\n)?[ \t]+')
 def _normalize_headers(headers):
@@ -211,13 +256,13 @@ def _entry_disposition(response_headers, request_headers):
     elif cc.has_key('only-if-cached'):
         retval = "FRESH"
     elif response_headers.has_key('date'):
-        date = calendar.timegm(rfc822.parsedate_tz(response_headers['date']))
+        date = calendar.timegm(email.Utils.parsedate_tz(response_headers['date']))
         now = time.time()
         current_age = max(0, now - date)
         if cc_response.has_key('max-age'):
             freshness_lifetime = int(cc_response['max-age'])
         elif response_headers.has_key('expires'):
-            expires = rfc822.parsedate_tz(response_headers['expires'])
+            expires = email.Utils.parsedate_tz(response_headers['expires'])
             freshness_lifetime = max(0, calendar.timegm(expires) - date)
         else:
             freshness_lifetime = 0
@@ -232,12 +277,14 @@ def _entry_disposition(response_headers, request_headers):
 def _decompressContent(response, new_content):
     content = new_content
     try:
-        if response.get('content-encoding', None) == 'gzip':
-            content = gzip.GzipFile(fileobj=StringIO.StringIO(new_content)).read()
+        encoding = response.get('content-encoding', None)
+        if encoding in ['gzip', 'deflate']:
+            if encoding == 'gzip':
+                content = gzip.GzipFile(fileobj=StringIO.StringIO(new_content)).read()
+            if encoding == 'deflate':
+                content = zlib.decompress(content)
             response['content-length'] = str(len(content))
-        if response.get('content-encoding', None) == 'deflate':
-            content = zlib.decompress(content)
-            response['content-length'] = str(len(content))
+            del response['content-encoding']
     except:
         content = ""
         raise FailedToDecompressContent(_("Content purported to be compressed with %s but failed to decompress.") % response.get('content-encoding'))
@@ -250,14 +297,23 @@ def _updateCache(request_headers, response_headers, content, cache, cachekey):
         if cc.has_key('no-store') or cc_response.has_key('no-store'):
             cache.delete(cachekey)
         else:
-            f = StringIO.StringIO("")
-            info = rfc822.Message(StringIO.StringIO(""))
+            info = email.Message.Message()
             for key, value in response_headers.iteritems():
-                info[key] = value
-            f.write(str(info))
-            f.write("\r\n\r\n")
-            f.write(content)
-            cache.set(cachekey, f.getvalue())
+                if key not in ['status','content-encoding','transfer-encoding']:
+                    info[key] = value
+
+            status = response_headers.status
+            if status == 304:
+                status = 200
+
+            status_header = 'status: %d\r\n' % response_headers.status
+
+            header_str = info.as_string()
+
+            header_str = re.sub("\r(?!\n)|(?<!\r)\n", "\r\n", header_str)
+            text = "".join([status_header, header_str, content])
+
+            cache.set(cachekey, text)
 
 def _cnonce():
     dig = md5.new("%s:%s" % (time.ctime(), ["0123456789"[random.randrange(0, 9)] for i in range(20)])).hexdigest()
@@ -498,20 +554,23 @@ AUTH_SCHEME_CLASSES = {
 
 AUTH_SCHEME_ORDER = ["hmacdigest", "googlelogin", "digest", "wsse", "basic"]
 
+def _md5(s):
+    return 
 
 class FileCache:
     """Uses a local directory as a store for cached files.
     Not really safe to use if multiple threads or processes are going to 
     be running on the same cache.
     """
-    def __init__(self, cache):
+    def __init__(self, cache, safe=safename): # use safe=lambda x: md5.new(x).hexdigest() for the old behavior
         self.cache = cache
+        self.safe = safe
         if not os.path.exists(cache): 
             os.makedirs(self.cache)
 
     def get(self, key):
         retval = None
-        cacheFullPath = os.path.join(self.cache, key)
+        cacheFullPath = os.path.join(self.cache, self.safe(key))
         try:
             f = file(cacheFullPath, "r")
             retval = f.read()
@@ -521,13 +580,13 @@ class FileCache:
         return retval
 
     def set(self, key, value):
-        cacheFullPath = os.path.join(self.cache, key)
+        cacheFullPath = os.path.join(self.cache, self.safe(key))
         f = file(cacheFullPath, "w")
         f.write(value)
         f.close()
 
     def delete(self, key):
-        cacheFullPath = os.path.join(self.cache, key)
+        cacheFullPath = os.path.join(self.cache, self.safe(key))
         if os.path.exists(cacheFullPath):
             os.remove(cacheFullPath)
 
@@ -639,7 +698,8 @@ class Http:
                             response['location'] = urlparse.urljoin(absolute_uri, location)
                     if response.status == 301 and method in ["GET", "HEAD"]:
                         response['-x-permanent-redirect-url'] = response['location']
-                        response['-location'] = absolute_uri 
+                        if not response.has_key('content-location'):
+                            response['content-location'] = absolute_uri 
                         _updateCache(headers, response, content, self.cache, cachekey)
                     if headers.has_key('if-none-match'):
                         del headers['if-none-match']
@@ -648,7 +708,8 @@ class Http:
                     if response.has_key('location'):
                         location = response['location']
                         old_response = copy.deepcopy(response)
-                        old_response['-location'] = absolute_uri 
+                        if not old_response.has_key('content-location'):
+                            old_response['content-location'] = absolute_uri 
                         redirect_method = ((response.status == 303) and (method not in ["GET", "HEAD"])) and "GET" or method
                         (response, content) = self.request(location, redirect_method, body=body, headers = headers, redirections = redirections - 1)
                         response.previous = old_response
@@ -656,7 +717,8 @@ class Http:
                     raise RedirectLimit( _("Redirected more times than rediection_limit allows."))
             elif response.status in [200, 203] and method == "GET":
                 # Don't cache 206's since we aren't going to handle byte range requests
-                response['-location'] = absolute_uri 
+                if not response.has_key('content-location'):
+                    response['content-location'] = absolute_uri 
                 _updateCache(headers, response, content, self.cache, cachekey)
 
         return (response, content)
@@ -690,14 +752,7 @@ a string that contains the response entity body.
         if not headers.has_key('user-agent'):
             headers['user-agent'] = "Python-httplib2/%s" % __version__
 
-        (scheme, authority, path, query, fragment) = parse_uri(uri)
-        authority = authority.lower()
-        if not path: 
-            path = "/"
-        # Could do syntax based normalization of the URI before
-        # computing the digest. See Section 6.2.2 of Std 66.
-        request_uri = query and "?".join([path, query]) or path
-        defrag_uri = scheme + "://" + authority + request_uri
+        (scheme, authority, request_uri, defrag_uri) = urlnorm(uri)
 
         if not self.connections.has_key(scheme+":"+authority):
             connection_type = (scheme == 'https') and httplib.HTTPSConnection or httplib.HTTPConnection
@@ -709,17 +764,16 @@ a string that contains the response entity body.
         if method in ["GET", "HEAD"] and 'range' not in headers:
             headers['accept-encoding'] = 'compress, gzip'
 
-        info = rfc822.Message(StringIO.StringIO(""))
+        info = email.Message.Message()
         cached_value = None
         if self.cache:
-            cachekey = md5.new(defrag_uri).hexdigest()
+            cachekey = defrag_uri
             cached_value = self.cache.get(cachekey)
             if cached_value:
                 try:
-                    f = StringIO.StringIO(cached_value)
-                    info = rfc822.Message(f)
+                    info = email.message_from_string(cached_value)
                     content = cached_value.split('\r\n\r\n', 1)[1]
-                except:
+                except Exception, e:
                     self.cache.delete(cachekey)
                     cachekey = None
                     cached_value = None
@@ -802,7 +856,7 @@ a string that contains the response entity body.
  
 
 class Response(dict):
-    """An object more like rfc822.Message than httplib.HTTPResponse."""
+    """An object more like email.Message than httplib.HTTPResponse."""
    
     """Is this response from our local cache"""
     fromcache = False
@@ -819,7 +873,7 @@ class Response(dict):
     previous = None
 
     def __init__(self, info):
-        # info is either an rfc822.Message or 
+        # info is either an email.Message or 
         # an httplib.HTTPResponse object.
         if isinstance(info, httplib.HTTPResponse):
             for key, value in info.getheaders(): 
@@ -828,7 +882,7 @@ class Response(dict):
             self['status'] = str(self.status)
             self.reason = info.reason
             self.version = info.version
-        elif isinstance(info, rfc822.Message):
+        elif isinstance(info, email.Message.Message):
             for key, value in info.items(): 
                 self[key] = value 
             self.status = int(self['status'])

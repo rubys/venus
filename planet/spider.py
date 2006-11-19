@@ -140,17 +140,7 @@ def spiderFeed(feed, only_if_new=0, content=None, resp_headers=None):
         return
 
     # read feed itself
-    if content:
-        # httplib2 was used to get the content, so prepare a 
-        # proper object to pass to feedparser.
-        f = StringIO(content) 
-        setattr(f, 'url', resp_headers.get('-location', feed))
-        if resp_headers:
-            if resp_headers.has_key('content-encoding'):
-                del resp_headers['content-encoding']
-            setattr(f, 'headers', resp_headers)
-        data = feedparser.parse(f)
-    else:
+    if not resp_headers:
         modified = None
         try:
             modified=time.strptime(
@@ -159,12 +149,25 @@ def spiderFeed(feed, only_if_new=0, content=None, resp_headers=None):
             pass
         data = feedparser.parse(feed_info.feed.get('planet_http_location',feed),
             etag=feed_info.feed.get('planet_http_etag',None), modified=modified)
+    elif int(resp_headers.status) < 300:
+        # httplib2 was used to get the content, so prepare a 
+        # proper object to pass to feedparser.
+        f = StringIO(content) 
+        setattr(f, 'url', resp_headers.get('content-location', feed))
+        if resp_headers:
+            if resp_headers.has_key('content-encoding'):
+                del resp_headers['content-encoding']
+            setattr(f, 'headers', resp_headers)
+        data = feedparser.parse(f)
+    else:
+        data = feedparser.FeedParserDict({'status': int(resp_headers.status),
+            'headers':resp_headers, 'version':None, 'entries': []})
 
     # capture http status
     if not data.has_key("status"):
         if data.has_key("entries") and len(data.entries)>0:
             data.status = 200
-        elif data.bozo and data.bozo_exception.__class__.__name__=='Timeout':
+        elif data.bozo and data.bozo_exception.__class__.__name__.lower()=='timeout':
             data.status = 408
         else:
             data.status = 500
@@ -380,13 +383,27 @@ def spiderPlanet(only_if_new = False):
                     # is empty which will terminate the thread.
                     uri = work_queue.get(block=False)
                     log.info("Fetching %s via %d", uri, thread_index)
+                    resp = feedparser.FeedParserDict({'status':'500'})
+                    content = None
                     try:
-                        (resp, content) = h.request(uri)
-                        awaiting_parsing.put(block=True, item=(resp, content, uri))
+                        try:
+                            if isinstance(uri,unicode):
+                                idna = uri.encode('idna')
+                            else:
+                                idna = uri.decode('utf-8').encode('idna')
+                            if idna != uri: log.info("IRI %s mapped to %s", uri, idna)
+                        except:
+                            log.info("unable to map %s to a URI", uri)
+                            idna = uri
+                        (resp, content) = h.request(idna)
                     except gaierror:
                         log.error("Fail to resolve server name %s via %d", uri, thread_index)
                     except error, e:
-                        log.error("HTTP Error: %s in thread-%d", str(e), thread_index)
+                        if e.__class__.__name__.lower()=='timeout':
+                            resp['status'] = '408'
+                            log.warn("Timeout in thread-%d", thread_index)
+                        else:
+                            log.error("HTTP Error: %s in thread-%d", str(e), thread_index)
                     except Exception, e:
                         import sys, traceback
                         type, value, tb = sys.exc_info()
@@ -394,6 +411,7 @@ def spiderPlanet(only_if_new = False):
                         for line in (traceback.format_exception_only(type, value) +
                             traceback.format_tb(tb)):
                             log.error(line.rstrip())
+                    awaiting_parsing.put(block=True, item=(resp, content, uri))
  
             except Empty, e:
                 log.info("Thread %d finished", thread_index)
@@ -409,18 +427,15 @@ def spiderPlanet(only_if_new = False):
 
         # Process the results as they arrive
         while work_queue.qsize() or awaiting_parsing.qsize() or threads:
-            if awaiting_parsing.qsize() == 0 and threads:
-                time.sleep(1)
+            while awaiting_parsing.qsize() == 0 and threads:
+                time.sleep(0.1)
             while awaiting_parsing.qsize():
                 item = awaiting_parsing.get(False)
                 try:
                     (resp_headers, content, uri) = item
-                    if not resp_headers.fromcache:
-                        if resp_headers.status < 300:
-                            log.info("Parsing pre-fetched %s", uri)
-                            spiderFeed(uri, only_if_new=only_if_new, content=content, resp_headers=resp_headers)
-                        else:
-                            log.error("Status code %d from %s", resp_headers.status, uri)
+                    if resp_headers.status == 200 and resp_headers.fromcache:
+                        resp_headers.status = 304
+                    spiderFeed(uri, only_if_new=only_if_new, content=content, resp_headers=resp_headers)
                 except Exception, e:
                     import sys, traceback
                     type, value, tb = sys.exc_info()
