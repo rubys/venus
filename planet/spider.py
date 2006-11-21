@@ -344,68 +344,64 @@ def httpThread(thread_index, input_queue, output_queue, log):
 
     http_cache = config.http_cache_directory()
     h = httplib2.Http(http_cache)
-    try:
-        while True:
-            # The non-blocking get will throw an exception when the queue 
-            # is empty which will terminate the thread.
-            uri, feed_info = input_queue.get(block=False)
-            log.info("Fetching %s via %d", uri, thread_index)
-            feed = StringIO('')
-            setattr(feed, 'url', uri)
-            setattr(feed, 'headers', 
-                feedparser.FeedParserDict({'status':'500'}))
+    uri, feed_info = input_queue.get(block=True)
+    while uri:
+        log.info("Fetching %s via %d", uri, thread_index)
+        feed = StringIO('')
+        setattr(feed, 'url', uri)
+        setattr(feed, 'headers', 
+            feedparser.FeedParserDict({'status':'500'}))
+        try:
+            # map IRI => URI
             try:
-                # map IRI => URI
-                try:
-                    if isinstance(uri,unicode):
-                        idna = uri.encode('idna')
-                    else:
-                        idna = uri.decode('utf-8').encode('idna')
-                    if idna != uri: log.info("IRI %s mapped to %s", uri, idna)
-                except:
-                    log.info("unable to map %s to a URI", uri)
-                    idna = uri
-
-                # issue request
-                (resp, content) = h.request(idna)
-                if resp.status == 200 and resp.fromcache:
-                    resp.status = 304
-
-                # build a file-like object
-                feed = StringIO(content) 
-                setattr(feed, 'url', resp.get('content-location', uri))
-                if resp.has_key('content-encoding'):
-                    del resp['content-encoding']
-                setattr(feed, 'headers', resp)
-            except gaierror:
-                log.error("Fail to resolve server name %s via %d",
-                    uri, thread_index)
-            except BadStatusLine:
-                log.error("Bad Status Line received for %s via %d",
-                    uri, thread_index)
-            except error, e:
-                if e.__class__.__name__.lower()=='timeout':
-                    feed.headers['status'] = '408'
-                    log.warn("Timeout in thread-%d", thread_index)
+                if isinstance(uri,unicode):
+                    idna = uri.encode('idna')
                 else:
-                    log.error("HTTP Error: %s in thread-%d",
-                    str(e), thread_index)
-            except Exception, e:
-                import sys, traceback
-                type, value, tb = sys.exc_info()
-                log.error('Error processing %s', uri)
-                for line in (traceback.format_exception_only(type, value) +
-                    traceback.format_tb(tb)):
-                    log.error(line.rstrip())
-                continue
+                    idna = uri.decode('utf-8').encode('idna')
+                if idna != uri: log.info("IRI %s mapped to %s", uri, idna)
+            except:
+                log.info("unable to map %s to a URI", uri)
+                idna = uri
 
-            output_queue.put(block=True, item=(uri, feed_info, feed))
- 
-    except Empty, e:
-        log.info("Thread %d finished", thread_index)
+            # issue request
+            (resp, content) = h.request(idna)
+            if resp.status == 200 and resp.fromcache:
+                resp.status = 304
+
+            # build a file-like object
+            feed = StringIO(content) 
+            setattr(feed, 'url', resp.get('content-location', uri))
+            if resp.has_key('content-encoding'):
+                del resp['content-encoding']
+            setattr(feed, 'headers', resp)
+        except gaierror:
+            log.error("Fail to resolve server name %s via %d",
+                uri, thread_index)
+        except BadStatusLine:
+            log.error("Bad Status Line received for %s via %d",
+                uri, thread_index)
+        except error, e:
+            if e.__class__.__name__.lower()=='timeout':
+                feed.headers['status'] = '408'
+                log.warn("Timeout in thread-%d", thread_index)
+            else:
+                log.error("HTTP Error: %s in thread-%d",
+                str(e), thread_index)
+        except Exception, e:
+            import sys, traceback
+            type, value, tb = sys.exc_info()
+            log.error('Error processing %s', uri)
+            for line in (traceback.format_exception_only(type, value) +
+                traceback.format_tb(tb)):
+                log.error(line.rstrip())
+            continue
+
+        output_queue.put(block=True, item=(uri, feed_info, feed))
+        uri, feed_info = input_queue.get(block=True)
 
 def spiderPlanet(only_if_new = False):
     """ Spider (fetch) an entire planet """
+    # log = planet.getLogger(config.log_level(),config.log_format())
     log = planet.getLogger(config.log_level(),config.log_format())
 
     global index
@@ -414,6 +410,7 @@ def spiderPlanet(only_if_new = False):
     timeout = config.feed_timeout()
     try:
         socket.setdefaulttimeout(float(timeout))
+        log.info("Socket timeout set to %d seconds", timeout)
     except:
         try:
             from planet import timeoutsocket
@@ -422,84 +419,87 @@ def spiderPlanet(only_if_new = False):
         except:
             log.warning("Timeout set to invalid value '%s', skipping", timeout)
 
+    from Queue import Queue
+    from threading import Thread
+
+    fetch_queue = Queue()
+    parse_queue = Queue()
+
+    threads = {}
     if int(config.spider_threads()):
-        from Queue import Queue
-        from threading import Thread
-
-        fetch_queue = Queue()
-        parse_queue = Queue()
-
         http_cache = config.http_cache_directory()
         if not os.path.exists(http_cache):
             os.makedirs(http_cache, 0700)
 
-        # Load the fetch_queue with all the HTTP(S) uris.
-        log.info("Building work queue")
-        for uri in config.subscriptions():
-            if _is_http_uri(uri):
-                # read cached feed info
-                sources = config.cache_sources_directory()
-                feed_source = filename(sources, uri)
-                feed_info = feedparser.parse(feed_source)
-
-                if feed_info.feed and only_if_new:
-                    log.info("Feed %s already in cache", uri)
-                    continue
-                if feed_info.feed.get('planet_http_status',None) == '410':
-                    log.info("Feed %s gone", uri)
-                    continue
-
-                fetch_queue.put(item=((uri, feed_info)))
-
         # Start all the worker threads
-        threads = dict([(i, Thread(target=httpThread,
-            args=(i,fetch_queue, parse_queue, log)))
-            for i in range(int(config.spider_threads()))])
-        for t in threads.itervalues():
-            t.start()
+        for i in range(int(config.spider_threads())):
+            threads[i] = Thread(target=httpThread,
+                args=(i,fetch_queue, parse_queue, log))
+            threads[i].start()
+    else:
+        log.info("Building work queue")
 
-        # Process the results as they arrive
-        while fetch_queue.qsize() or parse_queue.qsize() or threads:
-            while parse_queue.qsize() == 0 and threads:
-                time.sleep(0.1)
-            while parse_queue.qsize():
-                (uri, feed_info, feed) = parse_queue.get(False)
-                try:
+    # Load the fetch and parse work queues
+    for uri in config.subscriptions():
+        # read cached feed info
+        sources = config.cache_sources_directory()
+        feed_source = filename(sources, uri)
+        feed_info = feedparser.parse(feed_source)
 
-                    if int(feed.headers.status) < 300:
-                        data = feedparser.parse(feed)
-                    else:
-                        data = feedparser.FeedParserDict({'version':None,
-                            'headers':feed.headers, 'entries': [],
-                            'status': int(feed.headers.status)})
+        if feed_info.feed and only_if_new:
+            log.info("Feed %s already in cache", uri)
+            continue
+        if feed_info.feed.get('planet_http_status',None) == '410':
+            log.info("Feed %s gone", uri)
+            continue
 
-                    writeCache(uri, feed_info, data)
+        if threads and _is_http_uri(uri):
+            fetch_queue.put(item=(uri, feed_info))
+        else:
+            parse_queue.put(item=(uri, feed_info, uri))
 
-                except Exception, e:
-                    import sys, traceback
-                    type, value, tb = sys.exc_info()
-                    log.error('Error processing %s', uri)
-                    for line in (traceback.format_exception_only(type, value) +
-                        traceback.format_tb(tb)):
-                        log.error(line.rstrip())
-            for index in threads.keys():
-                if not threads[index].isAlive():
-                    del threads[index]
-    log.info("Finished threaded part of processing.")
-                    
+    # Mark the end of the fetch queue
+    for thread in threads.keys():
+        fetch_queue.put(item=(None, None))
 
-    # Process non-HTTP uris if we are threading, otherwise process *all* uris here.
-    unthreaded_work_queue = [uri for uri in config.subscriptions() if not int(config.spider_threads()) or not _is_http_uri(uri)]
-    for feed in unthreaded_work_queue:
-        try:
-            spiderFeed(feed, only_if_new=only_if_new)
-        except Exception,e:
-            import sys, traceback
-            type, value, tb = sys.exc_info()
-            log.error('Error processing %s', feed)
-            for line in (traceback.format_exception_only(type, value) +
-                traceback.format_tb(tb)):
-                log.error(line.rstrip())
+    # Process the results as they arrive
+    while fetch_queue.qsize() or parse_queue.qsize() or threads:
+        while parse_queue.qsize() == 0 and threads:
+            time.sleep(0.1)
+        while parse_queue.qsize():
+            (uri, feed_info, feed) = parse_queue.get(False)
+            try:
 
+                if not hasattr(feed,'headers') or int(feed.headers.status)<300:
+                    options = {}
+                    if hasattr(feed_info,'feed'):
+                        options['etag'] = \
+                            feed_info.feed.get('planet_http_etag',None)
+                        try:
+                            modified=time.strptime(
+                                feed_info.feed.get('planet_http_last_modified',
+                                None))
+                        except:
+                            pass
 
+                    data = feedparser.parse(feed, **options)
+                else:
+                    data = feedparser.FeedParserDict({'version':None,
+                        'headers':feed.headers, 'entries': [],
+                        'status': int(feed.headers.status)})
 
+                writeCache(uri, feed_info, data)
+
+            except Exception, e:
+                import sys, traceback
+                type, value, tb = sys.exc_info()
+                log.error('Error processing %s', uri)
+                for line in (traceback.format_exception_only(type, value) +
+                    traceback.format_tb(tb)):
+                    log.error(line.rstrip())
+
+        for index in threads.keys():
+            if not threads[index].isAlive():
+                del threads[index]
+                if not threads:
+                    log.info("Finished threaded part of processing.")

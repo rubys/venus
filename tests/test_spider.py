@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest, os, glob, calendar, shutil, time
-from planet.spider import filename, spiderFeed, spiderPlanet
+from planet.spider import filename, spiderPlanet, writeCache
 from planet import feedparser, config
 import planet
 
@@ -43,6 +43,11 @@ class SpiderTest(unittest.TestCase):
         self.assertEqual(os.path.join('.', 'xn--8ws00zhy3a.com'),
             filename('.', u'http://www.\u8a79\u59c6\u65af.com/'))
 
+    def spiderFeed(self, feed_uri):
+        feed_info = feedparser.parse('<feed/>')
+        data = feedparser.parse(feed_uri)
+        writeCache(feed_uri, feed_info, data)
+
     def verify_spiderFeed(self):
         files = glob.glob(workdir+"/*")
         files.sort()
@@ -65,13 +70,13 @@ class SpiderTest(unittest.TestCase):
 
     def test_spiderFeed(self):
         config.load(configfile)
-        spiderFeed(testfeed % '1b')
+        self.spiderFeed(testfeed % '1b')
         self.verify_spiderFeed()
 
     def test_spiderUpdate(self):
         config.load(configfile)
-        spiderFeed(testfeed % '1a')
-        spiderFeed(testfeed % '1b')
+        self.spiderFeed(testfeed % '1a')
+        self.spiderFeed(testfeed % '1b')
         self.verify_spiderFeed()
 
     def verify_spiderPlanet(self):
