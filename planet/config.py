@@ -285,13 +285,13 @@ def downloadReadingList(list, orig_config, callback, use_cache=True, re_read=Tru
 
 def http_cache_directory():
     if parser.has_option('Planet', 'http_cache_directory'):
-        parser.get('Planet', 'http_cache_directory')
-    else:
-        return os.path.join(cache_directory(), 'sources/http')
+        os.path.join(cache_directory(), 
+            parser.get('Planet', 'http_cache_directory'))
 
 def cache_sources_directory():
     if parser.has_option('Planet', 'cache_sources_directory'):
-        parser.get('Planet', 'cache_sources_directory')
+        return os.path.join(cache_directory(),
+            parser.get('Planet', 'cache_sources_directory'))
     else:
         return os.path.join(cache_directory(), 'sources')
 

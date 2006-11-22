@@ -105,7 +105,7 @@ def links(xentry, entry):
        if entry.has_key('link'):
          entry['links'].append({'rel':'alternate', 'href':entry.link}) 
     xdoc = xentry.ownerDocument
-    for link in entry.links:
+    for link in entry['links']:
         if not 'href' in link.keys(): continue
         xlink = xdoc.createElement('link')
         xlink.setAttribute('href', link.get('href'))

@@ -100,7 +100,16 @@ use for logging output.  Note: this configuration value is processed
 <dd>Number of items to take from new feeds</dd>
 <dt><ins>spider_threads</ins></dt>
 <dd>The number of threads to use when spidering. When set to 0, the default, 
-   no threads are used and spidering follows the traditional algorithm.</dd>
+no threads are used and spidering follows the traditional algorithm.</dd>
+<dt><ins>spider_threads</ins></dt>
+<dd>The number of threads to use when spidering. When set to 0, the default, 
+no threads are used and spidering follows the traditional algorithm.</dd>
+<dt><ins>http_cache_directory</ins></dt>
+<dd>If <code>spider_threads</code> is specified, you can also specify a
+directory to be used for an additional HTTP cache to front end the Venus
+cache.  If specified as a relative path, it is evaluated relative to the
+<code>cache_directory</code>.</dd>
+<code>
 </dl>
 </blockquote>
 

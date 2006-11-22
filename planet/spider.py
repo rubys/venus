@@ -121,36 +121,6 @@ def _is_http_uri(uri):
     parsed = urlparse.urlparse(uri)
     return parsed[0] in ['http', 'https']
 
-def spiderFeed(feed_uri, only_if_new=0):
-    """ Spider (fetch) a single feed """
-    log = planet.logger
-
-    # read cached feed info
-    sources = config.cache_sources_directory()
-    if not os.path.exists(sources):
-        os.makedirs(sources, 0700)
-
-    feed_source = filename(sources, feed_uri)
-    feed_info = feedparser.parse(feed_source)
-    if feed_info.feed and only_if_new:
-        log.info("Feed %s already in cache", feed_uri)
-        return
-    if feed_info.feed.get('planet_http_status',None) == '410':
-        log.info("Feed %s gone", feed_uri)
-        return
-
-    # read feed itself
-    modified = None
-    try:
-        modified=time.strptime(
-            feed_info.feed.get('planet_http_last_modified', None))
-    except:
-        pass
-    data = feedparser.parse(feed_info.feed.get('planet_http_location',feed_uri),
-        etag=feed_info.feed.get('planet_http_etag',None), modified=modified)
-
-    writeCache(feed_uri, feed_info, data)
-
 def writeCache(feed_uri, feed_info, data):
     log = planet.logger
     sources = config.cache_sources_directory()
@@ -159,7 +129,8 @@ def writeCache(feed_uri, feed_info, data):
     if not data.has_key("status"):
         if data.has_key("entries") and len(data.entries)>0:
             data.status = 200
-        elif data.bozo and data.bozo_exception.__class__.__name__.lower()=='timeout':
+        elif data.bozo and \
+            data.bozo_exception.__class__.__name__.lower()=='timeout':
             data.status = 408
         else:
             data.status = 500
@@ -210,11 +181,16 @@ def writeCache(feed_uri, feed_info, data):
     if data.has_key('headers'):
         if data.has_key('etag') and data.etag:
             data.feed['planet_http_etag'] = data.etag
-            log.debug("E-Tag: %s", data.etag)
-        if data.has_key('modified') and data.modified:
+        elif data.headers.has_key('etag') and data.headers['etag']:
+            data.feed['planet_http_etag'] =  data.headers['etag']
+
+        if data.headers.has_key('last-modified'):
+            data.feed['planet_http_last_modified']=data.headers['last-modified']
+        elif data.has_key('modified') and data.modified:
             data.feed['planet_http_last_modified'] = time.asctime(data.modified)
-            log.debug("Last Modified: %s",
-                data.feed['planet_http_last_modified'])
+
+        if data.headers.has_key('-content-hash'):
+            data.feed['planet_content_hash'] = data.headers['-content-hash']
 
     # capture feed and data from the planet configuration file
     if data.version:
@@ -337,13 +313,11 @@ def writeCache(feed_uri, feed_info, data):
     xdoc.unlink()
 
 def httpThread(thread_index, input_queue, output_queue, log):
-    from Queue import Empty
-    import httplib2
+    import httplib2, md5
     from socket import gaierror, error 
     from httplib import BadStatusLine
 
-    http_cache = config.http_cache_directory()
-    h = httplib2.Http(http_cache)
+    h = httplib2.Http(config.http_cache_directory())
     uri, feed_info = input_queue.get(block=True)
     while uri:
         log.info("Fetching %s via %d", uri, thread_index)
@@ -363,10 +337,26 @@ def httpThread(thread_index, input_queue, output_queue, log):
                 log.info("unable to map %s to a URI", uri)
                 idna = uri
 
+            # cache control headers
+            headers = {}
+            if feed_info.feed.has_key('planet_http_etag'):
+                headers['If-None-Match'] = feed_info.feed['planet_http_etag']
+            if feed_info.feed.has_key('planet_http_last_modified'):
+                headers['If-Modified-Since'] = \
+                    feed_info.feed['planet_http_last_modified']
+
             # issue request
-            (resp, content) = h.request(idna)
-            if resp.status == 200 and resp.fromcache:
-                resp.status = 304
+            (resp, content) = h.request(idna, 'GET', headers=headers)
+
+            # unchanged detection
+            resp['-content-hash'] = md5.new(content or '').hexdigest()
+            if resp.status == 200:
+                if resp.fromcache:
+                    resp.status = 304
+                elif feed_info.feed.has_key('planet_content_hash') and \
+                    feed_info.feed['planet_content_hash'] == \
+                    resp['-content-hash']:
+                    resp.status = 304
 
             # build a file-like object
             feed = StringIO(content) 
@@ -385,8 +375,7 @@ def httpThread(thread_index, input_queue, output_queue, log):
                 feed.headers['status'] = '408'
                 log.warn("Timeout in thread-%d", thread_index)
             else:
-                log.error("HTTP Error: %s in thread-%d",
-                str(e), thread_index)
+                log.error("HTTP Error: %s in thread-%d", str(e), thread_index)
         except Exception, e:
             import sys, traceback
             type, value, tb = sys.exc_info()
@@ -428,7 +417,7 @@ def spiderPlanet(only_if_new = False):
     threads = {}
     if int(config.spider_threads()):
         http_cache = config.http_cache_directory()
-        if not os.path.exists(http_cache):
+        if http_cache and not os.path.exists(http_cache):
             os.makedirs(http_cache, 0700)
 
         # Start all the worker threads
@@ -484,9 +473,9 @@ def spiderPlanet(only_if_new = False):
 
                     data = feedparser.parse(feed, **options)
                 else:
-                    data = feedparser.FeedParserDict({'version':None,
-                        'headers':feed.headers, 'entries': [],
-                        'status': int(feed.headers.status)})
+                    data = feedparser.FeedParserDict({'version': None,
+                        'headers': feed.headers, 'entries': [], 'feed': {},
+                        'bozo': 0, 'status': int(feed.headers.status)})
 
                 writeCache(uri, feed_info, data)
 
