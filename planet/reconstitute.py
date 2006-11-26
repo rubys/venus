@@ -250,6 +250,7 @@ def reconstitute(feed, entry):
                 entry['%s_%s' % (ns,name)])
             xoriglink.setAttribute('xmlns:%s' % ns, feed.namespaces[ns])
 
+    # author / contributor
     author_detail = entry.get('author_detail',{})
     if author_detail and not author_detail.has_key('name') and \
         feed.feed.has_key('planet_name'):
@@ -258,14 +259,24 @@ def reconstitute(feed, entry):
     for contributor in entry.get('contributors',[]):
         author(xentry, 'contributor', contributor)
 
-    xsource = xdoc.createElement('source')
-    src = entry.get('source') or feed.feed
+    # merge in planet:* from feed (or simply use the feed if no source)
+    src = entry.get('source')
+    if src:
+      for name,value in feed.feed.items():
+        if name.startswith('planet_'): src[name]=value
+    else:
+      src = feed.feed
+
+    # source:author
     src_author = src.get('author_detail',{})
     if (not author_detail or not author_detail.has_key('name')) and \
        not src_author.has_key('name') and  feed.feed.has_key('planet_name'):
        if src_author: src_author = src_author.__class__(src_author.copy())
        src['author_detail'] = src_author
        src_author['name'] = feed.feed['planet_name']
+
+    # source
+    xsource = xdoc.createElement('source')
     source(xsource, src, bozo, feed.version)
     xentry.appendChild(xsource)
 

@@ -1,0 +1,15 @@
+<!--
+Description:  ensure that planet attributes make it into the source
+Expect:       source.planet_name == 'John Doe'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom"
+  xmlns:planet="http://planet.intertwingly.net/">
+  <planet:name>John Doe</planet:name>
+  <entry>
+    <source>
+      <id>http://example.com/</id>
+    </source>
+  </entry>
+</feed>
+
