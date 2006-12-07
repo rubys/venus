@@ -5,7 +5,11 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 exclude-result-prefixes="atom planet xhtml">
  
+  <xsl:output method="xml" omit-xml-declaration="yes"/>
+
   <xsl:template match="atom:feed">
+    <xsl:text disable-output-escaping="yes">&lt;!DOCTYPE html&gt;</xsl:text>
+    <xsl:text>&#10;</xsl:text>
     <html xmlns="http://www.w3.org/1999/xhtml">
 
       <!-- head -->
@@ -21,7 +25,7 @@
         </xsl:if>
         <link rel="shortcut icon" href="/favicon.ico" />
         <script type="text/javascript" src="personalize.js">
-          <xsl:comment>HTML Compatibility</xsl:comment>
+          <xsl:comment><!--HTML Compatibility--></xsl:comment>
         </script>
       </head>
 
