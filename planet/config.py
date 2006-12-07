@@ -118,6 +118,7 @@ def __init__():
     define_tmpl('title_type', '')
     define_tmpl('summary_type', '')
     define_tmpl('content_type', '')
+    define_tmpl('future_dates', 'keep')
 
 def load(config_file):
     """ initialize and load a configuration"""

@@ -7,7 +7,7 @@ and write each as a set of entries in a cache directory.
 import time, calendar, re, os, urlparse
 from xml.dom import minidom
 # Planet modules
-import planet, config, feedparser, reconstitute, shell, socket
+import planet, config, feedparser, reconstitute, shell, socket, scrub
 from StringIO import StringIO 
 
 # Regular expressions to sanitise cache filenames
@@ -57,66 +57,6 @@ def write(xdoc, out):
     file.write(xdoc)
     file.close()
 
-type_map = {'text': 'text/plain', 'html': 'text/html',
-    'xhtml': 'application/xhtml+xml'}
-
-def scrub(feed, data):
-
-    # some data is not trustworthy
-    for tag in config.ignore_in_feed(feed).split():
-        if tag.find('lang')>=0: tag='language'
-        if data.feed.has_key(tag): del data.feed[tag]
-        for entry in data.entries:
-            if entry.has_key(tag): del entry[tag]
-            if entry.has_key(tag + "_detail"): del entry[tag + "_detail"]
-            if entry.has_key(tag + "_parsed"): del entry[tag + "_parsed"]
-            for key in entry.keys():
-                if not key.endswith('_detail'): continue
-                for detail in entry[key].copy():
-                    if detail == tag: del entry[key][detail]
-
-    # adjust title types
-    if config.title_type(feed):
-        title_type = config.title_type(feed)
-        title_type = type_map.get(title_type, title_type)
-        for entry in data.entries:
-            if entry.has_key('title_detail'):
-                entry.title_detail['type'] = title_type
-
-    # adjust summary types
-    if config.summary_type(feed):
-        summary_type = config.summary_type(feed)
-        summary_type = type_map.get(summary_type, summary_type)
-        for entry in data.entries:
-            if entry.has_key('summary_detail'):
-                entry.summary_detail['type'] = summary_type
-
-    # adjust content types
-    if config.content_type(feed):
-        content_type = config.content_type(feed)
-        content_type = type_map.get(content_type, content_type)
-        for entry in data.entries:
-            if entry.has_key('content'):
-                entry.content[0]['type'] = content_type
-
-    # some people put html in author names
-    if config.name_type(feed).find('html')>=0:
-        from planet.shell.tmpl import stripHtml
-        if data.feed.has_key('author_detail') and \
-            data.feed.author_detail.has_key('name'):
-            data.feed.author_detail['name'] = \
-                str(stripHtml(data.feed.author_detail.name))
-        for entry in data.entries:
-            if entry.has_key('author_detail') and \
-                entry.author_detail.has_key('name'):
-                entry.author_detail['name'] = \
-                    str(stripHtml(entry.author_detail.name))
-            if entry.has_key('source'):
-                source = entry.source
-                if source.has_key('author_detail') and \
-                    source.author_detail.has_key('name'):
-                    source.author_detail['name'] = \
-                        str(stripHtml(source.author_detail.name))
 def _is_http_uri(uri):
     parsed = urlparse.urlparse(uri)
     return parsed[0] in ['http', 'https']
@@ -209,7 +149,7 @@ def writeCache(feed_uri, feed_info, data):
         data.feed['planet_'+name] = value
 
     # perform user configured scrub operations on the data
-    scrub(feed_uri, data)
+    scrub.scrub(feed_uri, data)
 
     from planet import idindex
     global index
@@ -244,7 +184,7 @@ def writeCache(feed_uri, feed_info, data):
                         mtime = calendar.timegm(data.feed.updated_parsed)
                     except:
                         pass
-        if not mtime or mtime > time.time(): mtime = time.time()
+        if not mtime: mtime = time.time()
         entry['updated_parsed'] = time.gmtime(mtime)
 
         # apply any filters
