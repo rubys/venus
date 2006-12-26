@@ -71,6 +71,11 @@ def __init__():
         planet_predefined_options.append(name)
 
     # define a list planet-level variable
+    def define_planet_int(name, default=0):
+        setattr(config, name, lambda : int(get(None,name,default)))
+        planet_predefined_options.append(name)
+
+    # define a list planet-level variable
     def define_planet_list(name, default=''):
         setattr(config, name, lambda : expand(get(None,name,default)))
         planet_predefined_options.append(name)
@@ -91,7 +96,6 @@ def __init__():
     define_planet('cache_directory', "cache")
     define_planet('log_level', "WARNING")
     define_planet('log_format', "%(levelname)s:%(name)s:%(message)s")
-    define_planet('feed_timeout', 20)
     define_planet('date_format', "%B %d, %Y %I:%M %p")
     define_planet('new_date_format', "%B %d, %Y")
     define_planet('generator', 'Venus')
@@ -101,6 +105,8 @@ def __init__():
     define_planet('output_theme', '')
     define_planet('output_dir', 'output')
     define_planet('spider_threads', 0) 
+
+    define_planet_int('feed_timeout', 20)
 
     define_planet_list('template_files')
     define_planet_list('bill_of_materials')
