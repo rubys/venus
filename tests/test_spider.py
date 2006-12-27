@@ -83,7 +83,7 @@ class SpiderTest(unittest.TestCase):
         files = glob.glob(workdir+"/*")
 
         # verify that exactly eight files + 1 source dir were produced
-        self.assertEqual(13, len(files))
+        self.assertEqual(14, len(files))
 
         # verify that the file names are as expected
         self.assertTrue(os.path.join(workdir,
