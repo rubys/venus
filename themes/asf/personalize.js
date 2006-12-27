@@ -210,6 +210,9 @@ function moveDateHeaders() {
 
 function moveSidebar() {
   var sidebar = document.getElementById('sidebar');
+  if (sidebar.currentStyle && sidebar.currentStyle['float'] == 'none') return;
+  if (window.getComputedStyle && document.defaultView.getComputedStyle(sidebar,null).getPropertyValue('float') == 'none') return;
+
   var h1 = sidebar.previousSibling;
   while (h1.nodeType != 1) h1=h1.previousSibling;
   h1.parentNode.removeChild(h1);

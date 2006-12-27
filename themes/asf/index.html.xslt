@@ -83,6 +83,9 @@
           <ul>
             <xsl:for-each select="planet:source">
               <xsl:sort select="planet:name"/>
+              <xsl:variable name="id" select="atom:id"/>
+              <xsl:variable name="posts"
+                select="/atom:feed/atom:entry[atom:source/atom:id = $id]"/>
               <xsl:text>&#10;</xsl:text>
               <li>
                 <!-- icon -->
@@ -107,7 +110,10 @@
                 <a href="{atom:link[@rel='alternate']/@href}">
                   <xsl:choose>
                     <xsl:when test="planet:message">
-                      <xsl:attribute name="class">message</xsl:attribute>
+                      <xsl:attribute name="class">
+                        <xsl:if test="$posts">active message</xsl:if>
+                        <xsl:if test="not($posts)">message</xsl:if>
+                      </xsl:attribute>
                       <xsl:attribute name="title">
                         <xsl:value-of select="planet:message"/>
                       </xsl:attribute>
@@ -116,10 +122,31 @@
                       <xsl:attribute name="title">
                         <xsl:value-of select="atom:title"/>
                       </xsl:attribute>
+                      <xsl:if test="$posts">
+                        <xsl:attribute name="class">active</xsl:attribute>
+                      </xsl:if>
                     </xsl:when>
                   </xsl:choose>
                   <xsl:value-of select="planet:name"/>
                 </a>
+
+                <xsl:if test="$posts">
+                  <ul>
+                    <xsl:for-each select="$posts">
+                      <xsl:if test="string-length(atom:title) &gt; 0">
+                        <li>
+                          <a href="{atom:link[@rel='alternate']/@href}">
+                            <xsl:if test="atom:title/@xml:lang != @xml:lang">
+                              <xsl:attribute name="xml:lang"
+                                select="{atom:title/@xml:lang}"/>
+                            </xsl:if>
+                            <xsl:value-of select="atom:title"/>
+                          </a>
+                        </li>
+                      </xsl:if>
+                    </xsl:for-each>
+                  </ul>
+                </xsl:if>
               </li>
             </xsl:for-each>
             <xsl:text>&#10;</xsl:text>
