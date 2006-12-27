@@ -288,6 +288,8 @@ def http_cache_directory():
     if parser.has_option('Planet', 'http_cache_directory'):
         os.path.join(cache_directory(), 
             parser.get('Planet', 'http_cache_directory'))
+    else:
+        return os.path.join(cache_directory(), "cache")
 
 def cache_sources_directory():
     if parser.has_option('Planet', 'cache_sources_directory'):

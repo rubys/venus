@@ -355,11 +355,13 @@ def spiderPlanet(only_if_new = False):
     parse_queue = Queue()
 
     threads = {}
-    if int(config.spider_threads()):
-        http_cache = config.http_cache_directory()
-        if http_cache and not os.path.exists(http_cache):
-            os.makedirs(http_cache, 0700)
+    http_cache = config.http_cache_directory()
+    # Should this be done in config?
+    if http_cache and not os.path.exists(http_cache):
+        os.makedirs(http_cache)
 
+
+    if int(config.spider_threads()):
         # Start all the worker threads
         for i in range(int(config.spider_threads())):
             threads[i] = Thread(target=httpThread,
