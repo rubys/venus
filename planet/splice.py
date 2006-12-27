@@ -81,7 +81,7 @@ def splice():
             if sources:
                 ids = sources[0].getElementsByTagName('id')
                 if ids and ids[0].childNodes[0].nodeValue not in sub_ids:
-                    ids = sources[0].getElementsByTagName('planet_id')
+                    ids = sources[0].getElementsByTagName('planet:id')
                     if not ids: continue
                     if ids[0].childNodes[0].nodeValue not in sub_ids: continue
 
