@@ -1,0 +1,14 @@
+<!--
+Description:  source id
+Expect:       source.planet_id == 'http://example.com/'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>http://example.com/</id>
+  <entry>
+    <source>
+      <id>http://example.org/</id>
+    </source>
+  </entry>
+</feed>
+

@@ -262,10 +262,12 @@ def reconstitute(feed, entry):
     # merge in planet:* from feed (or simply use the feed if no source)
     src = entry.get('source')
     if src:
-      for name,value in feed.feed.items():
-        if name.startswith('planet_'): src[name]=value
+        for name,value in feed.feed.items():
+            if name.startswith('planet_'): src[name]=value
+        if feed.feed.has_key('id'):
+            src['planet_id'] = feed.feed.id
     else:
-      src = feed.feed
+        src = feed.feed
 
     # source:author
     src_author = src.get('author_detail',{})
