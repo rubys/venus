@@ -15,9 +15,9 @@ Todo:
 """
 import re, time, md5, sgmllib
 from xml.sax.saxutils import escape
-from xml.dom import minidom
+from xml.dom import minidom, Node
 from BeautifulSoup import BeautifulSoup
-from xml.parsers.expat import ExpatError
+from planet.html5lib import liberalxmlparser, treebuilders
 import planet, config
 
 illegal_xml_chars = re.compile("[\x01-\x08\x0B\x0C\x0E-\x1F]")
@@ -58,22 +58,6 @@ def cssid(name):
     except:
         name = nonalpha.sub('-',name).lower()
     return name.strip('-')
-
-def normalize(text, bozo):
-    """ convert everything to well formed XML """
-    if text.has_key('type'):
-        if text.type.lower().find('html')<0:
-            text['value'] = escape(text.value)
-            text['type'] = 'text/html'
-        if text.type.lower() == 'text/html' or bozo:
-            dom=BeautifulSoup(text.value,convertEntities="html")
-            for tag in dom.findAll(True):
-                for attr,value in tag.attrs:
-                    value=sgmllib.charref.sub(ncr2c,value)
-                    value=illegal_xml_chars.sub(u'\uFFFD',value)
-                    tag[attr]=value
-            text['value'] = illegal_xml_chars.sub(invalidate, str(dom))
-    return text
 
 def id(xentry, entry):
     """ copy or compute an id for the entry """
@@ -150,27 +134,32 @@ def author(xentry, name, detail):
 def content(xentry, name, detail, bozo):
     """ insert a content-like element into the entry """
     if not detail or not detail.value: return
-    normalize(detail, bozo)
+
+    data = None
+    xdiv = '<div xmlns="http://www.w3.org/1999/xhtml">%s</div>'
     xdoc = xentry.ownerDocument
     xcontent = xdoc.createElement(name)
+    if isinstance(detail.value,unicode):
+        detail.value=detail.value.encode('utf-8')
 
-    try:
-        # see if the resulting text is a well-formed XML fragment
-        div = '<div xmlns="http://www.w3.org/1999/xhtml">%s</div>'
-        if isinstance(detail.value,unicode):
-            detail.value=detail.value.encode('utf-8')
-        data = minidom.parseString(div % detail.value).documentElement
+    parser = liberalxmlparser.XHTMLParser(tree=treebuilders.dom.TreeBuilder)
+    html = parser.parse(xdiv % detail.value, encoding="utf-8")
+    for body in html.documentElement.childNodes:
+        if body.nodeType != Node.ELEMENT_NODE: continue
+        if body.nodeName != 'body': continue
+        for div in body.childNodes:
+            if div.nodeType != Node.ELEMENT_NODE: continue
+            if div.nodeName != 'div': continue
+            div.normalize()
+            if len(div.childNodes) == 1 and \
+                div.firstChild.nodeType == Node.TEXT_NODE:
+                data = div.firstChild
+            else:
+                data = div
+                xcontent.setAttribute('type', 'xhtml')
+            break
 
-        if detail.value.find('<') < 0:
-            xcontent.appendChild(data.firstChild)
-        else:
-            xcontent.setAttribute('type', 'xhtml')
-            xcontent.appendChild(data)
-
-    except ExpatError:
-        # leave as html
-        xcontent.setAttribute('type', 'html')
-        xcontent.appendChild(xdoc.createTextNode(detail.value.decode('utf-8')))
+    if data: xcontent.appendChild(data)
 
     if detail.get("language"):
         xcontent.setAttribute('xml:lang', detail.language)
