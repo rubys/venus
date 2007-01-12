@@ -16,7 +16,6 @@ Todo:
 import re, time, md5, sgmllib
 from xml.sax.saxutils import escape
 from xml.dom import minidom, Node
-from BeautifulSoup import BeautifulSoup
 from planet.html5lib import liberalxmlparser, treebuilders
 import planet, config
 
@@ -139,25 +138,33 @@ def content(xentry, name, detail, bozo):
     xdiv = '<div xmlns="http://www.w3.org/1999/xhtml">%s</div>'
     xdoc = xentry.ownerDocument
     xcontent = xdoc.createElement(name)
+
     if isinstance(detail.value,unicode):
         detail.value=detail.value.encode('utf-8')
 
-    parser = liberalxmlparser.XHTMLParser(tree=treebuilders.dom.TreeBuilder)
-    html = parser.parse(xdiv % detail.value, encoding="utf-8")
-    for body in html.documentElement.childNodes:
-        if body.nodeType != Node.ELEMENT_NODE: continue
-        if body.nodeName != 'body': continue
-        for div in body.childNodes:
-            if div.nodeType != Node.ELEMENT_NODE: continue
-            if div.nodeName != 'div': continue
-            div.normalize()
-            if len(div.childNodes) == 1 and \
-                div.firstChild.nodeType == Node.TEXT_NODE:
-                data = div.firstChild
-            else:
-                data = div
-                xcontent.setAttribute('type', 'xhtml')
-            break
+    if not detail.has_key('type') or detail.type.lower().find('html')<0:
+        detail['value'] = escape(detail.value)
+        detail['type'] = 'text/html'
+
+    if detail.type.find('xhtml')>=0 and not bozo:
+        data = minidom.parseString(xdiv % detail.value).documentElement
+    else:
+        parser = liberalxmlparser.XHTMLParser(tree=treebuilders.dom.TreeBuilder)
+        html = parser.parse(xdiv % detail.value, encoding="utf-8")
+        for body in html.documentElement.childNodes:
+            if body.nodeType != Node.ELEMENT_NODE: continue
+            if body.nodeName != 'body': continue
+            for div in body.childNodes:
+                if div.nodeType != Node.ELEMENT_NODE: continue
+                if div.nodeName != 'div': continue
+                div.normalize()
+                if len(div.childNodes) == 1 and \
+                    div.firstChild.nodeType == Node.TEXT_NODE:
+                    data = div.firstChild
+                else:
+                    data = div
+                    xcontent.setAttribute('type', 'xhtml')
+                break
 
     if data: xcontent.appendChild(data)
 
