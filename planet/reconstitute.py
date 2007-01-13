@@ -148,6 +148,7 @@ def content(xentry, name, detail, bozo):
 
     if detail.type.find('xhtml')>=0 and not bozo:
         data = minidom.parseString(xdiv % detail.value).documentElement
+        xcontent.setAttribute('type', 'xhtml')
     else:
         parser = liberalxmlparser.XHTMLParser(tree=treebuilders.dom.TreeBuilder)
         html = parser.parse(xdiv % detail.value, encoding="utf-8")
