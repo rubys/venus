@@ -68,8 +68,8 @@ def splice():
     # insert entry information
     items = 0
     for mtime,file in dir:
-        if index:
-            base = file.split('/')[-1]
+        if index != None:
+            base = os.path.basename(file)
             if index.has_key(base) and index[base] not in sub_ids: continue
 
         try:
@@ -81,7 +81,9 @@ def splice():
             if sources:
                 ids = sources[0].getElementsByTagName('id')
                 if ids and ids[0].childNodes[0].nodeValue not in sub_ids:
-                    continue
+                    ids = sources[0].getElementsByTagName('planet:id')
+                    if not ids: continue
+                    if ids[0].childNodes[0].nodeValue not in sub_ids: continue
 
             # add entry to feed
             feed.appendChild(entry.documentElement)

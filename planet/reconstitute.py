@@ -15,9 +15,8 @@ Todo:
 """
 import re, time, md5, sgmllib
 from xml.sax.saxutils import escape
-from xml.dom import minidom
-from BeautifulSoup import BeautifulSoup
-from xml.parsers.expat import ExpatError
+from xml.dom import minidom, Node
+from planet.html5lib import liberalxmlparser, treebuilders
 import planet, config
 
 illegal_xml_chars = re.compile("[\x01-\x08\x0B\x0C\x0E-\x1F]")
@@ -50,21 +49,14 @@ def ncr2c(value):
         value=unichr(int(value))
     return value
 
-def normalize(text, bozo):
-    """ convert everything to well formed XML """
-    if text.has_key('type'):
-        if text.type.lower().find('html')<0:
-            text['value'] = escape(text.value)
-            text['type'] = 'text/html'
-        if text.type.lower() == 'text/html' or bozo:
-            dom=BeautifulSoup(text.value,convertEntities="html")
-            for tag in dom.findAll(True):
-                for attr,value in tag.attrs:
-                    value=sgmllib.charref.sub(ncr2c,value)
-                    value=illegal_xml_chars.sub(u'\uFFFD',value)
-                    tag[attr]=value
-            text['value'] = illegal_xml_chars.sub(invalidate, str(dom))
-    return text
+nonalpha=re.compile('\W+',re.UNICODE)
+def cssid(name):
+    """ generate a css id from a name """
+    try:
+        name = nonalpha.sub('-',name.decode('utf-8')).lower().encode('utf-8')
+    except:
+        name = nonalpha.sub('-',name).lower()
+    return name.strip('-')
 
 def id(xentry, entry):
     """ copy or compute an id for the entry """
@@ -96,7 +88,7 @@ def links(xentry, entry):
        if entry.has_key('link'):
          entry['links'].append({'rel':'alternate', 'href':entry.link}) 
     xdoc = xentry.ownerDocument
-    for link in entry.links:
+    for link in entry['links']:
         if not 'href' in link.keys(): continue
         xlink = xdoc.createElement('link')
         xlink.setAttribute('href', link.get('href'))
@@ -141,27 +133,41 @@ def author(xentry, name, detail):
 def content(xentry, name, detail, bozo):
     """ insert a content-like element into the entry """
     if not detail or not detail.value: return
-    normalize(detail, bozo)
+
+    data = None
+    xdiv = '<div xmlns="http://www.w3.org/1999/xhtml">%s</div>'
     xdoc = xentry.ownerDocument
     xcontent = xdoc.createElement(name)
 
-    try:
-        # see if the resulting text is a well-formed XML fragment
-        div = '<div xmlns="http://www.w3.org/1999/xhtml">%s</div>'
-        if isinstance(detail.value,unicode):
-            detail.value=detail.value.encode('utf-8')
-        data = minidom.parseString(div % detail.value).documentElement
+    if isinstance(detail.value,unicode):
+        detail.value=detail.value.encode('utf-8')
 
-        if detail.value.find('<') < 0:
-            xcontent.appendChild(data.firstChild)
-        else:
-            xcontent.setAttribute('type', 'xhtml')
-            xcontent.appendChild(data)
+    if not detail.has_key('type') or detail.type.lower().find('html')<0:
+        detail['value'] = escape(detail.value)
+        detail['type'] = 'text/html'
 
-    except ExpatError:
-        # leave as html
-        xcontent.setAttribute('type', 'html')
-        xcontent.appendChild(xdoc.createTextNode(detail.value.decode('utf-8')))
+    if detail.type.find('xhtml')>=0 and not bozo:
+        data = minidom.parseString(xdiv % detail.value).documentElement
+        xcontent.setAttribute('type', 'xhtml')
+    else:
+        parser = liberalxmlparser.XHTMLParser(tree=treebuilders.dom.TreeBuilder)
+        html = parser.parse(xdiv % detail.value, encoding="utf-8")
+        for body in html.documentElement.childNodes:
+            if body.nodeType != Node.ELEMENT_NODE: continue
+            if body.nodeName != 'body': continue
+            for div in body.childNodes:
+                if div.nodeType != Node.ELEMENT_NODE: continue
+                if div.nodeName != 'div': continue
+                div.normalize()
+                if len(div.childNodes) == 1 and \
+                    div.firstChild.nodeType == Node.TEXT_NODE:
+                    data = div.firstChild
+                else:
+                    data = div
+                    xcontent.setAttribute('type', 'xhtml')
+                break
+
+    if data: xcontent.appendChild(data)
 
     if detail.get("language"):
         xcontent.setAttribute('xml:lang', detail.language)
@@ -198,6 +204,8 @@ def source(xsource, source, bozo, format):
     if not bozo == None: source['planet_bozo'] = bozo and 'true' or 'false'
 
     # propagate planet inserted information
+    if source.has_key('planet_name') and not source.has_key('planet_css-id'):
+        source['planet_css-id'] = cssid(source['planet_name'])
     for key, value in source.items():
         if key.startswith('planet_'):
             createTextElement(xsource, key.replace('_',':',1), value)
@@ -239,6 +247,7 @@ def reconstitute(feed, entry):
                 entry['%s_%s' % (ns,name)])
             xoriglink.setAttribute('xmlns:%s' % ns, feed.namespaces[ns])
 
+    # author / contributor
     author_detail = entry.get('author_detail',{})
     if author_detail and not author_detail.has_key('name') and \
         feed.feed.has_key('planet_name'):
@@ -247,14 +256,26 @@ def reconstitute(feed, entry):
     for contributor in entry.get('contributors',[]):
         author(xentry, 'contributor', contributor)
 
-    xsource = xdoc.createElement('source')
-    src = entry.get('source') or feed.feed
+    # merge in planet:* from feed (or simply use the feed if no source)
+    src = entry.get('source')
+    if src:
+        for name,value in feed.feed.items():
+            if name.startswith('planet_'): src[name]=value
+        if feed.feed.has_key('id'):
+            src['planet_id'] = feed.feed.id
+    else:
+        src = feed.feed
+
+    # source:author
     src_author = src.get('author_detail',{})
     if (not author_detail or not author_detail.has_key('name')) and \
        not src_author.has_key('name') and  feed.feed.has_key('planet_name'):
        if src_author: src_author = src_author.__class__(src_author.copy())
        src['author_detail'] = src_author
        src_author['name'] = feed.feed['planet_name']
+
+    # source
+    xsource = xdoc.createElement('source')
     source(xsource, src, bozo, feed.version)
     xentry.appendChild(xsource)
 

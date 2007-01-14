@@ -16,10 +16,11 @@ def getLogger(level, format):
 
     try:
         import logging
+        logging.basicConfig(format=format)
     except:
         import compat_logging as logging
+        logging.basicConfig(format=format)
 
-    logging.basicConfig(format=format)
     logging.getLogger().setLevel(logging.getLevelName(level))
     logger = logging.getLogger("planet.runner")
     try:
@@ -30,25 +31,4 @@ def getLogger(level, format):
     return logger
 
 
-def setTimeout(timeout):
-    """ time out rather than hang forever on ultra-slow servers."""
-    if timeout:
-        try:
-            timeout = float(timeout)
-        except:
-            logger.warning("Timeout set to invalid value '%s', skipping", timeout)
-            timeout = None
 
-    if timeout:
-        try:
-            from planet import timeoutsocket
-            timeoutsocket.setDefaultSocketTimeout(timeout)
-            logger.info("Socket timeout set to %d seconds", timeout)
-        except ImportError:
-            import socket
-            if hasattr(socket, 'setdefaulttimeout'):
-                logger.debug("timeoutsocket not found, using python function")
-                socket.setdefaulttimeout(timeout)
-                logger.info("Socket timeout set to %d seconds", timeout)
-            else:
-                logger.error("Unable to set timeout to %d seconds", timeout)

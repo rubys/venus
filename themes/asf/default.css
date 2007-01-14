@@ -30,6 +30,10 @@ a:active {
 a:focus {
 }
 
+a.active {
+	font-weight: bold;
+}
+
 h1 {
 	font-size: x-large;
 	text-transform: uppercase;
@@ -97,6 +101,33 @@ h1 {
 	text-decoration: underline;
 }
 
+#sidebar ul li a:visited {
+	color: #000;
+}
+
+#sidebar ul li ul {
+	display: none;
+}
+
+#sidebar ul li {
+	position: relative;
+}
+
+#sidebar ul li:hover ul {
+	background-color: #EEE;
+	border: 2px solid #BBB;
+	color:#000;
+	display: block;
+	margin-left: -300px;
+	margin-right: 115px;
+	padding: 10px;
+	padding-left: 25px;
+	position: absolute;
+	right: 80px;
+	top: -12px;
+	z-index: 1;
+}
+
 #sidebar img {
 	border: 0;
 }
@@ -135,15 +166,19 @@ h1 {
 /* ---------------------------- Footer --------------------------- */
 
 #footer ul {
-        margin: 0 20px 0 -25px;
-        padding: 0;
+	margin: 0 20px 0 -25px;
+	padding: 0;
 }
 
 #footer li {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        display: inline;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: inline;
+}
+
+#footer img {
+	display: none;
 }
 
 /* ----------------------------- Body ---------------------------- */
@@ -262,9 +297,9 @@ img.icon {
 }
 
 .news code {
-    font-family: monospace;
-    font-size: medium;
-    font-weight: bold;
+	font-family: monospace;
+	font-size: medium;
+	font-weight: bold;
 }
 
 .news .content a {
@@ -402,11 +437,6 @@ img.floatright {
 .FeaturedPost > li {
 	list-style-type: none;
 	background-color: #f8f8f8;
-}
-
-/* GigaOM */
-p img {
-	float: left;
 }
 
 /* Tantek */

@@ -18,6 +18,7 @@ function stopPropagation(event) {
 // scroll back to the previous article
 function prevArticle(event) {
   for (var i=entries.length; --i>=0;) {
+    if (!entries[i].anchor) continue;
     if (entries[i].anchor.offsetTop < document.documentElement.scrollTop) {
       window.location.hash=entries[i].anchor.id;
       stopPropagation(event);
@@ -29,6 +30,7 @@ function prevArticle(event) {
 // advance to the next article
 function nextArticle(event) {
   for (var i=1; i<entries.length; i++) {
+    if (!entries[i].anchor) continue;
     if (entries[i].anchor.offsetTop-20 > document.documentElement.scrollTop) {
       window.location.hash=entries[i].anchor.id;
       stopPropagation(event);
@@ -84,17 +86,20 @@ function selectOption() {
 
 // add navkeys option to sidebar
 function addOption(event) {
-  if (entries.length > 1 && entries[entries.length-1].parent.offsetTop > 0) {
-    var sidebar = document.getElementById('sidebar');
-    if (!sidebar) return;
+  var sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
 
-    for (var i=entries.length; --i>=0;) {
+  var h2 = null;
+  for (var i=entries.length; --i>=0;) {
+    if (entries[i].parent.offsetTop > 0) {
       var a = entries[i].anchor = document.createElement('a');
       a.id = "news-" + i;
       entries[i].parent.insertBefore(a, entries[i].parent.firstChild);
+      if (h2 == null) h2 = document.createElement('h2');
     }
+  }
 
-    var h2 = document.createElement('h2');
+  if (h2 != null) {
     h2.appendChild(document.createTextNode('Options'));
     sidebar.appendChild(h2);
 
@@ -159,7 +164,8 @@ function findEntries() {
       var date = localizeDate(span[i]);
 
       var parent = span[i];
-      while (parent && parent.className != 'news') {
+      while (parent && 
+        (!parent.className || parent.className.split(' ')[0] != 'news')) {
         parent = parent.parentNode;
       }
 
@@ -202,8 +208,49 @@ function moveDateHeaders() {
   }
 }
 
+function moveSidebar() {
+  var sidebar = document.getElementById('sidebar');
+  if (sidebar.currentStyle && sidebar.currentStyle['float'] == 'none') return;
+  if (window.getComputedStyle && document.defaultView.getComputedStyle(sidebar,null).getPropertyValue('float') == 'none') return;
+
+  var h1 = sidebar.previousSibling;
+  while (h1.nodeType != 1) h1=h1.previousSibling;
+  h1.parentNode.removeChild(h1);
+  var footer = document.getElementById('footer');
+  var ul = footer.firstChild;
+  while (ul.nodeType != 1) ul=ul.nextSibling;
+  footer.removeChild(ul);
+  sidebar.insertBefore(ul, sidebar.firstChild);
+  var h2 = document.createElement('h2');
+  h2.appendChild(h1.firstChild);
+  var twisty = document.createElement('a');
+  twisty.appendChild(document.createTextNode('\u25bc'));
+  twisty.title = 'hide';
+  twisty.onclick = function() {
+    var display = 'block';
+    if (this.childNodes[0].nodeValue == '\u25ba') {
+      this.title = 'hide';
+      this.childNodes[0].nodeValue = '\u25bc';
+    } else {
+      this.title = 'show';
+      this.childNodes[0].nodeValue = '\u25ba';
+      display = 'none';
+    }
+    ul.style.display = display;
+    createCookie("subscriptions", display, 365);
+  }
+  var cookie = readCookie("subscriptions");
+  if (cookie && cookie == 'none') twisty.onclick();
+  h2.appendChild(twisty);
+  sidebar.insertBefore(h2, sidebar.firstChild);
+  var body = document.getElementById('body');
+  sidebar.parentNode.removeChild(sidebar);
+  body.parentNode.insertBefore(sidebar, body);
+}
+
 // adjust dates to local time zones, optionally provide navigation keys
 function personalize() {
+  moveSidebar();
   findEntries(); 
   addOption();
   moveDateHeaders();

@@ -74,7 +74,7 @@
     <xsl:text>&#10;</xsl:text>
     <tr>
       <xsl:if test="planet:bozo='true'">
-        <xsl:attribute name="bgcolor">#FCC</xsl:attribute>
+        <xsl:attribute name="style">background-color:#FCC</xsl:attribute>
       </xsl:if>
       <td>
         <a title="feed validator">

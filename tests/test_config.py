@@ -58,3 +58,11 @@ class ConfigTest(unittest.TestCase):
     def test_filters(self):
         self.assertEqual(['foo','bar'], config.filters('feed2'))
         self.assertEqual(['foo'], config.filters('feed1'))
+
+    # ints
+
+    def test_timeout(self):
+        self.assertEqual(30,
+            config.feed_timeout())
+
+

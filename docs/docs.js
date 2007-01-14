@@ -23,7 +23,7 @@ window.onload=function() {
 
   p = document.createElement('p');
   var a = document.createElement('a');
-  a.setAttribute('href',base+'index.html');
+  a.setAttribute('href',base);
   a.appendChild(document.createTextNode('Download'));
   p.appendChild(a);
   p.appendChild(document.createTextNode(" \u00b7 "));

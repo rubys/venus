@@ -4,10 +4,11 @@ and write each as a set of entries in a cache directory.
 """
 
 # Standard library modules
-import time, calendar, re, os
+import time, calendar, re, os, urlparse
 from xml.dom import minidom
 # Planet modules
-import planet, config, feedparser, reconstitute, shell
+import planet, config, feedparser, reconstitute, shell, socket, scrub
+from StringIO import StringIO 
 
 # Regular expressions to sanitise cache filenames
 re_url_scheme    = re.compile(r'^\w+:/*(\w+:|www\.)?')
@@ -56,118 +57,39 @@ def write(xdoc, out):
     file.write(xdoc)
     file.close()
 
-type_map = {'text': 'text/plain', 'html': 'text/html',
-    'xhtml': 'application/xhtml+xml'}
+def _is_http_uri(uri):
+    parsed = urlparse.urlparse(uri)
+    return parsed[0] in ['http', 'https']
 
-def scrub(feed, data):
-
-    # some data is not trustworthy
-    for tag in config.ignore_in_feed(feed).split():
-        if tag.find('lang')>=0: tag='language'
-        if data.feed.has_key(tag): del data.feed[tag]
-        for entry in data.entries:
-            if entry.has_key(tag): del entry[tag]
-            if entry.has_key(tag + "_detail"): del entry[tag + "_detail"]
-            if entry.has_key(tag + "_parsed"): del entry[tag + "_parsed"]
-            for key in entry.keys():
-                if not key.endswith('_detail'): continue
-                for detail in entry[key].copy():
-                    if detail == tag: del entry[key][detail]
-
-    # adjust title types
-    if config.title_type(feed):
-        title_type = config.title_type(feed)
-        title_type = type_map.get(title_type, title_type)
-        for entry in data.entries:
-            if entry.has_key('title_detail'):
-                entry.title_detail['type'] = title_type
-
-    # adjust summary types
-    if config.summary_type(feed):
-        summary_type = config.summary_type(feed)
-        summary_type = type_map.get(summary_type, summary_type)
-        for entry in data.entries:
-            if entry.has_key('summary_detail'):
-                entry.summary_detail['type'] = summary_type
-
-    # adjust content types
-    if config.content_type(feed):
-        content_type = config.content_type(feed)
-        content_type = type_map.get(content_type, content_type)
-        for entry in data.entries:
-            if entry.has_key('content'):
-                entry.content[0]['type'] = content_type
-
-    # some people put html in author names
-    if config.name_type(feed).find('html')>=0:
-        from planet.shell.tmpl import stripHtml
-        if data.feed.has_key('author_detail') and \
-            data.feed.author_detail.has_key('name'):
-            data.feed.author_detail['name'] = \
-                str(stripHtml(data.feed.author_detail.name))
-        for entry in data.entries:
-            if entry.has_key('author_detail') and \
-                entry.author_detail.has_key('name'):
-                entry.author_detail['name'] = \
-                    str(stripHtml(entry.author_detail.name))
-            if entry.has_key('source'):
-                source = entry.source
-                if source.has_key('author_detail') and \
-                    source.author_detail.has_key('name'):
-                    source.author_detail['name'] = \
-                        str(stripHtml(source.author_detail.name))
-
-def spiderFeed(feed, only_if_new=0):
-    """ Spider (fetch) a single feed """
+def writeCache(feed_uri, feed_info, data):
     log = planet.logger
-
-    # read cached feed info
     sources = config.cache_sources_directory()
-    if not os.path.exists(sources):
-        os.makedirs(sources, 0700)
-    feed_source = filename(sources, feed)
-    feed_info = feedparser.parse(feed_source)
-    if feed_info.feed and only_if_new:
-        log.info("Feed %s already in cache", feed)
-        return
-    if feed_info.feed.get('planet_http_status',None) == '410':
-        log.info("Feed %s gone", feed)
-        return
-
-    # read feed itself
-    modified = None
-    try:
-        modified=time.strptime(
-            feed_info.feed.get('planet_http_last_modified', None))
-    except:
-        pass
-    data = feedparser.parse(feed_info.feed.get('planet_http_location',feed),
-        etag=feed_info.feed.get('planet_http_etag',None), modified=modified)
 
     # capture http status
     if not data.has_key("status"):
         if data.has_key("entries") and len(data.entries)>0:
             data.status = 200
-        elif data.bozo and data.bozo_exception.__class__.__name__=='Timeout':
+        elif data.bozo and \
+            data.bozo_exception.__class__.__name__.lower()=='timeout':
             data.status = 408
         else:
             data.status = 500
 
     activity_horizon = \
-        time.gmtime(time.time()-86400*config.activity_threshold(feed))
+        time.gmtime(time.time()-86400*config.activity_threshold(feed_uri))
 
     # process based on the HTTP status code
     if data.status == 200 and data.has_key("url"):
         data.feed['planet_http_location'] = data.url
-        if feed == data.url:
-            log.info("Updating feed %s", feed)
+        if feed_uri == data.url:
+            log.info("Updating feed %s", feed_uri)
         else:
-            log.info("Updating feed %s @ %s", feed, data.url)
+            log.info("Updating feed %s @ %s", feed_uri, data.url)
     elif data.status == 301 and data.has_key("entries") and len(data.entries)>0:
-        log.warning("Feed has moved from <%s> to <%s>", feed, data.url)
+        log.warning("Feed has moved from <%s> to <%s>", feed_uri, data.url)
         data.feed['planet_http_location'] = data.url
     elif data.status == 304:
-        log.info("Feed %s unchanged", feed)
+        log.info("Feed %s unchanged", feed_uri)
 
         if not feed_info.feed.has_key('planet_message'):
             if feed_info.feed.has_key('planet_updated'):
@@ -180,13 +102,13 @@ def spiderFeed(feed, only_if_new=0):
             del feed_info.feed['planet_message']
 
     elif data.status == 410:
-        log.info("Feed %s gone", feed)
+        log.info("Feed %s gone", feed_uri)
     elif data.status == 408:
-        log.warning("Feed %s timed out", feed)
+        log.warning("Feed %s timed out", feed_uri)
     elif data.status >= 400:
-        log.error("Error %d while updating feed %s", data.status, feed)
+        log.error("Error %d while updating feed %s", data.status, feed_uri)
     else:
-        log.info("Updating feed %s", feed)
+        log.info("Updating feed %s", feed_uri)
 
     # if read failed, retain cached information
     if not data.version and feed_info.version:
@@ -199,11 +121,16 @@ def spiderFeed(feed, only_if_new=0):
     if data.has_key('headers'):
         if data.has_key('etag') and data.etag:
             data.feed['planet_http_etag'] = data.etag
-            log.debug("E-Tag: %s", data.etag)
-        if data.has_key('modified') and data.modified:
+        elif data.headers.has_key('etag') and data.headers['etag']:
+            data.feed['planet_http_etag'] =  data.headers['etag']
+
+        if data.headers.has_key('last-modified'):
+            data.feed['planet_http_last_modified']=data.headers['last-modified']
+        elif data.has_key('modified') and data.modified:
             data.feed['planet_http_last_modified'] = time.asctime(data.modified)
-            log.debug("Last Modified: %s",
-                data.feed['planet_http_last_modified'])
+
+        if data.headers.has_key('-content-hash'):
+            data.feed['planet_content_hash'] = data.headers['-content-hash']
 
     # capture feed and data from the planet configuration file
     if data.version:
@@ -217,12 +144,12 @@ def spiderFeed(feed, only_if_new=0):
                 break
         else:
             data.feed.links.append(feedparser.FeedParserDict(
-                {'rel':'self', 'type':feedtype, 'href':feed}))
-    for name, value in config.feed_options(feed).items():
+                {'rel':'self', 'type':feedtype, 'href':feed_uri}))
+    for name, value in config.feed_options(feed_uri).items():
         data.feed['planet_'+name] = value
 
     # perform user configured scrub operations on the data
-    scrub(feed, data)
+    scrub.scrub(feed_uri, data)
 
     from planet import idindex
     global index
@@ -241,10 +168,9 @@ def spiderFeed(feed, only_if_new=0):
 
         # get updated-date either from the entry or the cache (default to now)
         mtime = None
-        if not entry.has_key('updated_parsed'):
-            if entry.has_key('published_parsed'):
-                entry['updated_parsed'] = entry['published_parsed']
-        if not entry.has_key('updated_parsed'):
+        if not entry.has_key('updated_parsed') or not entry['updated_parsed']:
+            entry['updated_parsed'] = entry.get('published_parsed',None)
+        if entry.has_key('updated_parsed'):
             try:
                 mtime = calendar.timegm(entry.updated_parsed)
             except:
@@ -254,15 +180,18 @@ def spiderFeed(feed, only_if_new=0):
                 mtime = os.stat(cache_file).st_mtime
             except:
                 if data.feed.has_key('updated_parsed'):
-                    mtime = calendar.timegm(data.feed.updated_parsed)
-        if not mtime or mtime > time.time(): mtime = time.time()
+                    try:
+                        mtime = calendar.timegm(data.feed.updated_parsed)
+                    except:
+                        pass
+        if not mtime: mtime = time.time()
         entry['updated_parsed'] = time.gmtime(mtime)
 
         # apply any filters
         xdoc = reconstitute.reconstitute(data, entry)
-        output = xdoc.toxml('utf-8')
+        output = xdoc.toxml().encode('utf-8')
         xdoc.unlink()
-        for filter in config.filters(feed):
+        for filter in config.filters(feed_uri):
             output = shell.run(filter, output, mode="filter")
             if not output: break
         if not output: continue
@@ -281,7 +210,7 @@ def spiderFeed(feed, only_if_new=0):
     if index: index.close()
 
     # identify inactive feeds
-    if config.activity_threshold(feed):
+    if config.activity_threshold(feed_uri):
         updated = [entry.updated_parsed for entry in data.entries
             if entry.has_key('updated_parsed')]
         updated.sort()
@@ -293,7 +222,7 @@ def spiderFeed(feed, only_if_new=0):
            updated = [feedparser._parse_date_iso8601(data.feed.planet_updated)]
 
         if not updated or updated[-1] < activity_horizon:
-            msg = "no activity in %d days" % config.activity_threshold(feed)
+            msg = "no activity in %d days" % config.activity_threshold(feed_uri)
             log.info(msg)
             data.feed['planet_message'] = msg
 
@@ -320,24 +249,188 @@ def spiderFeed(feed, only_if_new=0):
     xdoc=minidom.parseString('''<feed xmlns:planet="%s"
       xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
     reconstitute.source(xdoc.documentElement,data.feed,data.bozo,data.version)
-    write(xdoc.toxml('utf-8'), filename(sources, feed))
+    write(xdoc.toxml().encode('utf-8'), filename(sources, feed_uri))
     xdoc.unlink()
+
+def httpThread(thread_index, input_queue, output_queue, log):
+    import httplib2, md5
+    from socket import gaierror, error 
+    from httplib import BadStatusLine
+
+    h = httplib2.Http(config.http_cache_directory())
+    uri, feed_info = input_queue.get(block=True)
+    while uri:
+        log.info("Fetching %s via %d", uri, thread_index)
+        feed = StringIO('')
+        setattr(feed, 'url', uri)
+        setattr(feed, 'headers', 
+            feedparser.FeedParserDict({'status':'500'}))
+        try:
+            # map IRI => URI
+            try:
+                if isinstance(uri,unicode):
+                    idna = uri.encode('idna')
+                else:
+                    idna = uri.decode('utf-8').encode('idna')
+                if idna != uri: log.info("IRI %s mapped to %s", uri, idna)
+            except:
+                log.info("unable to map %s to a URI", uri)
+                idna = uri
+
+            # cache control headers
+            headers = {}
+            if feed_info.feed.has_key('planet_http_etag'):
+                headers['If-None-Match'] = feed_info.feed['planet_http_etag']
+            if feed_info.feed.has_key('planet_http_last_modified'):
+                headers['If-Modified-Since'] = \
+                    feed_info.feed['planet_http_last_modified']
+
+            # issue request
+            (resp, content) = h.request(idna, 'GET', headers=headers)
+
+            # unchanged detection
+            resp['-content-hash'] = md5.new(content or '').hexdigest()
+            if resp.status == 200:
+                if resp.fromcache:
+                    resp.status = 304
+                elif feed_info.feed.has_key('planet_content_hash') and \
+                    feed_info.feed['planet_content_hash'] == \
+                    resp['-content-hash']:
+                    resp.status = 304
+
+            # build a file-like object
+            feed = StringIO(content) 
+            setattr(feed, 'url', resp.get('content-location', uri))
+            if resp.has_key('content-encoding'):
+                del resp['content-encoding']
+            setattr(feed, 'headers', resp)
+        except gaierror:
+            log.error("Fail to resolve server name %s via %d",
+                uri, thread_index)
+        except BadStatusLine:
+            log.error("Bad Status Line received for %s via %d",
+                uri, thread_index)
+        except error, e:
+            if e.__class__.__name__.lower()=='timeout':
+                feed.headers['status'] = '408'
+                log.warn("Timeout in thread-%d", thread_index)
+            else:
+                log.error("HTTP Error: %s in thread-%d", str(e), thread_index)
+        except Exception, e:
+            import sys, traceback
+            type, value, tb = sys.exc_info()
+            log.error('Error processing %s', uri)
+            for line in (traceback.format_exception_only(type, value) +
+                traceback.format_tb(tb)):
+                log.error(line.rstrip())
+            continue
+
+        output_queue.put(block=True, item=(uri, feed_info, feed))
+        uri, feed_info = input_queue.get(block=True)
 
 def spiderPlanet(only_if_new = False):
     """ Spider (fetch) an entire planet """
+    # log = planet.getLogger(config.log_level(),config.log_format())
     log = planet.getLogger(config.log_level(),config.log_format())
-    planet.setTimeout(config.feed_timeout())
 
     global index
     index = True
 
-    for feed in config.subscriptions():
+    timeout = config.feed_timeout()
+    try:
+        socket.setdefaulttimeout(float(timeout))
+        log.info("Socket timeout set to %d seconds", timeout)
+    except:
         try:
-            spiderFeed(feed, only_if_new=only_if_new)
-        except Exception,e:
-            import sys, traceback
-            type, value, tb = sys.exc_info()
-            log.error('Error processing %s', feed)
-            for line in (traceback.format_exception_only(type, value) +
-                traceback.format_tb(tb)):
-                log.error(line.rstrip())
+            from planet import timeoutsocket
+            timeoutsocket.setDefaultSocketTimeout(float(timeout))
+            log.info("Socket timeout set to %d seconds", timeout)
+        except:
+            log.warning("Timeout set to invalid value '%s', skipping", timeout)
+
+    from Queue import Queue
+    from threading import Thread
+
+    fetch_queue = Queue()
+    parse_queue = Queue()
+
+    threads = {}
+    http_cache = config.http_cache_directory()
+    # Should this be done in config?
+    if http_cache and not os.path.exists(http_cache):
+        os.makedirs(http_cache)
+
+
+    if int(config.spider_threads()):
+        # Start all the worker threads
+        for i in range(int(config.spider_threads())):
+            threads[i] = Thread(target=httpThread,
+                args=(i,fetch_queue, parse_queue, log))
+            threads[i].start()
+    else:
+        log.info("Building work queue")
+
+    # Load the fetch and parse work queues
+    for uri in config.subscriptions():
+        # read cached feed info
+        sources = config.cache_sources_directory()
+        feed_source = filename(sources, uri)
+        feed_info = feedparser.parse(feed_source)
+
+        if feed_info.feed and only_if_new:
+            log.info("Feed %s already in cache", uri)
+            continue
+        if feed_info.feed.get('planet_http_status',None) == '410':
+            log.info("Feed %s gone", uri)
+            continue
+
+        if threads and _is_http_uri(uri):
+            fetch_queue.put(item=(uri, feed_info))
+        else:
+            parse_queue.put(item=(uri, feed_info, uri))
+
+    # Mark the end of the fetch queue
+    for thread in threads.keys():
+        fetch_queue.put(item=(None, None))
+
+    # Process the results as they arrive
+    while fetch_queue.qsize() or parse_queue.qsize() or threads:
+        while parse_queue.qsize() == 0 and threads:
+            time.sleep(0.1)
+        while parse_queue.qsize():
+            (uri, feed_info, feed) = parse_queue.get(False)
+            try:
+
+                if not hasattr(feed,'headers') or int(feed.headers.status)<300:
+                    options = {}
+                    if hasattr(feed_info,'feed'):
+                        options['etag'] = \
+                            feed_info.feed.get('planet_http_etag',None)
+                        try:
+                            modified=time.strptime(
+                                feed_info.feed.get('planet_http_last_modified',
+                                None))
+                        except:
+                            pass
+
+                    data = feedparser.parse(feed, **options)
+                else:
+                    data = feedparser.FeedParserDict({'version': None,
+                        'headers': feed.headers, 'entries': [], 'feed': {},
+                        'bozo': 0, 'status': int(feed.headers.status)})
+
+                writeCache(uri, feed_info, data)
+
+            except Exception, e:
+                import sys, traceback
+                type, value, tb = sys.exc_info()
+                log.error('Error processing %s', uri)
+                for line in (traceback.format_exception_only(type, value) +
+                    traceback.format_tb(tb)):
+                    log.error(line.rstrip())
+
+        for index in threads.keys():
+            if not threads[index].isAlive():
+                del threads[index]
+                if not threads:
+                    log.info("Finished threaded part of processing.")

@@ -69,7 +69,7 @@
   <g font-size="32" fill="#FFF" text-anchor="middle">
     <text x="350" y="380" fill="#F00">Spider</text>
     <text x="350" y="460">Universal Feed Parser</text>
-    <text x="350" y="530">BeautifulSoup</text>
+    <text x="350" y="530">html5lib</text>
     <text x="350" y="600">Reconstitute</text>
     <text x="350" y="750">Filter(s)</text>
     <text x="850" y="250" fill="#F00">Splice</text>

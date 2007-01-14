@@ -71,6 +71,11 @@ def __init__():
         planet_predefined_options.append(name)
 
     # define a list planet-level variable
+    def define_planet_int(name, default=0):
+        setattr(config, name, lambda : int(get(None,name,default)))
+        planet_predefined_options.append(name)
+
+    # define a list planet-level variable
     def define_planet_list(name, default=''):
         setattr(config, name, lambda : expand(get(None,name,default)))
         planet_predefined_options.append(name)
@@ -91,7 +96,6 @@ def __init__():
     define_planet('cache_directory', "cache")
     define_planet('log_level', "WARNING")
     define_planet('log_format', "%(levelname)s:%(name)s:%(message)s")
-    define_planet('feed_timeout', 20)
     define_planet('date_format', "%B %d, %Y %I:%M %p")
     define_planet('new_date_format', "%B %d, %Y")
     define_planet('generator', 'Venus')
@@ -100,6 +104,9 @@ def __init__():
     define_planet('owner_email', '')
     define_planet('output_theme', '')
     define_planet('output_dir', 'output')
+    define_planet('spider_threads', 0) 
+
+    define_planet_int('feed_timeout', 20)
 
     define_planet_list('template_files')
     define_planet_list('bill_of_materials')
@@ -117,6 +124,7 @@ def __init__():
     define_tmpl('title_type', '')
     define_tmpl('summary_type', '')
     define_tmpl('content_type', '')
+    define_tmpl('future_dates', 'keep')
 
 def load(config_file):
     """ initialize and load a configuration"""
@@ -282,10 +290,17 @@ def downloadReadingList(list, orig_config, callback, use_cache=True, re_read=Tru
         except:
             logger.exception("Unable to read %s readinglist", list)
 
+def http_cache_directory():
+    if parser.has_option('Planet', 'http_cache_directory'):
+        os.path.join(cache_directory(), 
+            parser.get('Planet', 'http_cache_directory'))
+    else:
+        return os.path.join(cache_directory(), "cache")
 
 def cache_sources_directory():
     if parser.has_option('Planet', 'cache_sources_directory'):
-        parser.get('Planet', 'cache_sources_directory')
+        return os.path.join(cache_directory(),
+            parser.get('Planet', 'cache_sources_directory'))
     else:
         return os.path.join(cache_directory(), 'sources')
 
