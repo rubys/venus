@@ -11,7 +11,7 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 1.146 $"[11:16] + "-cvs"
+__version__ = "4.2-pre-" + "$Revision: 1.147 $"[11:16] + "-cvs"
 __license__ = """Copyright (c) 2002-2006, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -2303,19 +2303,20 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
        'class', 'color', 'color-rendering', 'content', 'cx', 'cy', 'd',
        'descent', 'display', 'dur', 'end', 'fill', 'fill-rule', 'font-family',
        'font-size', 'font-stretch', 'font-style', 'font-variant',
-       'font-weight', 'from', 'fx', 'fy', 'g1', 'g2', 'glyph-name', 'hanging',
-       'height', 'horiz-adv-x', 'horiz-origin-x', 'id', 'ideographic', 'k',
-       'keyPoints', 'keySplines', 'keyTimes', 'lang', 'mathematical', 'max',
-       'min', 'name', 'offset', 'opacity', 'origin', 'overline-position',
-       'overline-thickness', 'panose-1', 'path', 'pathLength', 'points',
-       'preserveAspectRatio', 'r', 'repeatCount', 'repeatDur',
-       'requiredExtensions', 'requiredFeatures', 'restart', 'rotate', 'rx',
-       'ry', 'slope', 'stemh', 'stemv', 'stop-color', 'stop-opacity',
-       'strikethrough-position', 'strikethrough-thickness', 'stroke',
-       'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap',
-       'stroke-linejoin', 'stroke-miterlimit', 'stroke-width',
-       'systemLanguage', 'target', 'text-anchor', 'to', 'transform', 'type',
-       'u1', 'u2', 'underline-position', 'underline-thickness', 'unicode',
+       'font-weight', 'from', 'fx', 'fy', 'g1', 'g2', 'glyph-name', 
+       'gradientUnits', 'hanging', 'height', 'horiz-adv-x', 'horiz-origin-x',
+       'id', 'ideographic', 'k', 'keyPoints', 'keySplines', 'keyTimes',
+       'lang', 'mathematical', 'max', 'min', 'name', 'offset', 'opacity',
+       'origin', 'overline-position', 'overline-thickness', 'panose-1',
+       'path', 'pathLength', 'points', 'preserveAspectRatio', 'r',
+       'repeatCount', 'repeatDur', 'requiredExtensions', 'requiredFeatures',
+       'restart', 'rotate', 'rx', 'ry', 'slope', 'stemh', 'stemv', 
+       'stop-color', 'stop-opacity', 'strikethrough-position',
+       'strikethrough-thickness', 'stroke', 'stroke-dasharray',
+       'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin',
+       'stroke-miterlimit', 'stroke-width', 'systemLanguage', 'target',
+       'text-anchor', 'to', 'transform', 'type', 'u1', 'u2',
+       'underline-position', 'underline-thickness', 'unicode',
        'unicode-range', 'units-per-em', 'values', 'version', 'viewBox',
        'visibility', 'width', 'widths', 'x', 'x-height', 'x1', 'x2',
        'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role',
@@ -3020,6 +3021,21 @@ def _parse_date_rfc822(dateString):
 _additional_timezones = {'AT': -400, 'ET': -500, 'CT': -600, 'MT': -700, 'PT': -800}
 rfc822._timezones.update(_additional_timezones)
 registerDateHandler(_parse_date_rfc822)    
+
+def _parse_date_perforce(aDateString):
+	"""parse a date in yyyy/mm/dd hh:mm:ss TTT format"""
+	# Fri, 2006/09/15 08:19:53 EDT
+	_my_date_pattern = re.compile( \
+		r'(\w{,3}), (\d{,4})/(\d{,2})/(\d{2}) (\d{,2}):(\d{2}):(\d{2}) (\w{,3})')
+
+	dow, year, month, day, hour, minute, second, tz = \
+		_my_date_pattern.search(aDateString).groups()
+	months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+	dateString = "%s, %s %s %s %s:%s:%s %s" % (dow, day, months[int(month) - 1], year, hour, minute, second, tz)
+	tm = rfc822.parsedate_tz(dateString)
+	if tm:
+		return time.gmtime(rfc822.mktime_tz(tm))
+registerDateHandler(_parse_date_perforce)
 
 def _parse_date(dateString):
     '''Parses a variety of date formats into a 9-tuple in GMT'''
