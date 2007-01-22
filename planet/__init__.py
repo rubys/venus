@@ -30,5 +30,7 @@ def getLogger(level, format):
 
     return logger
 
-
-
+# Configure feed parser
+from planet import feedparser
+feedparser.SANITIZE_HTML=0
+feedparser.RESOLVE_RELATIVE_URIS=0

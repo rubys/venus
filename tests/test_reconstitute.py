@@ -3,6 +3,7 @@
 import unittest, os, sys, glob, new, re, StringIO, time
 from planet import feedparser
 from planet.reconstitute import reconstitute
+from planet.scrub import scrub
 
 testfiles = 'tests/data/reconstitute/%s.xml'
 
@@ -23,6 +24,7 @@ class ReconstituteTest(unittest.TestCase):
         # parse and reconstitute to a string
         work = StringIO.StringIO()
         results = feedparser.parse(data)
+        scrub(testfiles%name, results)
         reconstitute(results, results.entries[0]).writexml(work)
 
         # verify the results

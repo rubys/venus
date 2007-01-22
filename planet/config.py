@@ -125,6 +125,7 @@ def __init__():
     define_tmpl('summary_type', '')
     define_tmpl('content_type', '')
     define_tmpl('future_dates', 'keep')
+    define_tmpl('xml_base', '')
 
 def load(config_file):
     """ initialize and load a configuration"""
