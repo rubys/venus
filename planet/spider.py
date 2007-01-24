@@ -254,7 +254,6 @@ def writeCache(feed_uri, feed_info, data):
 
 def httpThread(thread_index, input_queue, output_queue, log):
     import httplib2, md5
-    from socket import gaierror, error 
     from httplib import BadStatusLine
 
     h = httplib2.Http(config.http_cache_directory())
@@ -304,13 +303,12 @@ def httpThread(thread_index, input_queue, output_queue, log):
             if resp.has_key('content-encoding'):
                 del resp['content-encoding']
             setattr(feed, 'headers', resp)
-        except gaierror:
-            log.error("Fail to resolve server name %s via %d",
-                uri, thread_index)
         except BadStatusLine:
             log.error("Bad Status Line received for %s via %d",
                 uri, thread_index)
-        except error, e:
+        except httplib2.HttpLib2Error, e:
+            log.error("HttpLib2Error: %s via %d", str(e), thread_index)
+        except socket.error, e:
             if e.__class__.__name__.lower()=='timeout':
                 feed.headers['status'] = '408'
                 log.warn("Timeout in thread-%d", thread_index)
