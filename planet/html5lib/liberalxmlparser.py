@@ -11,11 +11,6 @@ References:
  * http://wiki.whatwg.org/wiki/HtmlVsXhtml
 
 @@TODO:
- * Produce SAX events based on the produced DOM.  This is intended not to
-   support streaming, but rather to support application level compatibility. 
- * Optional namespace support
- * Investigate the use of <![CDATA[]]> when tokenizer.contentModelFlag
-   indicates CDATA processsing to ensure dual HTML/XHTML compatibility.
  * Selectively lowercase only XHTML, but not foreign markup
 """
 
@@ -49,6 +44,13 @@ class XMLParser(html5parser.HTMLParser):
         elif token["type"] == "EndTag":
             if token["data"]:
                self.parseError(_("End tag contains unexpected attributes."))
+
+        elif token["type"] == "Comment":
+            # Rescue CDATA from the comments
+            if (token["data"].startswith("[CDATA[") and
+                token["data"].endswith("]]")):
+                token["type"] = "Characters"
+                token["data"] = token["data"][7:-2]
 
         return token
 
