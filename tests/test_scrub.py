@@ -6,7 +6,7 @@ from planet.scrub import scrub
 from planet import feedparser, config
 
 feed = '''
-<feed xmlns='http://www.w3.org/2005/Atom'>
+<feed xmlns='http://www.w3.org/2005/Atom' xml:base="http://example.com/">
   <author><name>F&amp;ouml;o</name></author>
   <entry xml:lang="en">
     <id>ignoreme</id>
@@ -15,7 +15,9 @@ feed = '''
     <title>F&amp;ouml;o</title>
     <summary>F&amp;ouml;o</summary>
     <content>F&amp;ouml;o</content>
+    <link href="http://example.com/entry/1/"/>
     <source>
+      <link href="http://example.com/feed/"/>
       <author><name>F&amp;ouml;o</name></author>
     </source>
   </entry>
@@ -82,3 +84,33 @@ class ScrubTest(unittest.TestCase):
         data = deepcopy(base)
         scrub('testfeed', data)
         self.assertEqual(0, len(data.entries))
+
+    def test_scrub_xmlbase(self):
+        base = feedparser.parse(feed)
+        self.assertEqual('http://example.com/',
+             base.entries[0].title_detail.base)
+
+        config.parser.readfp(StringIO.StringIO(configData))
+        config.parser.set('testfeed', 'xml_base', 'feed_alternate')
+        data = deepcopy(base)
+        scrub('testfeed', data)
+        self.assertEqual('http://example.com/feed/',
+             data.entries[0].title_detail.base)
+
+        config.parser.set('testfeed', 'xml_base', 'entry_alternate')
+        data = deepcopy(base)
+        scrub('testfeed', data)
+        self.assertEqual('http://example.com/entry/1/',
+             data.entries[0].title_detail.base)
+
+        config.parser.set('testfeed', 'xml_base', 'base/')
+        data = deepcopy(base)
+        scrub('testfeed', data)
+        self.assertEqual('http://example.com/base/',
+             data.entries[0].title_detail.base)
+
+        config.parser.set('testfeed', 'xml_base', 'http://example.org/data/')
+        data = deepcopy(base)
+        scrub('testfeed', data)
+        self.assertEqual('http://example.org/data/',
+             data.entries[0].title_detail.base)

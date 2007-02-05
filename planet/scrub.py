@@ -6,6 +6,7 @@ Process a set of configuration defined sanitations on a given feed.
 import time
 # Planet modules
 import planet, config, shell
+from planet import feedparser
 
 type_map = {'text': 'text/plain', 'html': 'text/html',
     'xhtml': 'application/xhtml+xml'}
@@ -92,3 +93,40 @@ def scrub(feed_uri, data):
           or entry['published_parsed'] <= now) and
         (not entry.has_key('updated_parsed') or not entry['updated_parsed']
           or entry['updated_parsed'] <= now)]
+
+    scrub_xmlbase = config.xml_base(feed_uri)
+
+    # resolve relative URIs and sanitize
+    for entry in data.entries + [data.feed]:
+        for key in entry.keys():
+            if key == 'content':
+                node = entry.content[0]
+            elif key.endswith('_detail'):
+                node = entry[key]
+            else:
+                continue
+
+            if not node.has_key('type'): continue
+            if not 'html' in node['type']: continue
+            if not node.has_key('value'): continue
+
+            if node.has_key('base'):
+                if scrub_xmlbase:
+                    if scrub_xmlbase == 'feed_alternate':
+                        if entry.has_key('source') and \
+                            entry.source.has_key('link'):
+                            node['base'] = entry.source.link
+                        elif data.feed.has_key('link'):
+                            node['base'] = data.feed.link
+                    elif scrub_xmlbase == 'entry_alternate':
+                        if entry.has_key('link'):
+                            node['base'] = entry.link
+                    else:
+                        node['base'] = feedparser._urljoin(
+                            node['base'], scrub_xmlbase)
+
+                node['value'] = feedparser._resolveRelativeURIs(
+                    node.value, node.base, 'utf-8', node.type)
+
+            node['value'] = feedparser._sanitizeHTML(
+                node.value, 'utf-8', node.type)

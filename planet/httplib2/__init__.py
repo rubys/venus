@@ -16,11 +16,13 @@ __contributors__ = ["Thomas Broyer (t.broyer@ltgt.net)",
     "Xavier Verges Farrero",
     "Jonathan Feinberg",
     "Blair Zajac",
-    "Sam Ruby"]
+    "Sam Ruby",
+    "Louis Nyffenegger"]
 __license__ = "MIT"
-__version__ = "$Rev: 217 $"
+__version__ = "$Rev: 227 $"
 
 import re 
+import sys 
 import md5
 import email
 import email.Utils
@@ -41,6 +43,12 @@ import hmac
 from gettext import gettext as _
 from socket import gaierror
 
+if sys.version_info >= (2,3):
+    from iri2uri import iri2uri
+else:
+    def iri2uri(uri):
+        return uri
+
 __all__ = ['Http', 'Response', 'HttpLib2Error',
   'RedirectMissingLocation', 'RedirectLimit', 'FailedToDecompressContent', 
   'UnimplementedDigestAuthOptionError', 'UnimplementedHmacDigestAuthOptionError',
@@ -51,7 +59,7 @@ __all__ = ['Http', 'Response', 'HttpLib2Error',
 debuglevel = 0
 
 # Python 2.3 support
-if 'sorted' not in __builtins__:
+if sys.version_info < (2,4):
     def sorted(seq):
         seq.sort()
         return seq
@@ -60,7 +68,6 @@ if 'sorted' not in __builtins__:
 def HTTPResponse__getheaders(self):
     """Return list of (header, value) tuples."""
     if self.msg is None:
-        print "================================"
         raise httplib.ResponseNotReady()
     return self.msg.items()
 
@@ -75,6 +82,8 @@ class RedirectLimit(HttpLib2Error): pass
 class FailedToDecompressContent(HttpLib2Error): pass
 class UnimplementedDigestAuthOptionError(HttpLib2Error): pass
 class UnimplementedHmacDigestAuthOptionError(HttpLib2Error): pass
+class RelativeURIError(HttpLib2Error): pass
+class ServerNotFoundError(HttpLib2Error): pass
 
 # Open Items:
 # -----------
@@ -118,6 +127,8 @@ def parse_uri(uri):
 
 def urlnorm(uri):
     (scheme, authority, path, query, fragment) = parse_uri(uri)
+    if not scheme or not authority:
+        raise RelativeURIError("Only absolute URIs are allowed. uri = %s" % uri)
     authority = authority.lower()
     scheme = scheme.lower()
     if not path: 
@@ -125,6 +136,7 @@ def urlnorm(uri):
     # Could do syntax based normalization of the URI before
     # computing the digest. See Section 6.2.2 of Std 66.
     request_uri = query and "?".join([path, query]) or path
+    scheme = scheme.lower()
     defrag_uri = scheme + "://" + authority + request_uri
     return scheme, authority, request_uri, defrag_uri
 
@@ -143,9 +155,10 @@ def safename(filename):
     try:
         if re_url_scheme.match(filename):
             if isinstance(filename,str):
-                filename=filename.decode('utf-8').encode('idna')
+                filename = filename.decode('utf-8')
+                filename = filename.encode('idna')
             else:
-                filename=filename.encode('idna')
+                filename = filename.encode('idna')
     except:
         pass
     if isinstance(filename,unicode):
@@ -260,16 +273,26 @@ def _entry_disposition(response_headers, request_headers):
         now = time.time()
         current_age = max(0, now - date)
         if cc_response.has_key('max-age'):
-            freshness_lifetime = int(cc_response['max-age'])
+            try:
+                freshness_lifetime = int(cc_response['max-age'])
+            except:
+                freshness_lifetime = 0
         elif response_headers.has_key('expires'):
             expires = email.Utils.parsedate_tz(response_headers['expires'])
             freshness_lifetime = max(0, calendar.timegm(expires) - date)
         else:
             freshness_lifetime = 0
         if cc.has_key('max-age'):
-            freshness_lifetime = min(freshness_lifetime, int(cc['max-age']))
+            try:
+                freshness_lifetime = int(cc['max-age'])
+            except:
+                freshness_lifetime = 0
         if cc.has_key('min-fresh'):
-            current_age += int(cc['min-fresh'])
+            try:
+                min_fresh = int(cc['min-fresh'])
+            except:
+                min_fresh = 0
+            current_age += min_fresh 
         if freshness_lifetime > current_age:
             retval = "FRESH"
     return retval 
@@ -418,13 +441,13 @@ class DigestAuthentication(Authentication):
 
     def response(self, response, content):
         if not response.has_key('authentication-info'):
-            challenge = _parse_www_authenticate(response, 'www-authenticate')['digest']
+            challenge = _parse_www_authenticate(response, 'www-authenticate').get('digest', {})
             if 'true' == challenge.get('stale'):
                 self.challenge['nonce'] = challenge['nonce']
                 self.challenge['nc'] = 1 
                 return True
         else:
-            updated_challenge = _parse_www_authenticate(response, 'authentication-info')['digest']
+            updated_challenge = _parse_www_authenticate(response, 'authentication-info').get('digest', {})
 
             if updated_challenge.has_key('nextnonce'):
                 self.challenge['nonce'] = updated_challenge['nextnonce']
@@ -440,7 +463,6 @@ class HmacDigestAuthentication(Authentication):
         Authentication.__init__(self, credentials, host, request_uri, headers, response, content, http)
         challenge = _parse_www_authenticate(response, 'www-authenticate')
         self.challenge = challenge['hmacdigest']
-        print self.challenge
         # TODO: self.challenge['domain']
         self.challenge['reason'] = self.challenge.get('reason', 'unauthorized')
         if self.challenge['reason'] not in ['unauthorized', 'integrity']:
@@ -466,9 +488,6 @@ class HmacDigestAuthentication(Authentication):
                     self.pwhashmod.new("".join([self.credentials[1], self.challenge['salt']])).hexdigest().lower(),
                     ":", self.challenge['realm']
                     ])
-        print response['www-authenticate']
-        print "".join([self.credentials[1], self.challenge['salt']])
-        print "key_str = %s" % self.key
         self.key = self.pwhashmod.new(self.key).hexdigest().lower()
 
     def request(self, method, request_uri, headers, content):
@@ -479,8 +498,6 @@ class HmacDigestAuthentication(Authentication):
         created = time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())
         cnonce = _cnonce()
         request_digest = "%s:%s:%s:%s:%s" % (method, request_uri, cnonce, self.challenge['snonce'], headers_val)
-        print "key = %s" % self.key
-        print "msg = %s" % request_digest
         request_digest  = hmac.new(self.key, request_digest, self.hashmod).hexdigest().lower()
         headers['Authorization'] = 'HMACDigest username="%s", realm="%s", snonce="%s", cnonce="%s", uri="%s", created="%s", response="%s", headers="%s"' % (
                 self.credentials[0], 
@@ -641,6 +658,8 @@ class Http:
             try:
                 conn.request(method, request_uri, body, headers)
                 response = conn.getresponse()
+            except gaierror:
+                raise ServerNotFoundError("Unable to find the server at %s" % request_uri)
             except:
                 if i == 0:
                     conn.close()
@@ -752,6 +771,8 @@ a string that contains the response entity body.
         if not headers.has_key('user-agent'):
             headers['user-agent'] = "Python-httplib2/%s" % __version__
 
+        uri = iri2uri(uri)
+
         (scheme, authority, request_uri, defrag_uri) = urlnorm(uri)
 
         if not self.connections.has_key(scheme+":"+authority):
@@ -780,7 +801,7 @@ a string that contains the response entity body.
         else:
             cachekey = None
                     
-        if method in ["PUT"] and self.cache and info.has_key('etag') and not self.ignore_etag:
+        if method in ["PUT"] and self.cache and info.has_key('etag') and not self.ignore_etag and 'if-match' not in headers:
             # http://www.w3.org/1999/04/Editing/ 
             headers['if-match'] = info['etag']
 
@@ -815,9 +836,9 @@ a string that contains the response entity body.
                     return (response, content)
 
                 if entry_disposition == "STALE":
-                    if info.has_key('etag') and not self.ignore_etag:
+                    if info.has_key('etag') and not self.ignore_etag and not 'if-none-match' in headers:
                         headers['if-none-match'] = info['etag']
-                    if info.has_key('last-modified'):
+                    if info.has_key('last-modified') and not 'last-modified' in headers:
                         headers['if-modified-since'] = info['last-modified']
                 elif entry_disposition == "TRANSPARENT":
                     pass

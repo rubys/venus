@@ -35,7 +35,7 @@
               <th>Name</th>
               <th>Format</th>
               <xsl:if test="//planet:ignore_in_feed | //planet:filters |
-                //planet:*[contains(local-name(),'_type')]">
+                //planet:xml_base | //planet:*[contains(local-name(),'_type')]">
                 <th>Notes</th>
               </xsl:if>
             </tr>
@@ -128,12 +128,12 @@
         </a>
       </td>
       <td><xsl:value-of select="planet:format"/></td>
-      <xsl:if test="planet:ignore_in_feed | planet:filters |
+      <xsl:if test="planet:ignore_in_feed | planet:filters | planet:xml_base |
         planet:*[contains(local-name(),'_type')]">
         <td>
           <dl>
             <xsl:for-each select="planet:ignore_in_feed | planet:filters |
-              planet:*[contains(local-name(),'_type')]">
+              planet:xml_base | planet:*[contains(local-name(),'_type')]">
               <xsl:sort select="local-name()"/>
               <dt><xsl:value-of select="local-name()"/></dt>
               <dd><xsl:value-of select="."/></dd>

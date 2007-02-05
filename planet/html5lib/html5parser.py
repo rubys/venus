@@ -1,3 +1,4 @@
+
 # Differences from the current specification (23 December 2006) are as follows:
 # * Phases and insertion modes are one concept in parser.py.
 # * EOF handling is slightly different to make sure <html>, <head> and <body>
@@ -553,6 +554,10 @@ class InBodyPhase(Phase):
     # the crazy mode
     def __init__(self, parser, tree):
         Phase.__init__(self, parser, tree)
+
+        #Keep a ref to this for special handling of whitespace in <pre>
+        self.processSpaceCharactersNonPre = self.processSpaceCharacters
+
         self.startTagHandler = utils.MethodDispatcher([
             ("html", self.startTagHtml),
             (("script", "style"), self.startTagScriptStyle),
@@ -622,6 +627,15 @@ class InBodyPhase(Phase):
             self.tree.openElements[-1])
 
     # the real deal
+    def processSpaceCharactersPre(self, data):
+        #Sometimes (start of <pre> blocks) we want to drop leading newlines
+        self.processSpaceCharacters = self.processSpaceCharactersNonPre
+        if (data.startswith("\n") and self.tree.openElements[-1].name == "pre" 
+            and not self.tree.openElements[-1].hasContent()):
+            data = data[1:]
+        if data:
+            self.tree.insertText(data)
+
     def processCharacters(self, data):
         # XXX The specification says to do this for every character at the
         # moment, but apparently that doesn't match the real world so we don't
@@ -651,6 +665,8 @@ class InBodyPhase(Phase):
         if self.tree.elementInScope("p"):
             self.endTagP("p")
         self.tree.insertElement(name, attributes)
+        if name == "pre":
+            self.processSpaceCharacters = self.processSpaceCharactersPre
 
     def startTagForm(self, name, attributes):
         if self.tree.formPointer:
@@ -849,6 +865,9 @@ class InBodyPhase(Phase):
             self.parser.phase.processEndTag(name)
 
     def endTagBlock(self, name):
+        #Put us back in the right whitespace handling mode
+        if name == "pre":
+            self.processSpaceCharacters = self.processSpaceCharactersNonPre
         inScope = self.tree.elementInScope(name)
         if inScope:
             self.tree.generateImpliedEndTags()

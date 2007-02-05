@@ -95,6 +95,13 @@ attributes on these elements.</li>
 <li>Anything else (i.e.. the default) will leave the date as is, causing the entries that contain these dates sort to the top of the planet until the time passes.</li>
 </ul>
 </li>
+<li><code>xml_base</code> will adjust the <code>xml:base</code> values in effect for each of the text constructs in the feed (things like <code>title</code>, <code>summary</code>, and <code>content</code>).  Other elements in the feed (most notably, <code>link</code> are not affected by this value.
+<ul style="margin:0">
+<li><code>feed_alternate</code> will replace the <code>xml:base</code> in effect with the value of the <code>alternate</code> <code>link</code> found either in the enclosed <code>source</code> or enclosing <code>feed</code> element.</li>
+<li><code>entry_alternate</code> will replace the <code>xml:base</code> in effect with the value of the <code>alternate</code> <code>link</code> found in this entry.</li>
+<li>Any other value will be treated as a <a href="http://www.ietf.org/rfc/rfc3986.txt">URI reference</a>.  These values may be relative or absolute.  If relative, the <code>xml:base</code> values in each text construct will each be adjusted separately using to the specified value.</li>
+</ul>
+</li>
 </ul>
 </body>
 </html>
