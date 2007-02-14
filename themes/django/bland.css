@@ -1,0 +1,39 @@
+body { 
+ margin: 50px 60px;
+ font-family: Georgia, Times New Roman, serif;
+}
+
+h1 { 
+ font: normal 4em Georgia, serif;
+ color: #900;
+ margin-bottom: 0px;
+}
+
+.updated, .entry-tools { 
+ font: .8em Verdana, Arial, sans-serif;
+ margin-bottom: 2em;
+}
+
+#channels { 
+ float: right;
+ width: 30%;
+ padding: 20px;
+ margin: 20px;
+ margin-top: 0px;
+ border: 1px solid #FC6;
+ background: #FFC;
+}
+
+#channels h2 { 
+ margin-top: 0px;
+}
+
+#channels ul { 
+ margin-bottom: 0px;
+}
+
+.entry { 
+ border-top: 1px solid #CCC;
+ padding-top: 1em;
+}
+
