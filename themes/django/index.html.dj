@@ -39,7 +39,7 @@
   <p class="entry-tools">
     by {{ item.channel_author }}  on 
     {{ item.date }} · 
-    <a href="{{ item.id }}">permalink</a>
+    <a href="{{ item.link }}">permalink</a>
   </p>
 </div>
 {% endfor %}
