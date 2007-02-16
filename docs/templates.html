@@ -101,6 +101,43 @@ The data values within the <code>Items</code> array are as follows:</p>
 <code>new_</code> are only set if their values differ from the previous
 Item.</p>
 
+<h3>django</h3>
+
+<p>
+  If you have the <a href="http://www.djangoproject.com/">Django</a>
+  framework installed, 
+  <a href="http://www.djangoproject.com/documentation/templates/"
+  >Django templates</a> are automatically available to Venus
+  projects. You will have to save them with a <code>.html.dj</code>
+  extension in your themes. The variable set is the same as the one
+  from htmltmpl, above. In the Django template context you'll have
+  access to <code>Channels</code> and <code>Items</code> and you'll be
+  able to iterate through them.
+</p>
+
+<p>
+  If you lose your way and want to introspect all the variable in the 
+  context, there's the useful <code>{% debug %}</code> template tag. 
+</p>
+
+<p>
+  In the <code>themes/django/</code> you'll find a sample Venus theme
+  that uses the Django templates that might be a starting point for
+  your own custom themes.
+</p>
+
+<p>
+  All the standard Django template tags and filter are supposed to
+  work, with the notable exception of the <code>date</code> filter on
+  the updated and published dates of an item (it works on the main 
+  <code>{{ date }}</code> variable).
+</p>
+
+<p>
+  Please note that Django, and therefore Venus' Django support,
+  requires at least Python 2.3.
+</p>
+
 <h3>xslt</h3>
 <p><a href="http://www.w3.org/TR/xslt">XSLT</a> is a paradox: it actually
 makes some simple things easier to do than htmltmpl, and certainly can

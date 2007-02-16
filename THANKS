@@ -11,6 +11,7 @@ Chris Dolan     - mkdir cache; default template_dirs; fix xsltproc
 David Sifry     - rss 2.0 xslt template based on http://atom.geekhood.net/
 Morten Fredericksen - Support WordPress LinkManager OPML
 Harry Fuecks    - default item date to feed date
+Antonio Cavendoni - Django templates
 
 This codebase represents a radical refactoring of Planet 2.0, which lists
 the following contributors:
