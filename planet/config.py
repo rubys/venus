@@ -26,7 +26,7 @@ Todo:
   * error handling (example: no planet section)
 """
 
-import os, sys, re
+import os, sys, re, urllib
 from ConfigParser import ConfigParser
 from urlparse import urljoin
 
@@ -126,6 +126,8 @@ def __init__():
     define_tmpl('content_type', '')
     define_tmpl('future_dates', 'keep')
     define_tmpl('xml_base', '')
+    define_tmpl('filter', None) 
+    define_tmpl('exclude', None) 
 
 def load(config_file):
     """ initialize and load a configuration"""
@@ -330,7 +332,7 @@ def feedtype():
 
 def subscriptions():
     """ list the feed subscriptions """
-    return filter(lambda feed: feed!='Planet' and 
+    return __builtins__['filter'](lambda feed: feed!='Planet' and 
         feed not in template_files()+filters()+reading_lists(),
         parser.sections())
 
@@ -350,6 +352,12 @@ def filters(section=None):
         filters += parser.get('Planet', 'filters').split()
     if section and parser.has_option(section, 'filters'):
         filters += parser.get(section, 'filters').split()
+    if filter(section):
+        filters.append('regexp_sifter.py?require=' +
+            urllib.quote(filter(section)))
+    if exclude(section):
+        filters.append('regexp_sifter.py?exclude=' +
+            urllib.quote(filter(section)))
     return filters
 
 def planet_options():
