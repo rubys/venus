@@ -31,4 +31,5 @@ try:
 except ImportError:
     logger.warn("Django is not available => can't test django filters")
     del DjangoFilterTests.test_django_filter
+    del DjangoFilterTests.test_django_date_type
     del DjangoFilterTests.test_django_item_title
