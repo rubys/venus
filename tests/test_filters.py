@@ -111,6 +111,7 @@ class FilterTests(unittest.TestCase):
 try:
     from subprocess import Popen, PIPE
 
+    _no_sed = False
     try:
         sed = Popen(['sed','--version'],stdout=PIPE,stderr=PIPE)
         sed.communicate()
