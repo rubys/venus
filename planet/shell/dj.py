@@ -33,6 +33,7 @@ def run(script, doc, output_file=None, options={}):
     # datatype converters
     context = Context()
     context.update(tmpl.template_info(doc))
+    context['Config'] = config.planet_options()
     t = get_template(script)
 
     if output_file:
