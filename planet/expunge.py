@@ -15,7 +15,7 @@ def expungeCache():
         data=feedparser.parse(filename(sources,sub))
         if not data.feed.has_key('id'): continue
         if config.feed_options(sub).has_key('cache_keep_entries'):
-            entry_count[data.feed.id] = config.feed_options(sub)['cache_keep_entries']
+            entry_count[data.feed.id] = int(config.feed_options(sub)['cache_keep_entries'])
         else:
             entry_count[data.feed.id] = config.cache_keep_entries()
 
@@ -60,7 +60,7 @@ def expungeCache():
                 log.debug("Removing %s, not subscribed to %s",
                     file, ids[0].childNodes[0].nodeValue)
             # remove old entry
-            #os.unlink(file)
+            os.unlink(file)
 
         except:
             log.error("Error parsing %s", file)
