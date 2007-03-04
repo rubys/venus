@@ -111,11 +111,18 @@ class FilterTests(unittest.TestCase):
 try:
     from subprocess import Popen, PIPE
 
-    sed=Popen(['sed','--version'],stdout=PIPE,stderr=PIPE)
-    sed.communicate()
-    if sed.returncode != 0:
+    _no_sed = False
+    try:
+        sed = Popen(['sed','--version'],stdout=PIPE,stderr=PIPE)
+        sed.communicate()
+        if sed.returncode != 0:
+            _no_sed = True
+    except WindowsError:
+        _no_sed = True
+
+    if _no_sed:
         logger.warn("sed is not available => can't test stripAd_yahoo")
-        del FilterTests.test_stripAd_yahoo
+        del FilterTests.test_stripAd_yahoo      
 
     try:
         import libxml2

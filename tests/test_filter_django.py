@@ -26,9 +26,18 @@ class DjangoFilterTests(unittest.TestCase):
             os.path.realpath('tests/data/filter/django/title.html.dj'), input)
         self.assertEqual(results, "Atom-Powered Robots Run Amok\n")
 
+    def test_django_config_context(self):
+        config.load('tests/data/filter/django/test.ini')
+        feed = open('tests/data/filter/django/test.xml')
+        input = feed.read(); feed.close()
+        results = dj.run(
+            os.path.realpath('tests/data/filter/django/config.html.dj'), input)
+        self.assertEqual(results, "Django on Venus\n")
+        
+
 try:
     from django.conf import settings
 except ImportError:
     logger.warn("Django is not available => can't test django filters")
-    del DjangoFilterTests.test_django_filter
-    del DjangoFilterTests.test_django_item_title
+    for method in dir(DjangoFilterTests):
+        if method.startswith('test_'):  delattr(DjangoFilterTests,method)
