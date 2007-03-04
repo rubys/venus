@@ -21,6 +21,7 @@ if __name__ == "__main__":
     offline = 0
     verbose = 0
     only_if_new = 0
+    expunge = 0
 
     for arg in sys.argv[1:]:
         if arg == "-h" or arg == "--help":
@@ -31,6 +32,7 @@ if __name__ == "__main__":
             print " -o, --offline       Update the Planet from the cache only"
             print " -h, --help          Display this help message and exit"
             print " -n, --only-if-new   Only spider new feeds"
+            print " -x, --expunge       Expunge old entries from cache"
             print
             sys.exit(0)
         elif arg == "-v" or arg == "--verbose":
@@ -39,6 +41,8 @@ if __name__ == "__main__":
             offline = 1
         elif arg == "-n" or arg == "--only-if-new":
             only_if_new = 1
+        elif arg == "-x" or arg == "--expunge":
+            expunge = 1
         elif arg.startswith("-"):
             print >>sys.stderr, "Unknown option:", arg
             sys.exit(1)
@@ -62,3 +66,7 @@ if __name__ == "__main__":
     from planet import splice
     doc = splice.splice()
     splice.apply(doc.toxml('utf-8'))
+
+    if expunge:
+        from planet import expunge
+        expunge.expungeCache

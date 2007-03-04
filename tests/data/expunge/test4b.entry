@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom">
+  <id>tag:bzr.mfd-consult.dk,2007:venus-expunge-test4/2</id>
+  <link href="http://example.com/4/2"/>
+  <title>Test 4/2</title>
+  <content>Entry for local setting 2</content>
+  <updated>2007-03-01T04:02:00Z</updated>
+  <source>
+    <id>tag:bzr.mfd-consult.dk,2007:venus-expunge-testfeed4</id>
+    <title>Test 4 source</title>
+  </source>
+</entry>

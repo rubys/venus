@@ -107,6 +107,7 @@ def __init__():
     define_planet('spider_threads', 0) 
 
     define_planet_int('feed_timeout', 20)
+    define_planet_int('cache_keep_entries', 10)
 
     define_planet_list('template_files')
     define_planet_list('bill_of_materials')

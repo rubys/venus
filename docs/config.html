@@ -111,6 +111,10 @@ no threads are used and spidering follows the traditional algorithm.</dd>
 directory to be used for an additional HTTP cache to front end the Venus
 cache.  If specified as a relative path, it is evaluated relative to the
 <code>cache_directory</code>.</dd>
+<dt><ins>cache_keep_entries</ins></dt>
+<dd>Used by <code>expunge</code> to determine how many entries should be
+kept for each source when expunging old entries from the cache directory.
+This may be overriden on a per subscription feed basis.</dd>
 </dl>
 <p>Additional options can be found in
 <a href="normalization.html#overrides">normalization level overrides</a>.</p>
