@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom">
+  <id>tag:bzr.mfd-consult.dk,2007:venus-expunge-test3/2</id>
+  <link href="http://example.com/3/2"/>
+  <title>Test 3/2</title>
+  <content>Entry for global setting 2</content>
+  <updated>2007-03-01T03:02:00Z</updated>
+  <source>
+    <id>tag:bzr.mfd-consult.dk,2007:venus-expunge-testfeed3</id>
+    <title>Test 3 source</title>
+  </source>
+</entry>

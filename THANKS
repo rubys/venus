@@ -9,7 +9,7 @@ Harry Fuecks    - Pipe characters in file names, filter bug
 Eric van der Vlist - Filters to add language, category information
 Chris Dolan     - mkdir cache; default template_dirs; fix xsltproc
 David Sifry     - rss 2.0 xslt template based on http://atom.geekhood.net/
-Morten Fredericksen - Support WordPress LinkManager OPML
+Morten Frederiksen - Support WordPress LinkManager OPML
 Harry Fuecks    - default item date to feed date
 Antonio Cavedoni - Django templates
 

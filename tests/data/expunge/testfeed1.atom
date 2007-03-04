@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <link rel="self" href="http://bzr.mfd-consult.dk/venus/tests/data/expunge/testfeed1.atom"/>
+  <id>tag:bzr.mfd-consult.dk,2007:venus-expunge-testfeed1</id>
+</feed>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom">
+  <id>tag:bzr.mfd-consult.dk,2007:venus-expunge-test1/1</id>
+  <link href="http://example.com/1/1"/>
+  <title>Test 1/1</title>
+  <content>Entry with missing source</content>
+  <updated>2007-03-01T01:01:00Z</updated>
+</entry>
