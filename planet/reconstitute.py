@@ -158,14 +158,21 @@ def content(xentry, name, detail, bozo):
             for div in body.childNodes:
                 if div.nodeType != Node.ELEMENT_NODE: continue
                 if div.nodeName != 'div': continue
-                div.normalize()
-                if len(div.childNodes) == 1 and \
-                    div.firstChild.nodeType == Node.TEXT_NODE:
-                    data = div.firstChild
-                else:
-                    data = div
-                    xcontent.setAttribute('type', 'xhtml')
-                break
+                try:
+                    div.normalize()
+                    if len(div.childNodes) == 1 and \
+                        div.firstChild.nodeType == Node.TEXT_NODE:
+                        data = div.firstChild
+                    else:
+                        data = div
+                        xcontent.setAttribute('type', 'xhtml')
+                    break
+                except:
+                    # in extremely nested cases, the Python runtime decides
+                    # that normalize() must be in an infinite loop; mark
+                    # the content as escaped html and proceed on...
+                    xcontent.setAttribute('type', 'html')
+                    data = xdoc.createTextNode(detail.value.decode('utf-8'))
 
     if data: xcontent.appendChild(data)
 
