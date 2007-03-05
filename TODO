@@ -1,13 +1,6 @@
 TODO
 ====
 
-  * Expire feed history
-
-    The feed cache doesn't currently expire old entries, so could get
-    large quite rapidly.  We should probably have a config setting for
-    the cache expiry, the trouble is some channels might need a longer
-    or shorter one than others.
-
   * Allow display normalisation to specified timezone
 
     Some Planet admins would like their feed to be displayed in the local
