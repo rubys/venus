@@ -29,6 +29,18 @@
     </xsl:copy>
   </xsl:template>
 
+<!-- popular customization: add planet name to each entry title
+  <xsl:template match="atom:entry/atom:title">
+    <xsl:text>&#10;    </xsl:text>
+    <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+      <xsl:value-of select="../atom:source/planet:name"/>
+      <xsl:text>: </xsl:text>
+      <xsl:apply-templates select="node()"/>
+    </xsl:copy>
+  </xsl:template>
+-->
+
   <!-- indent atom elements -->
   <xsl:template match="atom:*">
     <!-- double space before atom:entries -->
