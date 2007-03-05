@@ -12,6 +12,7 @@ David Sifry     - rss 2.0 xslt template based on http://atom.geekhood.net/
 Morten Frederiksen - Support WordPress LinkManager OPML
 Harry Fuecks    - default item date to feed date
 Antonio Cavedoni - Django templates
+Morten Frederiksen - expungeCache
 
 This codebase represents a radical refactoring of Planet 2.0, which lists
 the following contributors:
