@@ -67,6 +67,8 @@ def splice():
 
     # insert entry information
     items = 0
+    count = {}
+    new_feed_items = config.new_feed_items()
     for mtime,file in dir:
         if index != None:
             base = os.path.basename(file)
@@ -75,15 +77,23 @@ def splice():
         try:
             entry=minidom.parse(file)
 
-            # verify that this entry is currently subscribed to
+            # verify that this entry is currently subscribed to and that the
+            # number of entries contributed by this feed does not exceed
+            # config.new_feed_items
             entry.normalize()
             sources = entry.getElementsByTagName('source')
             if sources:
                 ids = sources[0].getElementsByTagName('id')
-                if ids and ids[0].childNodes[0].nodeValue not in sub_ids:
-                    ids = sources[0].getElementsByTagName('planet:id')
-                    if not ids: continue
-                    if ids[0].childNodes[0].nodeValue not in sub_ids: continue
+                if ids:
+                    id = ids[0].childNodes[0].nodeValue
+                    count[id] = count.get(id,0) + 1
+                    if new_feed_items and count[id] > new_feed_items: continue
+
+                    if id not in sub_ids:
+                        ids = sources[0].getElementsByTagName('planet:id')
+                        if not ids: continue
+                        id = ids[0].childNodes[0].nodeValue
+                        if id not in sub_ids: continue
 
             # add entry to feed
             feed.appendChild(entry.documentElement)

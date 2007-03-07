@@ -106,6 +106,7 @@ def __init__():
     define_planet('output_dir', 'output')
     define_planet('spider_threads', 0) 
 
+    define_planet_int('new_feed_items', 0) 
     define_planet_int('feed_timeout', 20)
     define_planet_int('cache_keep_entries', 10)
 
