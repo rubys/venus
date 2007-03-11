@@ -45,11 +45,14 @@ function navkey(event) {
   if (!checkbox || !checkbox.checked) return;
 
   if (!event) event=window.event;
-  key=event.keyCode;
+  if (event.originalTarget &&
+    event.originalTarget.nodeName.toLowerCase() == 'input' &&
+    event.originalTarget.id != 'navkeys') return;
 
   if (!document.documentElement) return;
   if (!entries[0].anchor || !entries[0].anchor.offsetTop) return;
 
+  key=event.keyCode;
   if (key == 'J'.charCodeAt(0)) nextArticle(event);
   if (key == 'K'.charCodeAt(0)) prevArticle(event);
 }
@@ -215,14 +218,12 @@ function moveSidebar() {
 
   var h1 = sidebar.previousSibling;
   while (h1.nodeType != 1) h1=h1.previousSibling;
-  h1.parentNode.removeChild(h1);
+  if (h1.nodeName.toLowerCase() == 'h1') h1.parentNode.removeChild(h1);
+
   var footer = document.getElementById('footer');
-  var ul = footer.firstChild;
-  while (ul.nodeType != 1) ul=ul.nextSibling;
-  footer.removeChild(ul);
-  sidebar.insertBefore(ul, sidebar.firstChild);
-  var h2 = document.createElement('h2');
-  h2.appendChild(h1.firstChild);
+  var ul = footer.lastChild;
+  while (ul.nodeType != 1) ul=ul.previousSibling;
+
   var twisty = document.createElement('a');
   twisty.appendChild(document.createTextNode('\u25bc'));
   twisty.title = 'hide';
@@ -239,10 +240,19 @@ function moveSidebar() {
     ul.style.display = display;
     createCookie("subscriptions", display, 365);
   }
+
   var cookie = readCookie("subscriptions");
   if (cookie && cookie == 'none') twisty.onclick();
-  h2.appendChild(twisty);
-  sidebar.insertBefore(h2, sidebar.firstChild);
+
+  for (var node=footer.lastChild; node; node=footer.lastChild) {
+    if (twisty && node.nodeType == 1 && node.nodeName.toLowerCase() == 'h2') {
+      node.appendChild(twisty);
+      twisty = null;
+    }
+    footer.removeChild(node);
+    sidebar.insertBefore(node, sidebar.firstChild);
+  }
+
   var body = document.getElementById('body');
   sidebar.parentNode.removeChild(sidebar);
   body.parentNode.insertBefore(sidebar, body);

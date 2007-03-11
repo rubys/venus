@@ -1,4 +1,5 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
+                xmlns:access="http://www.bloglines.com/about/specs/fac-1.0"
                 xmlns:atom="http://www.w3.org/2005/Atom"
                 xmlns:indexing="urn:atom-extension:indexing"
                 xmlns:planet="http://planet.intertwingly.net/"
@@ -20,11 +21,13 @@
   <!-- Strip site meter -->
   <xsl:template match="xhtml:div[comment()[. = ' Site Meter ']]"/>
 
-  <!-- add Google/LiveJournal-esque noindex directive -->
+  <!-- add Google/LiveJournal-esque and Bloglines noindex directive -->
   <xsl:template match="atom:feed">
     <xsl:copy>
       <xsl:attribute name="indexing:index">no</xsl:attribute>
-      <xsl:apply-templates select="@*|node()"/>
+      <xsl:apply-templates select="@*"/>
+      <access:restriction relationship="allow"/>
+      <xsl:apply-templates select="node()"/>
       <xsl:text>&#10;</xsl:text>
     </xsl:copy>
   </xsl:template>
