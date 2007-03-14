@@ -194,7 +194,9 @@ def writeCache(feed_uri, feed_info, data):
         for filter in config.filters(feed_uri):
             output = shell.run(filter, output, mode="filter")
             if not output: break
-        if not output: continue
+        if not output:
+          if os.path.exists(cache_file): os.remove(cache_file)
+          continue
 
         # write out and timestamp the results
         write(output, cache_file) 
