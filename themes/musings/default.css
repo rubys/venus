@@ -306,6 +306,15 @@ img.mathlogo, img.svglogo {
         font-size:1em;
         font-weight:bold;
 }
+table.plaintable {border-collapse:collapse;}
+.plaintable td {border:1px solid #000; padding: 3px;}
+.plaintable th {padding: 3px;}
+.plaintable caption {
+        font-weight: bold;
+        font-size:1.1em;
+        text-align:center;
+        margin-left:30px;
+}
 
 /* Bosker Blog */
 p.center {text-align:center}
