@@ -99,7 +99,7 @@ def scrub(feed_uri, data):
     # resolve relative URIs and sanitize
     for entry in data.entries + [data.feed]:
         for key in entry.keys():
-            if key == 'content':
+            if key == 'content'and not entry.has_key('content_detail'):
                 node = entry.content[0]
             elif key.endswith('_detail'):
                 node = entry[key]

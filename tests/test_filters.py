@@ -89,14 +89,40 @@ class FilterTests(unittest.TestCase):
 
         self.assertNotEqual('', output)
 
+    def test_regexp_filter(self):
+        config.load('tests/data/filter/regexp-sifter.ini')
+
+        testfile = 'tests/data/filter/category-one.xml'
+
+        output = open(testfile).read()
+        for filter in config.filters():
+            output = shell.run(filter, output, mode="filter")
+
+        self.assertEqual('', output)
+
+        testfile = 'tests/data/filter/category-two.xml'
+
+        output = open(testfile).read()
+        for filter in config.filters():
+            output = shell.run(filter, output, mode="filter")
+
+        self.assertNotEqual('', output)
+
 try:
     from subprocess import Popen, PIPE
 
-    sed=Popen(['sed','--version'],stdout=PIPE,stderr=PIPE)
-    sed.communicate()
-    if sed.returncode != 0:
+    _no_sed = False
+    try:
+        sed = Popen(['sed','--version'],stdout=PIPE,stderr=PIPE)
+        sed.communicate()
+        if sed.returncode != 0:
+            _no_sed = True
+    except WindowsError:
+        _no_sed = True
+
+    if _no_sed:
         logger.warn("sed is not available => can't test stripAd_yahoo")
-        del FilterTests.test_stripAd_yahoo
+        del FilterTests.test_stripAd_yahoo      
 
     try:
         import libxml2

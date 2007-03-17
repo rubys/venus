@@ -73,6 +73,14 @@ class SpiderTest(unittest.TestCase):
         self.spiderFeed(testfeed % '1b')
         self.verify_spiderFeed()
 
+    def test_spiderFeed_retroactive_filter(self):
+        config.load(configfile)
+        self.spiderFeed(testfeed % '1b')
+        self.assertEqual(5, len(glob.glob(workdir+"/*")))
+        config.parser.set('Planet', 'filter', 'two')
+        self.spiderFeed(testfeed % '1b')
+        self.assertEqual(1, len(glob.glob(workdir+"/*")))
+
     def test_spiderUpdate(self):
         config.load(configfile)
         self.spiderFeed(testfeed % '1a')

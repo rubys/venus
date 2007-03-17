@@ -61,8 +61,13 @@ material information.</dd>
 can be found</dd>
 <dt><ins>bill_of_materials</ins></dt>
 <dd>Space-separated list of files to be copied as is directly from the <code>template_directories</code> to the <code>output_dir</code></dd>
+<dt>filter</dt>
+<dd>Regular expression that must be found in the textual portion of the entry</dd>
+<dt>exclude</dt>
+<dd>Regular expression that must <b>not</b> be found in the textual portion of the entry</dd>
 <dt><ins>filters</ins></dt>
-<dd>Space-separated list of filters to apply to each entry</dd>
+<dd>Space-separated list of <a href="filters.html">filters</a> to apply to
+each entry</dd>
 
 </dl>
 <dl class="compact code">
@@ -96,8 +101,8 @@ use for logging output.  Note: this configuration value is processed
 <a href="http://docs.python.org/lib/ConfigParser-objects.html">raw</a></dd>
 <dt>feed_timeout</dt>
 <dd>Number of seconds to wait for any given feed</dd>
-<dt><del>new_feed_items</del></dt>
-<dd>Number of items to take from new feeds</dd>
+<dt>new_feed_items</dt>
+<dd>Maximum number of items to include in the output from any one feed</dd>
 <dt><ins>spider_threads</ins></dt>
 <dd>The number of threads to use when spidering. When set to 0, the default, 
 no threads are used and spidering follows the traditional algorithm.</dd>
@@ -106,6 +111,10 @@ no threads are used and spidering follows the traditional algorithm.</dd>
 directory to be used for an additional HTTP cache to front end the Venus
 cache.  If specified as a relative path, it is evaluated relative to the
 <code>cache_directory</code>.</dd>
+<dt><ins>cache_keep_entries</ins></dt>
+<dd>Used by <code>expunge</code> to determine how many entries should be
+kept for each source when expunging old entries from the cache directory.
+This may be overriden on a per subscription feed basis.</dd>
 </dl>
 <p>Additional options can be found in
 <a href="normalization.html#overrides">normalization level overrides</a>.</p>

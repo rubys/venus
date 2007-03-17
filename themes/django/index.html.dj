@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>{{ name }}</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="bland.css" type="text/css" />
+</head>
+
+<body>
+
+<h1>{{ name }}</h1>
+
+<p class="updated">
+  last updated by <a href="http://intertwingly.net/code/venus/">Venus</a> 
+  on {{ date }} on behalf of {{ author_name }}
+</p>
+
+<div id="channels">
+  <h2>Feeds</h2>
+
+  <ul>
+    {% for channel in Channels %}
+    <li>{{ channel.title }} by {{ channel.author_name }}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+{% for item in Items %}
+{% ifchanged item.channel_name %}
+<h3>{{ item.channel_name }}</h3>
+{% endifchanged %}
+
+<div class="entry">
+  {% if item.title %}<h4>{{ item.title }}</h4>{% endif %}
+
+  {{ item.content }}
+  
+  <p class="entry-tools">
+    by {{ item.channel_author }}  on 
+    {{ item.date }} · 
+    <a href="{{ item.link }}">permalink</a>
+  </p>
+</div>
+{% endfor %}
+
+</body>
+</html>
+

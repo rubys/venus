@@ -40,7 +40,7 @@
           <xsl:text>&#10;&#10;</xsl:text>
         </div>
 
-        <h1>Subscriptions </h1>
+        <h1>Footnotes</h1>
         <xsl:text>&#10;&#10;</xsl:text>
 
         <div id="sidebar">
@@ -80,6 +80,7 @@
 
         <xsl:text>&#10;&#10;</xsl:text>
         <div id="footer">
+          <h2>Subscriptions</h2>
           <ul>
             <xsl:for-each select="planet:source">
               <xsl:sort select="planet:name"/>

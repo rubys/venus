@@ -24,3 +24,11 @@ class SpliceTest(unittest.TestCase):
         self.assertEqual(8,len(doc.getElementsByTagName('entry')))
         self.assertEqual(3,len(doc.getElementsByTagName('planet:source')))
         self.assertEqual(11,len(doc.getElementsByTagName('planet:name')))
+
+    def test_splice_new_feed_items(self):
+        config.load(configfile)
+        config.parser.set('Planet','new_feed_items','3')
+        doc = splice()
+        self.assertEqual(9,len(doc.getElementsByTagName('entry')))
+        self.assertEqual(4,len(doc.getElementsByTagName('planet:source')))
+        self.assertEqual(13,len(doc.getElementsByTagName('planet:name')))

@@ -30,11 +30,15 @@ a:active {
 a:focus {
 }
 
-a.active {
+a.inactive {
+	color: #558;
+}
+
+a.rising {
 	font-weight: bold;
 }
 
-h1 {
+body > h1 {
 	font-size: x-large;
 	text-transform: uppercase;
 	letter-spacing: 0.25em;
@@ -72,6 +76,11 @@ h1 {
 	border-top: 1px solid #ccc;
 	border-left: 1px solid #ccc;
 	border-bottom: 1px solid #ccc;
+}
+
+#sidebar h2 a img {
+        margin-bottom: 2px;
+        vertical-align: middle;
 }
 
 #sidebar p {
@@ -163,6 +172,10 @@ h1 {
 	text-decoration: none !important;
 }
 
+#sidebar input[name=q] {
+        margin: 4px 0 0 24px;
+}
+
 /* ---------------------------- Footer --------------------------- */
 
 #footer ul {
@@ -175,6 +188,10 @@ h1 {
 	padding: 0;
 	list-style: none;
 	display: inline;
+}
+
+#footer ul li ul {
+	display: none;
 }
 
 #footer img {
@@ -419,7 +436,7 @@ math[display=block] {
 	overflow: auto;
 }
 
-.eqno {
+.numberedEq span, .eqno {
 	float: right;
 }
 
