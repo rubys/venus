@@ -4,15 +4,15 @@
 
   <!-- only retain titles that don't duplicate summary or content -->
   <xsl:template match="atom:title">
-    <xsl:if test="string-length(.) &lt; 30 or
-                  ( substring(.,1,string-length(.)-3) !=
-                    substring(../atom:content,1,string-length(.)-3) and
-                    substring(.,1,string-length(.)-3) !=
-                    substring(../atom:summary,1,string-length(.)-3) )">
-      <xsl:copy>
+    <xsl:copy>
+      <xsl:if test="string-length(.) &lt; 30 or
+                    ( substring(.,1,string-length(.)-3) !=
+                      substring(../atom:content,1,string-length(.)-3) and
+                      substring(.,1,string-length(.)-3) !=
+                      substring(../atom:summary,1,string-length(.)-3) )">
         <xsl:apply-templates select="@*|node()"/>
-      </xsl:copy>
-    </xsl:if>
+      </xsl:if>
+    </xsl:copy>
   </xsl:template>
 
   <!-- pass through everything else -->
