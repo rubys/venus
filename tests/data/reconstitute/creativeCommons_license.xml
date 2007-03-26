@@ -1,0 +1,13 @@
+<!--
+Description:  creative commons license
+Expect:       links[0].rel == 'license' and links[0].href == 'http://www.creativecommons.org/licenses/by-nc/1.0'
+-->
+
+<rss version="2.0" xmlns:creativeCommons="http://backend.userland.com/creativeCommonsRssModule">
+  <channel>
+    <item>
+      <creativeCommons:license>http://www.creativecommons.org/licenses/by-nc/1.0</creativeCommons:license>
+    </item>
+  </channel>
+</rss>
+
