@@ -323,7 +323,6 @@ def httpThread(thread_index, input_queue, output_queue, log):
             for line in (traceback.format_exception_only(type, value) +
                 traceback.format_tb(tb)):
                 log.error(line.rstrip())
-            continue
 
         output_queue.put(block=True, item=(uri, feed_info, feed))
         uri, feed_info = input_queue.get(block=True)
