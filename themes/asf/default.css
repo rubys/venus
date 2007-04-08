@@ -466,9 +466,26 @@ ul.tags a:link, ul.tags a:visited {
 	color:green
 }
 
+a[rel='tag'] img {
+    border: 0;
+}  
+
 /* DiveIntoMark */
 .framed {
 	float: none;
+}
+
+/* BurningBird */
+.update:before {
+	content: 'Update';
+	font-weight: bold;
+}
+
+.update {
+    margin: 2em;
+    padding: 0 1em 0 1em;
+    background: #eee;
+    border: 1px solid #aaa;
 }
 
 /* ----------------------------- Footer ---------------------------- */
