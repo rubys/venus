@@ -226,7 +226,7 @@ def template_info(source):
                 date = item['new_date']
 
         if item.has_key('new_channel'):
-            if item['new_channel'] == channel:
+            if item['new_channel'] == channel and not item.has_key('new_date'):
                 del item['new_channel']
             else:
                 channel = item['new_channel']
