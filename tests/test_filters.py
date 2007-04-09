@@ -11,8 +11,11 @@ class FilterTests(unittest.TestCase):
 
         output = shell.run(filter, open(testfile).read(), mode="filter")
         dom = xml.dom.minidom.parseString(output)
-        imgsrc = dom.getElementsByTagName('img')[0].getAttribute('src')
-        self.assertEqual('http://example.com.nyud.net:8080/foo.png', imgsrc)
+        imgsrcs = [img.getAttribute('src') for img in dom.getElementsByTagName('img')]
+        self.assertEqual('http://example.com.nyud.net:8080/foo.png', imgsrcs[0])
+        self.assertEqual('http://example.com.1234.nyud.net:8080/foo.png', imgsrcs[1])
+        self.assertEqual('http://u:p@example.com.nyud.net:8080/foo.png', imgsrcs[2])
+        self.assertEqual('http://u:p@example.com.1234.nyud.net:8080/foo.png', imgsrcs[3])
 
     def test_excerpt_images1(self):
         config.load('tests/data/filter/excerpt-images.ini')

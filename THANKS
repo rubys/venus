@@ -13,6 +13,7 @@ Morten Frederiksen - Support WordPress LinkManager OPML
 Harry Fuecks    - default item date to feed date
 Antonio Cavedoni - Django templates
 Morten Frederiksen - expungeCache
+Lenny Domnitser - Coral CDN support for URLs with non-standard ports
 
 This codebase represents a radical refactoring of Planet 2.0, which lists
 the following contributors:
