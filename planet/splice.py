@@ -131,5 +131,6 @@ def apply(doc):
             if not os.path.exists(dest_dir): os.makedirs(dest_dir)
 
             log.info("Copying %s to %s", source, dest)
+            if os.path.exists(dest): os.chmod(dest, 0644)
             shutil.copyfile(source, dest)
             shutil.copystat(source, dest)

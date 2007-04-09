@@ -14,6 +14,7 @@ Harry Fuecks    - default item date to feed date
 Antonio Cavedoni - Django templates
 Morten Frederiksen - expungeCache
 Lenny Domnitser - Coral CDN support for URLs with non-standard ports
+Amit Chakradeo  - Allow read-only files to be overwritten
 
 This codebase represents a radical refactoring of Planet 2.0, which lists
 the following contributors:
