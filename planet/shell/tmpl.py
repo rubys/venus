@@ -102,7 +102,7 @@ Items = [
     ['enclosure_type', String, 'links', {'rel': 'enclosure'}, 'type'],
     ['id', String, 'id'],
     ['link', String, 'links', {'rel': 'alternate'}, 'href'],
-    ['new_channel', String, 'id'],
+    ['new_channel', String, 'source', 'id'],
     ['new_date', NewDate, 'published_parsed'],
     ['new_date', NewDate, 'updated_parsed'],
     ['rights', String, 'rights_detail', 'value'],
