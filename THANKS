@@ -16,6 +16,7 @@ Morten Frederiksen - expungeCache
 Lenny Domnitser - Coral CDN support for URLs with non-standard ports
 Amit Chakradeo  - Allow read-only files to be overwritten
 Matt Brubeck    - fix new_channel
+Aristotle Pagaltzis - ensure byline_author filter doesn't drop foreign markup
 
 This codebase represents a radical refactoring of Planet 2.0, which lists
 the following contributors:

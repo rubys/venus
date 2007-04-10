@@ -8,7 +8,7 @@
       <atom:name>
        <xsl:value-of select="substring(../atom:content/xhtml:div/xhtml:span[@class='byline-author'],11)"/>
       </atom:name>
-      <xsl:apply-templates select="*[name()!='name']"/>
+      <xsl:apply-templates select="*[not(self::atom:name)]"/>
     </xsl:copy>
   </xsl:template>
 
