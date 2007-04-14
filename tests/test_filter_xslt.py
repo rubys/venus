@@ -15,6 +15,15 @@ class XsltFilterTests(unittest.TestCase):
         catterm = dom.getElementsByTagName('category')[0].getAttribute('term')
         self.assertEqual('OnE', catterm)
 
+    def test_addsearch_filter(self):
+        testfile = 'tests/data/filter/index.html'
+        filter = 'addsearch.xslt'
+        output = shell.run(filter, open(testfile).read(), mode="filter")
+        self.assertTrue(output.find('<h2>Search</h2>')>=0)
+        self.assertTrue(output.find('<form><input name="q"/></form>')>=0)
+        self.assertTrue(output.find(' href="http://planet.intertwingly.net/opensearchdescription.xml"')>=0)
+        self.assertTrue(output.find('</script>')>=0)
+
 try:
     import libxslt
 except:
@@ -26,3 +35,4 @@ except:
     except:
         logger.warn("libxslt is not available => can't test xslt filters")
         del XsltFilterTests.test_xslt_filter
+        del XsltFilterTests.test_addsearch_filter

@@ -30,7 +30,7 @@ def run(template_file, doc, mode='template'):
         if not mode in logged_modes:
             log.info("%s search path:", mode)
             for template_dir in dirs:
-                log.error("    %s", os.path.realpath(template_dir))
+                log.info("    %s", os.path.realpath(template_dir))
             logged_modes.append(mode)
         return
     template_resolved = os.path.realpath(template_resolved)
@@ -44,7 +44,10 @@ def run(template_file, doc, mode='template'):
     base,ext = os.path.splitext(os.path.basename(template_resolved))
     module_name = ext[1:]
     try:
-        module = __import__(module_name)
+        try:
+            module = __import__("_" + module_name)
+        except:
+            module = __import__(module_name)
     except Exception, inst:
         return log.error("Skipping %s '%s' after failing to load '%s': %s", 
             mode, template_resolved, module_name, inst)

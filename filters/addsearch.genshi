@@ -1,0 +1,30 @@
+<html xmlns:py="http://genshi.edgewall.org/" py:strip="">
+
+  <!--! insert search form -->
+  <div py:match="div[@id='sidebar']" py:attrs="select('@*')">
+    ${select('*')}
+    <h2>Search</h2>
+    <form><input name="q"/></form>
+  </div>
+
+  <?python from urlparse import urljoin ?>
+
+  <!--! insert opensearch autodiscovery link -->
+  <head py:match="head" py:attrs="select('@*')">
+    ${select('*')}
+    <link rel="search" type="application/opensearchdescription+xml"
+      href="${urljoin(str(select('link[@rel=\'alternate\']/@href')),
+        'opensearchdescription.xml')}"
+      title="${select('link[@rel=\'alternate\']/@title')} search"/>
+  </head>
+
+  <!--! ensure that scripts don't use empty tag syntax -->
+  <script py:match="script" py:attrs="select('@*')">
+    ${select('*')}
+  </script>
+
+  <!--! Include the original stream, which will be processed by the rules
+        defined above -->
+  ${input}
+
+</html>
