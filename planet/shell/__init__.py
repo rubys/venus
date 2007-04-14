@@ -30,7 +30,7 @@ def run(template_file, doc, mode='template'):
         if not mode in logged_modes:
             log.info("%s search path:", mode)
             for template_dir in dirs:
-                log.info("    %s", os.path.realpath(template_dir))
+                log.error("    %s", os.path.realpath(template_dir))
             logged_modes.append(mode)
         return
     template_resolved = os.path.realpath(template_resolved)
@@ -60,3 +60,4 @@ def run(template_file, doc, mode='template'):
         output_dir = planet.config.output_dir()
         output_file = os.path.join(output_dir, base)
         module.run(template_resolved, doc, output_file, options)
+        return output_file

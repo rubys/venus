@@ -111,9 +111,25 @@ def apply(doc):
     if not os.path.exists(output_dir): os.makedirs(output_dir)
     log = planet.getLogger(config.log_level(),config.log_format())
 
+    planet_filters = config.filters('Planet')
+
     # Go-go-gadget-template
     for template_file in config.template_files():
-        shell.run(template_file, doc)
+        output_file = shell.run(template_file, doc)
+
+        # run any template specific filters
+        if config.filters(template_file) != planet_filters:
+            output = open(output_file).read()
+            for filter in config.filters(template_file):
+                if filter in planet_filters: continue
+                output = shell.run(filter, output, mode="filter")
+                if not output:
+                    os.unlink(output_file)
+                    break
+            else:
+                handle = open(output_file,'w')
+                handle.write(output)
+                handle.close()
 
     # Process bill of materials
     for copy_file in config.bill_of_materials():

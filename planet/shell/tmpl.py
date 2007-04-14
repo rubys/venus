@@ -241,12 +241,15 @@ def run(script, doc, output_file=None, options={}):
     for key,value in template_info(doc).items():
         tp.set(key, value)
 
-    reluri = os.path.splitext(os.path.basename(output_file))[0]
-    tp.set('url', urlparse.urljoin(config.link(),reluri))
+    if output_file:
+        reluri = os.path.splitext(os.path.basename(output_file))[0]
+        tp.set('url', urlparse.urljoin(config.link(),reluri))
 
-    output = open(output_file, "w")
-    output.write(tp.process(template))
-    output.close()
+        output = open(output_file, "w")
+        output.write(tp.process(template))
+        output.close()
+    else:
+        return tp.process(template)
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.split(sys.path[0])[0])

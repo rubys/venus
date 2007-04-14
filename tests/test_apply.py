@@ -63,6 +63,14 @@ class ApplyTest(unittest.TestCase):
         self.assertTrue(html.find(
           '<h4><a href="http://example.com/2">Venus</a></h4>')>=0)
 
+    def test_apply_filter(self):
+        config.load(configfile % 'filter')
+        splice.apply(self.feeddata)
+
+        # verify that index.html is well formed, has content, and xml:lang
+        html = open(os.path.join(workdir, 'index.html')).read()
+        self.assertTrue(html.find(' href="http://example.com/default.css"')>=0)
+
 try:
     import libxml2
 except ImportError:
