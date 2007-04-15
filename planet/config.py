@@ -359,7 +359,7 @@ def filters(section=None):
             urllib.quote(filter(section)))
     if exclude(section):
         filters.append('regexp_sifter.py?exclude=' +
-            urllib.quote(filter(section)))
+            urllib.quote(exclude(section)))
     return filters
 
 def planet_options():

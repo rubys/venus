@@ -111,6 +111,25 @@ class FilterTests(unittest.TestCase):
 
         self.assertNotEqual('', output)
 
+    def test_regexp_filter2(self):
+        config.load('tests/data/filter/regexp-sifter2.ini')
+
+        testfile = 'tests/data/filter/category-one.xml'
+
+        output = open(testfile).read()
+        for filter in config.filters():
+            output = shell.run(filter, output, mode="filter")
+
+        self.assertNotEqual('', output)
+
+        testfile = 'tests/data/filter/category-two.xml'
+
+        output = open(testfile).read()
+        for filter in config.filters():
+            output = shell.run(filter, output, mode="filter")
+
+        self.assertEqual('', output)
+
 try:
     from subprocess import Popen, PIPE
 
