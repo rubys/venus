@@ -134,11 +134,27 @@ function addOption(event) {
   }
 }
 
-// convert date to local time
+// Parse an HTML5-liberalized version of RFC 3339 datetime values
+Date.parseRFC3339 = function (string) {
+    var date=new Date();
+    date.setTime(0);
+    var match = string.match(/(\d{4})-(\d\d)-(\d\d)\s*(?:[\sT]\s*(\d\d):(\d\d)(?::(\d\d))?(\.\d*)?\s*(Z|([-+])(\d\d):(\d\d))?)?/);
+    if (!match) return;
+    if (match[2]) match[2]--;
+    if (match[7]) match[7] = (match[7]+'000').substring(1,4);
+    var field = [null,'FullYear','Month','Date','Hours','Minutes','Seconds','Milliseconds'];
+    for (var i=1; i<=7; i++) if (match[i]) date['setUTC'+field[i]](match[i]);
+    if (match[9]) date.setTime(date.getTime()+
+        (match[9]=='-'?1:-1)*(match[10]*3600000+match[11]*60000) );
+    return date.getTime();
+}
+
+// convert datetime to local date
 var localere = /^(\w+) (\d+) (\w+) \d+ 0?(\d\d?:\d\d):\d\d ([AP]M) (EST|EDT|CST|CDT|MST|MDT|PST|PDT)/;
 function localizeDate(element) {
   var date = new Date();
-  date.setTime(Date.parse(element.innerHTML + " GMT"));
+  date.setTime(Date.parseRFC3339(element.getAttribute('datetime')));
+  if (!date.getTime()) return;
 
   var local = date.toLocaleString();
   var match = local.match(localere);
@@ -160,13 +176,13 @@ function localizeDate(element) {
 // find entries (and localizeDates)
 function findEntries() {
 
-  var span = document.getElementsByTagName('span');
+  var times = document.getElementsByTagName('time');
    
-  for (var i=0; i<span.length; i++) {
-    if (span[i].className == "date" && span[i].title == "GMT") {
-      var date = localizeDate(span[i]);
+  for (var i=0; i<times.length; i++) {
+    if (times[i].title == "GMT") {
+      var date = localizeDate(times[i]);
 
-      var parent = span[i];
+      var parent = times[i];
       while (parent && 
         (!parent.className || parent.className.split(' ')[0] != 'news')) {
         parent = parent.parentNode;
@@ -174,8 +190,9 @@ function findEntries() {
 
       if (parent) {
         var info = entries[entries.length] = new Object();
-        info.parent = parent;
-        info.date   = date;
+        info.parent   = parent;
+        info.date     = date;
+        info.datetime = times[i].getAttribute('datetime').substring(0,10);
       }
     }
   }
@@ -184,7 +201,7 @@ function findEntries() {
 
 // insert/remove date headers to indicate change of date in local time zone
 function moveDateHeaders() {
-  lastdate = ''
+  var lastdate = ''
   for (var i=0; i<entries.length; i++) {
     var parent = entries[i].parent;
     var date = entries[i].date;
@@ -198,13 +215,16 @@ function moveDateHeaders() {
       if (lastdate == date) {
         sibling.parentNode.removeChild(sibling);
       } else {
-        sibling.innerHTML = date;
+        sibling.childNodes[0].innerHTML = date;
+        sibling.childNodes[0].setAttribute('datetime',entries[i].datetime);
         lastdate = date;
       }
     } else if (lastdate != date) {
       var h2 = document.createElement('h2');
-      h2.className = 'date'
-      h2.appendChild(document.createTextNode(date));
+      var time = document.createElement('time');
+      time.setAttribute('datetime',entries[i].datetime);
+      time.appendChild(document.createTextNode(date));
+      h2.appendChild(time);
       parent.parentNode.insertBefore(h2, parent);
       lastdate = date;
     }

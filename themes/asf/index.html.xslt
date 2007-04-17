@@ -49,9 +49,9 @@
           <dl>
             <dt>Last updated:</dt>
             <dd>
-              <span class="date" title="GMT">
+              <time datetime="{atom:updated}" title="GMT">
                 <xsl:value-of select="atom:updated/@planet:format"/>
-              </span>
+              </time>
             </dd>
             <dt>Powered by:</dt>
             <dd>
@@ -165,10 +165,12 @@
     <xsl:if test="not(preceding-sibling::atom:entry
       [substring(atom:updated,1,10) = $date])">
       <xsl:text>&#10;&#10;</xsl:text>
-      <h2 class="date">
-        <xsl:value-of select="substring-before(atom:updated/@planet:format,', ')"/>
-        <xsl:text>, </xsl:text>
-        <xsl:value-of select="substring-before(substring-after(atom:updated/@planet:format,', '), ' ')"/>
+      <h2>
+        <time datetime="{$date}">
+          <xsl:value-of select="substring-before(atom:updated/@planet:format,', ')"/>
+          <xsl:text>, </xsl:text>
+          <xsl:value-of select="substring-before(substring-after(atom:updated/@planet:format,', '), ' ')"/>
+        </time>
       </h2>
     </xsl:if>
 
@@ -231,9 +233,9 @@
               <xsl:text> at </xsl:text>
             </xsl:when>
           </xsl:choose>
-          <span class="date" title="GMT">
+          <time datetime="{atom:updated}" title="GMT">
             <xsl:value-of select="atom:updated/@planet:format"/>
-          </span>
+          </time>
         </a>
       </div>
     </div>
