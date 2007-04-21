@@ -28,10 +28,16 @@ try:
     import libxslt
 except:
     try:
-        from subprocess import Popen, PIPE
-        xsltproc=Popen(['xsltproc','--version'],stdout=PIPE,stderr=PIPE)
-        xsltproc.communicate()
-        if xsltproc.returncode != 0: raise ImportError
+        try:
+            # Python 2.5 bug 1704790 workaround (alas, Unix only)
+            import commands
+            if commands.getstatusoutput('xsltproc --version')[0] != 0:
+                raise ImportError
+        except:
+            from subprocess import Popen, PIPE
+            xsltproc=Popen(['xsltproc','--version'],stdout=PIPE,stderr=PIPE)
+            xsltproc.communicate()
+            if xsltproc.returncode != 0: raise ImportError
     except:
         logger.warn("libxslt is not available => can't test xslt filters")
         del XsltFilterTests.test_xslt_filter

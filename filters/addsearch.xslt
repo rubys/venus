@@ -1,14 +1,13 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
                 xmlns:xhtml="http://www.w3.org/1999/xhtml"
-                xmlns="http://www.w3.org/1999/xhtml"
-		exclude-result-prefixes="xhtml">
+                xmlns="http://www.w3.org/1999/xhtml">
 
   <!-- insert search form -->
   <xsl:template match="xhtml:div[@id='sidebar']">
     <xsl:copy>
       <xsl:apply-templates select="@*|node()"/>
-      <xhtml:h2>Search</xhtml:h2>
-      <xhtml:form><xhtml:input name="q"/></xhtml:form>
+      <h2>Search</h2>
+      <form><input name="q"/></form>
     </xsl:copy>
   </xsl:template>
 
@@ -30,7 +29,7 @@
   <xsl:template match="xhtml:head">
     <xsl:copy>
       <xsl:apply-templates select="@*|node()"/>
-      <xhtml:link rel="search" type="application/opensearchdescription+xml" title="{xhtml:link[@rel='alternate']/@title} search">
+      <link rel="search" type="application/opensearchdescription+xml" title="{xhtml:link[@rel='alternate']/@title} search">
         <xsl:attribute name="href">
           <xsl:call-template name="baseuri">
             <xsl:with-param name="string">
@@ -39,7 +38,7 @@
           </xsl:call-template>
           <xsl:text>opensearchdescription.xml</xsl:text>
         </xsl:attribute>
-      </xhtml:link>
+      </link>
     </xsl:copy>
   </xsl:template>
 

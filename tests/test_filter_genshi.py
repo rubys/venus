@@ -17,6 +17,6 @@ class GenshiFilterTests(unittest.TestCase):
 try:
     import genshi
 except:
-    logger.warn("genshi is not available => can't test genshi filters")
+    logger.warn("Genshi is not available => can't test genshi filters")
     for method in dir(GenshiFilterTests):
         if method.startswith('test_'):  delattr(GenshiFilterTests,method)
