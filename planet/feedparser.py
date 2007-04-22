@@ -11,8 +11,8 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 1.150 $"[11:16] + "-cvs"
-__license__ = """Copyright (c) 2002-2006, Mark Pilgrim, All rights reserved.
+__version__ = "4.2-pre-" + "$Revision: 260 $"[11:14] + "-svn"
+__license__ = """Copyright (c) 2002-2007, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -39,7 +39,8 @@ __contributors__ = ["Jason Diamond <http://injektilo.org/>",
                     "John Beimler <http://john.beimler.org/>",
                     "Fazal Majid <http://www.majid.info/mylos/weblog/>",
                     "Aaron Swartz <http://aaronsw.com/>",
-                    "Kevin Marks <http://epeus.blogspot.com/>"]
+                    "Kevin Marks <http://epeus.blogspot.com/>",
+                    "Sam Ruby <http://intertwingly.net/>"]
 _debug = 0
 
 # HTTP "User-Agent" header to send to servers when downloading feeds.
@@ -2250,27 +2251,41 @@ def _resolveRelativeURIs(htmlSource, baseURI, encoding, type):
     return p.output()
 
 class _HTMLSanitizer(_BaseHTMLProcessor):
-    acceptable_elements = ['a', 'abbr', 'acronym', 'address', 'area', 'b',
-      'big', 'blockquote', 'br', 'button', 'caption', 'center', 'cite',
-      'code', 'col', 'colgroup', 'dd', 'del', 'dfn', 'dir', 'div', 'dl', 'dt',
-      'em', 'fieldset', 'font', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'hr', 'i', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'map',
-      'menu', 'ol', 'optgroup', 'option', 'p', 'pre', 'q', 's', 'samp',
-      'select', 'small', 'span', 'strike', 'strong', 'sub', 'sup', 'table',
-      'tbody', 'td', 'textarea', 'tfoot', 'th', 'thead', 'tr', 'tt', 'u',
-      'ul', 'var']
+    acceptable_elements = ['a', 'abbr', 'acronym', 'address', 'area', 'article',
+      'aside', 'audio', 'b', 'big', 'blockquote', 'br', 'button', 'canvas',
+      'caption', 'center', 'cite', 'code', 'col', 'colgroup', 'command',
+      'datagrid', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'dir',
+      'div', 'dl', 'dt', 'em', 'event-source', 'fieldset', 'figure', 'footer',
+      'font', 'form', 'header', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i',
+      'img', 'input', 'ins', 'keygen', 'kbd', 'label', 'legend', 'li', 'm', 'map',
+      'menu', 'meter', 'multicol', 'nav', 'nextid', 'ol', 'output', 'optgroup',
+      'option', 'p', 'pre', 'progress', 'q', 's', 'samp', 'section', 'select',
+      'small', 'sound', 'source', 'spacer', 'span', 'strike', 'strong', 'sub',
+      'sup', 'table', 'tbody', 'td', 'textarea', 'time', 'tfoot', 'th', 'thead',
+      'tr', 'tt', 'u', 'ul', 'var', 'video', 'noscript']
 
     acceptable_attributes = ['abbr', 'accept', 'accept-charset', 'accesskey',
-      'action', 'align', 'alt', 'axis', 'border', 'cellpadding',
-      'cellspacing', 'char', 'charoff', 'charset', 'checked', 'cite', 'class',
-      'clear', 'cols', 'colspan', 'color', 'compact', 'coords', 'datetime',
-      'dir', 'disabled', 'enctype', 'for', 'frame', 'headers', 'height',
-      'href', 'hreflang', 'hspace', 'id', 'ismap', 'label', 'lang',
-      'longdesc', 'maxlength', 'media', 'method', 'multiple', 'name',
-      'nohref', 'noshade', 'nowrap', 'prompt', 'readonly', 'rel', 'rev',
-      'rows', 'rowspan', 'rules', 'scope', 'selected', 'shape', 'size',
-      'span', 'src', 'start', 'summary', 'tabindex', 'target', 'title',
-      'type', 'usemap', 'valign', 'value', 'vspace', 'width', 'xml:lang']
+      'action', 'align', 'alt', 'autoplay', 'autocomplete', 'autofocus', 'axis',
+      'background', 'balance', 'bgcolor', 'bgproperties', 'border',
+      'bordercolor', 'bordercolordark', 'bordercolorlight', 'bottompadding',
+      'cellpadding', 'cellspacing', 'ch', 'challenge', 'char', 'charoff',
+      'choff', 'charset', 'checked', 'cite', 'class', 'clear', 'color', 'cols',
+      'colspan', 'compact', 'contenteditable', 'coords', 'data', 'datafld',
+      'datapagesize', 'datasrc', 'datetime', 'default', 'delay', 'dir',
+      'disabled', 'draggable', 'dynsrc', 'enctype', 'end', 'face', 'for',
+      'form', 'frame', 'galleryimg', 'gutter', 'headers', 'height', 'hidefocus',
+      'hidden', 'high', 'href', 'hreflang', 'hspace', 'icon', 'id', 'inputmode',
+      'ismap', 'keytype', 'label', 'leftspacing', 'lang', 'list', 'longdesc',
+      'loop', 'loopcount', 'loopend', 'loopstart', 'low', 'lowsrc', 'max',
+      'maxlength', 'media', 'method', 'min', 'multiple', 'name', 'nohref',
+      'noshade', 'nowrap', 'open', 'optimum', 'pattern', 'ping', 'point-size',
+      'prompt', 'pqg', 'radiogroup', 'readonly', 'rel', 'repeat-max',
+      'repeat-min', 'replace', 'required', 'rev', 'rightspacing', 'rows',
+      'rowspan', 'rules', 'scope', 'selected', 'shape', 'size', 'span', 'src',
+      'start', 'step', 'summary', 'suppress', 'tabindex', 'target', 'template',
+      'title', 'toppadding', 'type', 'unselectable', 'usemap', 'urn', 'valign',
+      'value', 'variable', 'volume', 'vspace', 'vrml', 'width', 'wrap',
+      'xml:lang']
 
     unacceptable_elements_with_end_tag = ['script', 'applet']
 
@@ -2339,8 +2354,8 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
        'stop-color', 'stop-opacity', 'strikethrough-position',
        'strikethrough-thickness', 'stroke', 'stroke-dasharray',
        'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin',
-       'stroke-miterlimit', 'stroke-width', 'systemLanguage', 'target',
-       'text-anchor', 'to', 'transform', 'type', 'u1', 'u2',
+       'stroke-miterlimit', 'stroke-opacity', 'stroke-width', 'systemLanguage',
+       'target', 'text-anchor', 'to', 'transform', 'type', 'u1', 'u2',
        'underline-position', 'underline-thickness', 'unicode',
        'unicode-range', 'units-per-em', 'values', 'version', 'viewBox',
        'visibility', 'width', 'widths', 'x', 'x-height', 'x1', 'x2',
@@ -3785,4 +3800,3 @@ if __name__ == '__main__':
 #  currently supports rel-tag (maps to 'tags'), rel-enclosure (maps to
 #  'enclosures'), XFN links within content elements (maps to 'xfn'),
 #  and hCard (parses as vCard); bug [ 1481975 ] Misencoded utf-8/win-1252
-
