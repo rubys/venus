@@ -167,5 +167,18 @@ a <code>planet:format</code> attribute containing the referenced date
 formatted according to the <code>[planet] date_format</code> specified
 in the configuration</li>
 </ul>
+
+<h3>genshi</h3>
+<p>Genshi approaches the power of XSLT, but with a syntax that many Python
+programmers find more natural, succinct and expressive.  Genshi templates
+have access to the full range of <a href="http://feedparser.org/docs/reference.html">feedparser</a> values, with the following additions:</p>
+<ul>
+<li>In addition to a <code>feed</code> element which describes the feed
+for your planet, there is also a <code>feeds</code> element which contains
+the description for each subscription.</li>
+<li>All <code>feed</code>, <code>feeds</code>, and <code>source</code> elements have a child <code>config</code> element which contains the config.ini entries associated with that feed.</li>
+<li>All text construct detail elements (<code>subtitle</code>, <code>rights</code>, <code>title</code>, <code>summary</code>, <code>content</code>) also contain a <code>stream</code> element which contains the value as a Genshi stream.</li>
+<li>Each of the <code>entries</code> has a <code>new_date</code> and <code>new_feed</code> value which indicates if this entry's date or feed differs from the preceeding entry.</li>
+</ul>
 </body>
 </html>

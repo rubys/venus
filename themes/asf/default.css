@@ -208,7 +208,7 @@ body > h1 {
 	text-align: right;
 }
 
-#body h2 {
+#body > h2 {
 	text-transform: none;
 	font-size: medium;
 	color: #333;

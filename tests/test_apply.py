@@ -47,8 +47,15 @@ class ApplyTest(unittest.TestCase):
         self.assertEqual(12, content)
         self.assertEqual(3, lang)
 
-    def test_apply_fancy(self):
+    def test_apply_classic_fancy(self):
         config.load(configfile % 'fancy')
+        self.apply_fancy()
+
+    def test_apply_genshi_fancy(self):
+        config.load(configfile % 'genshi')
+        self.apply_fancy()
+
+    def apply_fancy(self):
         splice.apply(self.feeddata)
 
         # verify that selected files are there
@@ -93,3 +100,9 @@ except ImportError:
         logger.warn("xsltproc is not available => can't test XSLT templates")
         for method in dir(ApplyTest):
             if method.startswith('test_'):  delattr(ApplyTest,method)
+
+import test_filter_genshi
+for method in dir(test_filter_genshi.GenshiFilterTests):
+    if method.startswith('test_'): break
+else:
+    delattr(ApplyTest,'test_apply_genshi_fancy')
