@@ -37,6 +37,22 @@ def find_config(config, feed):
 
     return {}
 
+class XHTMLParser(object):
+    """ parse an XHTML fragment """
+    def __init__(self, text):
+        self.parser = XMLParser(StringIO("<div>%s</div>" % text))
+        self.depth = 0
+    def __iter__(self):
+        self.iter = self.parser.__iter__()
+        return self
+    def next(self):
+        object = self.iter.next()
+        if object[0] == 'END': self.depth = self.depth - 1
+        predepth = self.depth
+        if object[0] == 'START': self.depth = self.depth + 1
+        if predepth: return object
+        return self.next()
+
 def streamify(text,bozo):
     """ add a .stream to a _detail textConstruct """
     if text.type == 'text/plain':
@@ -44,7 +60,7 @@ def streamify(text,bozo):
     elif text.type == 'text/html' or bozo != 'false':
         text.stream = HTMLParser(StringIO(text.value))
     else:
-        text.stream = XMLParser(StringIO("<div>%s</div>" % text.value))
+        text.stream = XHTMLParser(text.value)
 
 def run(script, doc, output_file=None, options={}):
     """ process an Genshi template """
