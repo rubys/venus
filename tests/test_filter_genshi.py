@@ -14,6 +14,13 @@ class GenshiFilterTests(unittest.TestCase):
         self.assertTrue(output.find(' href="http://planet.intertwingly.net/opensearchdescription.xml"')>=0)
         self.assertTrue(output.find('</script>')>=0)
 
+    def test_xhtml2html_filter(self):
+        testfile = 'tests/data/filter/index.html'
+        filter = 'xhtml2html.py'
+        output = shell.run(filter, open(testfile).read(), mode="filter")
+        self.assertTrue(output.find('/>')<0)
+        self.assertTrue(output.find('</script>')>=0)
+
 try:
     import genshi
 except:
