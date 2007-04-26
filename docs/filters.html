@@ -77,8 +77,18 @@ python. <code>.xslt</code> involkes XSLT.  <code>.sed</code> and
 perl or ruby or class/jar (java), aren't supported at the moment, but these
 would be easy to add.</li>
 
-<li>Templates written using htmltmpl currently only have access to a fixed set
-of fields, whereas XSLT templates have access to everything.</li>
+<li>If the filter name contains a redirection character (<code>&gt;</code>),
+then the output stream is
+<a href="http://en.wikipedia.org/wiki/Tee_(Unix)">tee</a>d; one branch flows
+through the specified filter and the output is planced into the named file; the
+other unmodified branch continues onto the next filter, if any.
+One use case for this function is to use
+<a href="../filters/xhtml2html.py">xhtml2html</a> to produce both an XHTML and
+an HTML output stream from one source.</li>
+
+<li>Templates written using htmltmpl or django currently only have access to a
+fixed set of fields, whereas XSLT and genshi templates have access to
+everything.</li>
 </ul>
 </body>
 </html>

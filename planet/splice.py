@@ -122,10 +122,22 @@ def apply(doc):
             output = open(output_file).read()
             for filter in config.filters(template_file):
                 if filter in planet_filters: continue
-                output = shell.run(filter, output, mode="filter")
-                if not output:
-                    os.unlink(output_file)
-                    break
+                if filter.find('>')>0:
+                    # tee'd output
+                    filter,dest = filter.split('>',1)
+                    tee = shell.run(filter.strip(), output, mode="filter")
+                    if tee:
+                        output_dir = planet.config.output_dir()
+                        dest_file = os.path.join(output_dir, dest.strip())
+                        dest_file = open(dest_file,'w')
+                        dest_file.write(tee)
+                        dest_file.close()
+                else:
+                    # pipe'd output
+                    output = shell.run(filter, output, mode="filter")
+                    if not output:
+                        os.unlink(output_file)
+                        break
             else:
                 handle = open(output_file,'w')
                 handle.write(output)

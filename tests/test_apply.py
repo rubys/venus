@@ -55,6 +55,16 @@ class ApplyTest(unittest.TestCase):
         config.load(configfile % 'genshi')
         self.apply_fancy()
 
+    def test_apply_filter_html(self):
+        config.load(configfile % 'html')
+        self.apply_fancy()
+
+        output = open(os.path.join(workdir, 'index.html')).read()
+        self.assertTrue(output.find('/>')>=0)
+
+        output = open(os.path.join(workdir, 'index.html4')).read()
+        self.assertTrue(output.find('/>')<0)
+
     def apply_fancy(self):
         splice.apply(self.feeddata)
 
@@ -106,3 +116,4 @@ for method in dir(test_filter_genshi.GenshiFilterTests):
     if method.startswith('test_'): break
 else:
     delattr(ApplyTest,'test_apply_genshi_fancy')
+    delattr(ApplyTest,'test_apply_filter_html')
