@@ -131,7 +131,7 @@
                   <xsl:value-of select="planet:name"/>
                 </a>
 
-                <xsl:if test="$posts">
+                <xsl:if test="$posts[string-length(atom:title) &gt; 0]">
                   <ul>
                     <xsl:for-each select="$posts">
                       <xsl:if test="string-length(atom:title) &gt; 0">

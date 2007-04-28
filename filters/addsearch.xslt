@@ -52,6 +52,14 @@
     </xsl:copy>
   </xsl:template>
 
+  <!-- add HTML5 doctype -->
+  <xsl:template match="/xhtml:html">
+    <xsl:text disable-output-escaping="yes">&lt;!DOCTYPE html&gt;</xsl:text>
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+  </xsl:template>
+
   <!-- pass through everything else -->
   <xsl:template match="@*|node()">
     <xsl:copy>

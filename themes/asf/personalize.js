@@ -71,6 +71,7 @@ function createCookie(name,value,days) {
 // read a cookie
 function readCookie(name) {
   var nameEQ = name + "=";
+  if (!document.cookie) return;
   var ca = document.cookie.split(';');
   for(var i=0;i < ca.length;i++) {
     var c = ca[i];
