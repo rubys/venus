@@ -8,12 +8,13 @@
 <title>Venus Filters</title>
 </head>
 <body>
-<h2>Filters</h2>
-<p>Filters are simple Unix pipes.  Input comes in <code>stdin</code>,
-parameters come from the config file, and output goes to <code>stdout</code>.
-Anything written to <code>stderr</code> is logged as an ERROR message.  If no
-<code>stdout</code> is produced, the entry is not written to the cache or
-processed further; in fact, if the entry had previously been written to the cache, it will be removed.</p>
+<h2>Filters and Plugins</h2>
+<p>Filters and plugins are simple Unix pipes.  Input comes in
+<code>stdin</code>, parameters come from the config file, and output goes to
+<code>stdout</code>.  Anything written to <code>stderr</code> is logged as an
+ERROR message.  If no <code>stdout</code> is produced, the entry is not written
+to the cache or processed further; in fact, if the entry had previously been
+written to the cache, it will be removed.</p>
 
 <p>There are two types of filters supported by Venus, input and template.</p>
 <p>Input to an input filter is a aggressively
@@ -89,6 +90,16 @@ an HTML output stream from one source.</li>
 <li>Templates written using htmltmpl or django currently only have access to a
 fixed set of fields, whereas XSLT and genshi templates have access to
 everything.</li>
+
+<li>Plugins differ from filters in that while filters are forked, plugins are
+<a href="http://docs.python.org/lib/module-imp.html">imported</a>.  This
+means that plugins are limited to Python and are run in-process.  Plugins
+therefore have direct access to planet internals like configuration and
+logging facitilies, as well as access to the bundled libraries like the
+<a href="http://feedparser.org/docs/">Universal Feed Parser</a> and
+<a href="http://code.google.com/p/html5lib/">html5lib</a>; but it also
+means that functions like <code>os.abort()</code> can't be recovered
+from.</li>
 </ul>
 </body>
 </html>

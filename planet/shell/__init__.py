@@ -54,6 +54,7 @@ def run(template_file, doc, mode='template'):
 
     # Execute the shell module
     options = planet.config.template_options(template_file)
+    if module_name == 'plugin': options['__file__'] = template_file
     options.update(extra_options)
     log.debug("Processing %s %s using %s", mode,
         os.path.realpath(template_resolved), module_name)

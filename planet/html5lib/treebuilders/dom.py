@@ -1,6 +1,8 @@
 import _base
 from xml.dom import minidom, Node, XML_NAMESPACE, XMLNS_NAMESPACE
 import new
+from xml.sax.saxutils import escape
+from constants import voidElements
 
 import re
 illegal_xml_chars = re.compile("[\x01-\x08\x0B\x0C\x0E-\x1F]")
@@ -87,6 +89,9 @@ class TreeBuilder(_base.TreeBuilder):
         
     def commentClass(self, data):
         return NodeBuilder(self.dom.createComment(data))
+    
+    def fragmentClass(self):
+        return NodeBuilder(self.dom.createDocumentFragment())
 
     def appendChild(self, node):
         self.dom.appendChild(node.element)
@@ -96,6 +101,9 @@ class TreeBuilder(_base.TreeBuilder):
 
     def getDocument(self):
         return self.dom
+    
+    def getFragment(self):
+        return _base.TreeBuilder.getFragment(self).element
 
     def insertText(self, data, parent=None):
         data=illegal_xml_chars.sub(u'\uFFFD',data)
@@ -119,6 +127,8 @@ def testSerializer(element):
             rv.append("|%s<!DOCTYPE %s>"%(' '*indent, element.name))
         elif element.nodeType == Node.DOCUMENT_NODE:
             rv.append("#document")
+        elif element.nodeType == Node.DOCUMENT_FRAGMENT_NODE:
+            rv.append("#document-fragment")
         elif element.nodeType == Node.COMMENT_NODE:
             rv.append("|%s<!-- %s -->"%(' '*indent, element.nodeValue))
         elif element.nodeType == Node.TEXT_NODE:
@@ -134,6 +144,32 @@ def testSerializer(element):
     serializeElement(element, 0)
 
     return "\n".join(rv)
+
+class HTMLSerializer(object):
+    def serialize(self, node):
+        rv = self.serializeNode(node)
+        for child in node.childNodes:
+            rv += self.serialize(child)
+        if node.nodeType == Node.ELEMENT_NODE and node.nodeName not in voidElements:
+            rv += "</%s>\n"%node.nodeName
+        return rv
+    
+    def serializeNode(self, node):
+        if node.nodeType == Node.TEXT_NODE:
+            rv = node.nodeValue
+        elif node.nodeType == Node.ELEMENT_NODE:
+            rv = "<%s"%node.nodeName
+            if node.hasAttributes():
+                rv = rv+"".join([" %s='%s'"%(key, escape(value)) for key,value in
+                                 node.attributes.items()])
+            rv += ">"
+        elif node.nodeType == Node.COMMENT_NODE:
+            rv = "<!-- %s -->" % escape(node.nodeValue)        
+        elif node.nodeType == Node.DOCUMENT_TYPE_NODE:
+            rv = "<!DOCTYPE %s>" % node.name
+        else:
+            rv = ""
+        return rv
 
 def dom2sax(node, handler, nsmap={'xml':XML_NAMESPACE}):
   if node.nodeType == Node.ELEMENT_NODE:
@@ -180,6 +216,9 @@ def dom2sax(node, handler, nsmap={'xml':XML_NAMESPACE}):
     handler.startDocument()
     for child in node.childNodes: dom2sax(child, handler, nsmap)
     handler.endDocument()
+
+  elif node.nodeType == Node.DOCUMENT_FRAGMENT_NODE:
+    for child in node.childNodes: dom2sax(child, handler, nsmap)
 
   else:
     # ATTRIBUTE_NODE

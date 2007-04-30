@@ -21,8 +21,7 @@ class ApplyTest(unittest.TestCase):
              os.makedirs(workdir)
     
     def tearDown(self):
-        shutil.rmtree(workdir)
-        os.removedirs(os.path.split(workdir)[0])
+        shutil.rmtree(os.path.split(workdir)[0])
 
     def test_apply_asf(self):
         config.load(configfile % 'asf')
@@ -65,7 +64,20 @@ class ApplyTest(unittest.TestCase):
         output = open(os.path.join(workdir, 'index.html4')).read()
         self.assertTrue(output.find('/>')<0)
 
+    def test_apply_filter_mememe(self):
+        config.load(configfile % 'mememe')
+        self.apply_fancy()
+    
+        output = open(os.path.join(workdir, 'index.html')).read()
+        self.assertTrue(output.find('<div class="sidebar"><h2>Memes <a href="memes.atom">')>=0)
+
     def apply_fancy(self):
+        # drop slow templates unrelated to test at hand
+        templates = config.parser.get('Planet','template_files').split()
+        templates.remove('rss10.xml.tmpl')
+        templates.remove('rss20.xml.tmpl')
+        config.parser.set('Planet','template_files',' '.join(templates))
+        
         splice.apply(self.feeddata)
 
         # verify that selected files are there
