@@ -151,6 +151,9 @@ def apply(doc):
             if os.path.exists(source): break
         else:
             log.error('Unable to locate %s', copy_file)
+            log.info("Template search path:")
+            for template_dir in config.template_directories():
+                log.info("    %s", os.path.realpath(template_dir))
             continue
 
         mtime = os.stat(source).st_mtime

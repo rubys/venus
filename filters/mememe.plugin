@@ -38,6 +38,11 @@ cache = config.cache_directory()
 meme_cache = os.path.join(cache, 'memes')
 if not os.path.exists(meme_cache): os.makedirs(meme_cache)
 
+bom = config.bill_of_materials()
+if not 'images/tcosm11.gif' in bom:
+  bom.append('images/tcosm11.gif')
+  config.parser.set('Planet', 'bill_of_materials', ' '.join(bom))
+
 all_links = {}
 feed_links = {}
 
@@ -412,7 +417,7 @@ for i in range(0,len(weighted_links)):
     a.setProp('href',tlink + quote_plus(link))
   a.setProp('title','cosmos')
   img = a.newChild(None, 'img', None)
-  img.setProp('src','tcosm11.gif')
+  img.setProp('src','images/tcosm11.gif')
 
   # main link
   a = li.newTextChild(None, 'a', title.strip().encode('utf-8'))
