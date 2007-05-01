@@ -11,8 +11,8 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 1.149 $"[11:16] + "-cvs"
-__license__ = """Copyright (c) 2002-2006, Mark Pilgrim, All rights reserved.
+__version__ = "4.2-pre-" + "$Revision: 262 $"[11:14] + "-svn"
+__license__ = """Copyright (c) 2002-2007, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -39,7 +39,8 @@ __contributors__ = ["Jason Diamond <http://injektilo.org/>",
                     "John Beimler <http://john.beimler.org/>",
                     "Fazal Majid <http://www.majid.info/mylos/weblog/>",
                     "Aaron Swartz <http://aaronsw.com/>",
-                    "Kevin Marks <http://epeus.blogspot.com/>"]
+                    "Kevin Marks <http://epeus.blogspot.com/>",
+                    "Sam Ruby <http://intertwingly.net/>"]
 _debug = 0
 
 # HTTP "User-Agent" header to send to servers when downloading feeds.
@@ -229,6 +230,10 @@ class FeedParserDict(UserDict):
         if key == 'enclosures':
             norel = lambda link: FeedParserDict([(name,value) for (name,value) in link.items() if name!='rel'])
             return [norel(link) for link in UserDict.__getitem__(self, 'links') if link['rel']=='enclosure']
+        if key == 'license':
+            for link in UserDict.__getitem__(self, 'links'):
+                if link['rel']=='license' and link.has_key('href'):
+                    return link['href']
         if key == 'categories':
             return [(tag['scheme'], tag['term']) for tag in UserDict.__getitem__(self, 'tags')]
         realkey = self.keymap.get(key, key)
@@ -424,7 +429,7 @@ class _FeedParserMixin:
 }
     _matchnamespaces = {}
 
-    can_be_relative_uri = ['link', 'id', 'wfw_comment', 'wfw_commentrss', 'docs', 'url', 'href', 'comments', 'license', 'icon', 'logo']
+    can_be_relative_uri = ['link', 'id', 'wfw_comment', 'wfw_commentrss', 'docs', 'url', 'href', 'comments', 'icon', 'logo']
     can_contain_relative_uris = ['content', 'title', 'summary', 'info', 'tagline', 'subtitle', 'copyright', 'rights', 'description']
     can_contain_dangerous_markup = ['content', 'title', 'summary', 'info', 'tagline', 'subtitle', 'copyright', 'rights', 'description']
     html_types = ['text/html', 'application/xhtml+xml']
@@ -460,6 +465,7 @@ class _FeedParserMixin:
         self.langstack = []
         self.baseuri = baseuri or ''
         self.lang = baselang or None
+        self.svgOK = 0
         if baselang:
             self.feeddata['language'] = baselang.replace('_','-')
 
@@ -514,6 +520,7 @@ class _FeedParserMixin:
                     attrs.append(('xmlns',namespace))
                 if tag=='svg' and namespace=='http://www.w3.org/2000/svg':
                     attrs.append(('xmlns',namespace))
+            if tag == 'svg': self.svgOK = 1
             return self.handle_data('<%s%s>' % (tag, self.strattrs(attrs)), escape=0)
 
         # match namespaces
@@ -549,6 +556,7 @@ class _FeedParserMixin:
         prefix = self.namespacemap.get(prefix, prefix)
         if prefix:
             prefix = prefix + '_'
+        if suffix == 'svg': self.svgOK = 0
 
         # call special handler (if defined) or default handler
         methodname = '_end_' + prefix + suffix
@@ -1247,17 +1255,26 @@ class _FeedParserMixin:
         self._save('expired_parsed', _parse_date(self.pop('expired')))
 
     def _start_cc_license(self, attrsD):
-        self.push('license', 1)
+        context = self._getContext()
         value = self._getAttribute(attrsD, 'rdf:resource')
-        if value:
-            self.elementstack[-1][2].append(value)
-        self.pop('license')
+        attrsD = FeedParserDict()
+        attrsD['rel']='license'
+        if value: attrsD['href']=value
+        context.setdefault('links', []).append(attrsD)
         
     def _start_creativecommons_license(self, attrsD):
         self.push('license', 1)
+    _start_creativeCommons_license = _start_creativecommons_license
 
     def _end_creativecommons_license(self):
-        self.pop('license')
+        value = self.pop('license')
+        context = self._getContext()
+        attrsD = FeedParserDict()
+        attrsD['rel']='license'
+        if value: attrsD['href']=value
+        context.setdefault('links', []).append(attrsD)
+        del context['license']
+    _end_creativeCommons_license = _end_creativecommons_license
 
     def _addXFN(self, relationships, href, name):
         context = self._getContext()
@@ -1349,12 +1366,13 @@ class _FeedParserMixin:
             self._save('link', value)
 
     def _start_title(self, attrsD):
-        if self.incontent: return self.unknown_starttag('title', attrsD)
+        if self.svgOK: return self.unknown_starttag('title', attrsD.items())
         self.pushContent('title', attrsD, 'text/plain', self.infeed or self.inentry or self.insource)
     _start_dc_title = _start_title
     _start_media_title = _start_title
 
     def _end_title(self):
+        if self.svgOK: return
         value = self.popContent('title')
         if not value: return
         context = self._getContext()
@@ -2233,27 +2251,41 @@ def _resolveRelativeURIs(htmlSource, baseURI, encoding, type):
     return p.output()
 
 class _HTMLSanitizer(_BaseHTMLProcessor):
-    acceptable_elements = ['a', 'abbr', 'acronym', 'address', 'area', 'b',
-      'big', 'blockquote', 'br', 'button', 'caption', 'center', 'cite',
-      'code', 'col', 'colgroup', 'dd', 'del', 'dfn', 'dir', 'div', 'dl', 'dt',
-      'em', 'fieldset', 'font', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'hr', 'i', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'map',
-      'menu', 'ol', 'optgroup', 'option', 'p', 'pre', 'q', 's', 'samp',
-      'select', 'small', 'span', 'strike', 'strong', 'sub', 'sup', 'table',
-      'tbody', 'td', 'textarea', 'tfoot', 'th', 'thead', 'tr', 'tt', 'u',
-      'ul', 'var']
+    acceptable_elements = ['a', 'abbr', 'acronym', 'address', 'area', 'article',
+      'aside', 'audio', 'b', 'big', 'blockquote', 'br', 'button', 'canvas',
+      'caption', 'center', 'cite', 'code', 'col', 'colgroup', 'command',
+      'datagrid', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'dir',
+      'div', 'dl', 'dt', 'em', 'event-source', 'fieldset', 'figure', 'footer',
+      'font', 'form', 'header', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i',
+      'img', 'input', 'ins', 'keygen', 'kbd', 'label', 'legend', 'li', 'm', 'map',
+      'menu', 'meter', 'multicol', 'nav', 'nextid', 'ol', 'output', 'optgroup',
+      'option', 'p', 'pre', 'progress', 'q', 's', 'samp', 'section', 'select',
+      'small', 'sound', 'source', 'spacer', 'span', 'strike', 'strong', 'sub',
+      'sup', 'table', 'tbody', 'td', 'textarea', 'time', 'tfoot', 'th', 'thead',
+      'tr', 'tt', 'u', 'ul', 'var', 'video', 'noscript']
 
     acceptable_attributes = ['abbr', 'accept', 'accept-charset', 'accesskey',
-      'action', 'align', 'alt', 'axis', 'border', 'cellpadding',
-      'cellspacing', 'char', 'charoff', 'charset', 'checked', 'cite', 'class',
-      'clear', 'cols', 'colspan', 'color', 'compact', 'coords', 'datetime',
-      'dir', 'disabled', 'enctype', 'for', 'frame', 'headers', 'height',
-      'href', 'hreflang', 'hspace', 'id', 'ismap', 'label', 'lang',
-      'longdesc', 'maxlength', 'media', 'method', 'multiple', 'name',
-      'nohref', 'noshade', 'nowrap', 'prompt', 'readonly', 'rel', 'rev',
-      'rows', 'rowspan', 'rules', 'scope', 'selected', 'shape', 'size',
-      'span', 'src', 'start', 'summary', 'tabindex', 'target', 'title',
-      'type', 'usemap', 'valign', 'value', 'vspace', 'width', 'xml:lang']
+      'action', 'align', 'alt', 'autoplay', 'autocomplete', 'autofocus', 'axis',
+      'background', 'balance', 'bgcolor', 'bgproperties', 'border',
+      'bordercolor', 'bordercolordark', 'bordercolorlight', 'bottompadding',
+      'cellpadding', 'cellspacing', 'ch', 'challenge', 'char', 'charoff',
+      'choff', 'charset', 'checked', 'cite', 'class', 'clear', 'color', 'cols',
+      'colspan', 'compact', 'contenteditable', 'coords', 'data', 'datafld',
+      'datapagesize', 'datasrc', 'datetime', 'default', 'delay', 'dir',
+      'disabled', 'draggable', 'dynsrc', 'enctype', 'end', 'face', 'for',
+      'form', 'frame', 'galleryimg', 'gutter', 'headers', 'height', 'hidefocus',
+      'hidden', 'high', 'href', 'hreflang', 'hspace', 'icon', 'id', 'inputmode',
+      'ismap', 'keytype', 'label', 'leftspacing', 'lang', 'list', 'longdesc',
+      'loop', 'loopcount', 'loopend', 'loopstart', 'low', 'lowsrc', 'max',
+      'maxlength', 'media', 'method', 'min', 'multiple', 'name', 'nohref',
+      'noshade', 'nowrap', 'open', 'optimum', 'pattern', 'ping', 'point-size',
+      'prompt', 'pqg', 'radiogroup', 'readonly', 'rel', 'repeat-max',
+      'repeat-min', 'replace', 'required', 'rev', 'rightspacing', 'rows',
+      'rowspan', 'rules', 'scope', 'selected', 'shape', 'size', 'span', 'src',
+      'start', 'step', 'summary', 'suppress', 'tabindex', 'target', 'template',
+      'title', 'toppadding', 'type', 'unselectable', 'usemap', 'urn', 'valign',
+      'value', 'variable', 'volume', 'vspace', 'vrml', 'width', 'wrap',
+      'xml:lang']
 
     unacceptable_elements_with_end_tag = ['script', 'applet']
 
@@ -2300,36 +2332,38 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
     svg_elements = ['a', 'animate', 'animateColor', 'animateMotion',
       'animateTransform', 'circle', 'defs', 'desc', 'ellipse', 'font-face',
       'font-face-name', 'font-face-src', 'g', 'glyph', 'hkern', 'image',
-      'linearGradient', 'line', 'metadata', 'missing-glyph', 'mpath', 'path',
-      'polygon', 'polyline', 'radialGradient', 'rect', 'set', 'stop', 'svg',
-      'switch', 'text', 'title', 'use']
+      'linearGradient', 'line', 'marker', 'metadata', 'missing-glyph', 'mpath',
+      'path', 'polygon', 'polyline', 'radialGradient', 'rect', 'set', 'stop',
+      'svg', 'switch', 'text', 'title', 'tspan', 'use']
 
     # svgtiny + class + opacity + offset + xmlns + xmlns:xlink
     svg_attributes = ['accent-height', 'accumulate', 'additive', 'alphabetic',
        'arabic-form', 'ascent', 'attributeName', 'attributeType',
        'baseProfile', 'bbox', 'begin', 'by', 'calcMode', 'cap-height',
-       'class', 'color', 'color-rendering', 'content', 'cx', 'cy', 'd',
-       'descent', 'display', 'dur', 'end', 'fill', 'fill-rule', 'font-family',
-       'font-size', 'font-stretch', 'font-style', 'font-variant',
+       'class', 'color', 'color-rendering', 'content', 'cx', 'cy', 'd', 'dx',
+       'dy', 'descent', 'display', 'dur', 'end', 'fill', 'fill-rule',
+       'font-family', 'font-size', 'font-stretch', 'font-style', 'font-variant',
        'font-weight', 'from', 'fx', 'fy', 'g1', 'g2', 'glyph-name', 
        'gradientUnits', 'hanging', 'height', 'horiz-adv-x', 'horiz-origin-x',
        'id', 'ideographic', 'k', 'keyPoints', 'keySplines', 'keyTimes',
-       'lang', 'mathematical', 'max', 'min', 'name', 'offset', 'opacity',
-       'origin', 'overline-position', 'overline-thickness', 'panose-1',
-       'path', 'pathLength', 'points', 'preserveAspectRatio', 'r',
-       'repeatCount', 'repeatDur', 'requiredExtensions', 'requiredFeatures',
-       'restart', 'rotate', 'rx', 'ry', 'slope', 'stemh', 'stemv', 
-       'stop-color', 'stop-opacity', 'strikethrough-position',
-       'strikethrough-thickness', 'stroke', 'stroke-dasharray',
-       'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin',
-       'stroke-miterlimit', 'stroke-width', 'systemLanguage', 'target',
-       'text-anchor', 'to', 'transform', 'type', 'u1', 'u2',
-       'underline-position', 'underline-thickness', 'unicode',
-       'unicode-range', 'units-per-em', 'values', 'version', 'viewBox',
-       'visibility', 'width', 'widths', 'x', 'x-height', 'x1', 'x2',
-       'xlink:actuate', 'xlink:arcrole', 'xlink:href', 'xlink:role',
-       'xlink:show', 'xlink:title', 'xlink:type', 'xml:base', 'xml:lang',
-       'xml:space', 'xmlns', 'xmlns:xlink', 'y', 'y1', 'y2', 'zoomAndPan']
+       'lang', 'mathematical', 'marker-end', 'marker-mid', 'marker-start',
+       'markerHeight', 'markerUnits', 'markerWidth', 'max', 'min', 'name',
+       'offset', 'opacity', 'orient', 'origin', 'overline-position',
+       'overline-thickness', 'panose-1', 'path', 'pathLength', 'points',
+       'preserveAspectRatio', 'r', 'refX', 'refY', 'repeatCount', 'repeatDur',
+       'requiredExtensions', 'requiredFeatures', 'restart', 'rotate', 'rx',
+       'ry', 'slope', 'stemh', 'stemv', 'stop-color', 'stop-opacity',
+       'strikethrough-position', 'strikethrough-thickness', 'stroke',
+       'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap',
+       'stroke-linejoin', 'stroke-miterlimit', 'stroke-opacity',
+       'stroke-width', 'systemLanguage', 'target', 'text-anchor', 'to',
+       'transform', 'type', 'u1', 'u2', 'underline-position',
+       'underline-thickness', 'unicode', 'unicode-range', 'units-per-em',
+       'values', 'version', 'viewBox', 'visibility', 'width', 'widths', 'x',
+       'x-height', 'x1', 'x2', 'xlink:actuate', 'xlink:arcrole', 'xlink:href',
+       'xlink:role', 'xlink:show', 'xlink:title', 'xlink:type', 'xml:base',
+       'xml:lang', 'xml:space', 'xmlns', 'xmlns:xlink', 'y', 'y1', 'y2',
+       'zoomAndPan']
 
     svg_attr_map = None
     svg_elem_map = None
@@ -3506,7 +3540,8 @@ class TextSerializer(Serializer):
         
 class PprintSerializer(Serializer):
     def write(self, stream=sys.stdout):
-        stream.write(self.results['href'] + '\n\n')
+        if self.results.has_key('href'):
+            stream.write(self.results['href'] + '\n\n')
         from pprint import pprint
         pprint(self.results, stream)
         stream.write('\n')
@@ -3767,4 +3802,3 @@ if __name__ == '__main__':
 #  currently supports rel-tag (maps to 'tags'), rel-enclosure (maps to
 #  'enclosures'), XFN links within content elements (maps to 'xfn'),
 #  and hCard (parses as vCard); bug [ 1481975 ] Misencoded utf-8/win-1252
-

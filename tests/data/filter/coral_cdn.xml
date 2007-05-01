@@ -1,7 +1,10 @@
 <entry xmlns="http://www.w3.org/2005/Atom">
   <content>
      <div xmlns="http://www.w3.org/1999/xhtml">
-       <img src="http://example.com/foo.png"/>
+       Plain old image: <img src="http://example.com/foo.png"/>
+       Host has a non-standard port: <img src="http://example.com:1234/foo.png"/>
+       A non-port colon: <img src="http://u:p@example.com/foo.png"/>
+       Several colons: <img src="http://u:p@example.com:1234/foo.png"/>
      </div>
   </content>
 </entry>

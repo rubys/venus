@@ -44,13 +44,17 @@ def run(template_file, doc, mode='template'):
     base,ext = os.path.splitext(os.path.basename(template_resolved))
     module_name = ext[1:]
     try:
-        module = __import__(module_name)
+        try:
+            module = __import__("_" + module_name)
+        except:
+            module = __import__(module_name)
     except Exception, inst:
         return log.error("Skipping %s '%s' after failing to load '%s': %s", 
             mode, template_resolved, module_name, inst)
 
     # Execute the shell module
     options = planet.config.template_options(template_file)
+    if module_name == 'plugin': options['__file__'] = template_file
     options.update(extra_options)
     log.debug("Processing %s %s using %s", mode,
         os.path.realpath(template_resolved), module_name)
@@ -60,3 +64,4 @@ def run(template_file, doc, mode='template'):
         output_dir = planet.config.output_dir()
         output_file = os.path.join(output_dir, base)
         module.run(template_resolved, doc, output_file, options)
+        return output_file

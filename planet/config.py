@@ -352,14 +352,15 @@ def filters(section=None):
     filters = []
     if parser.has_option('Planet', 'filters'):
         filters += parser.get('Planet', 'filters').split()
-    if section and parser.has_option(section, 'filters'):
-        filters += parser.get(section, 'filters').split()
     if filter(section):
         filters.append('regexp_sifter.py?require=' +
             urllib.quote(filter(section)))
     if exclude(section):
         filters.append('regexp_sifter.py?exclude=' +
-            urllib.quote(filter(section)))
+            urllib.quote(exclude(section)))
+    for section in section and [section] or template_files():
+        if parser.has_option(section, 'filters'):
+            filters += parser.get(section, 'filters').split()
     return filters
 
 def planet_options():
@@ -380,6 +381,10 @@ def feed_options(section):
 
 def template_options(section):
     """ dictionary of template specific options"""
+    return feed_options(section)
+
+def filter_options(section):
+    """ dictionary of filter specific options"""
     return feed_options(section)
 
 def write(file=sys.stdout):

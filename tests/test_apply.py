@@ -21,8 +21,7 @@ class ApplyTest(unittest.TestCase):
              os.makedirs(workdir)
     
     def tearDown(self):
-        shutil.rmtree(workdir)
-        os.removedirs(os.path.split(workdir)[0])
+        shutil.rmtree(os.path.split(workdir)[0])
 
     def test_apply_asf(self):
         config.load(configfile % 'asf')
@@ -47,8 +46,38 @@ class ApplyTest(unittest.TestCase):
         self.assertEqual(12, content)
         self.assertEqual(3, lang)
 
-    def test_apply_fancy(self):
+    def test_apply_classic_fancy(self):
         config.load(configfile % 'fancy')
+        self.apply_fancy()
+
+    def test_apply_genshi_fancy(self):
+        config.load(configfile % 'genshi')
+        self.apply_fancy()
+
+    def test_apply_filter_html(self):
+        config.load(configfile % 'html')
+        self.apply_fancy()
+
+        output = open(os.path.join(workdir, 'index.html')).read()
+        self.assertTrue(output.find('/>')>=0)
+
+        output = open(os.path.join(workdir, 'index.html4')).read()
+        self.assertTrue(output.find('/>')<0)
+
+    def test_apply_filter_mememe(self):
+        config.load(configfile % 'mememe')
+        self.apply_fancy()
+    
+        output = open(os.path.join(workdir, 'index.html')).read()
+        self.assertTrue(output.find('<div class="sidebar"><h2>Memes <a href="memes.atom">')>=0)
+
+    def apply_fancy(self):
+        # drop slow templates unrelated to test at hand
+        templates = config.parser.get('Planet','template_files').split()
+        templates.remove('rss10.xml.tmpl')
+        templates.remove('rss20.xml.tmpl')
+        config.parser.set('Planet','template_files',' '.join(templates))
+        
         splice.apply(self.feeddata)
 
         # verify that selected files are there
@@ -62,6 +91,14 @@ class ApplyTest(unittest.TestCase):
         self.assertTrue(html.find('<h1>test planet</h1>')>=0)
         self.assertTrue(html.find(
           '<h4><a href="http://example.com/2">Venus</a></h4>')>=0)
+
+    def test_apply_filter(self):
+        config.load(configfile % 'filter')
+        splice.apply(self.feeddata)
+
+        # verify that index.html is well formed, has content, and xml:lang
+        html = open(os.path.join(workdir, 'index.html')).read()
+        self.assertTrue(html.find(' href="http://example.com/default.css"')>=0)
 
 try:
     import libxml2
@@ -85,3 +122,10 @@ except ImportError:
         logger.warn("xsltproc is not available => can't test XSLT templates")
         for method in dir(ApplyTest):
             if method.startswith('test_'):  delattr(ApplyTest,method)
+
+import test_filter_genshi
+for method in dir(test_filter_genshi.GenshiFilterTests):
+    if method.startswith('test_'): break
+else:
+    delattr(ApplyTest,'test_apply_genshi_fancy')
+    delattr(ApplyTest,'test_apply_filter_html')

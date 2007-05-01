@@ -102,7 +102,7 @@ Items = [
     ['enclosure_type', String, 'links', {'rel': 'enclosure'}, 'type'],
     ['id', String, 'id'],
     ['link', String, 'links', {'rel': 'alternate'}, 'href'],
-    ['new_channel', String, 'id'],
+    ['new_channel', String, 'source', 'id'],
     ['new_date', NewDate, 'published_parsed'],
     ['new_date', NewDate, 'updated_parsed'],
     ['rights', String, 'rights_detail', 'value'],
@@ -226,7 +226,7 @@ def template_info(source):
                 date = item['new_date']
 
         if item.has_key('new_channel'):
-            if item['new_channel'] == channel:
+            if item['new_channel'] == channel and not item.has_key('new_date'):
                 del item['new_channel']
             else:
                 channel = item['new_channel']
@@ -241,12 +241,15 @@ def run(script, doc, output_file=None, options={}):
     for key,value in template_info(doc).items():
         tp.set(key, value)
 
-    reluri = os.path.splitext(os.path.basename(output_file))[0]
-    tp.set('url', urlparse.urljoin(config.link(),reluri))
+    if output_file:
+        reluri = os.path.splitext(os.path.basename(output_file))[0]
+        tp.set('url', urlparse.urljoin(config.link(),reluri))
 
-    output = open(output_file, "w")
-    output.write(tp.process(template))
-    output.close()
+        output = open(output_file, "w")
+        output.write(tp.process(template))
+        output.close()
+    else:
+        return tp.process(template)
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.split(sys.path[0])[0])

@@ -18,12 +18,23 @@ if not hasattr(unittest.TestCase, 'assertFalse'):
 if sys.path[0]: os.chdir(sys.path[0])
 sys.path[0] = os.getcwd()
 
-# find all of the planet test modules
-modules = map(fullmodname, glob.glob(os.path.join('tests', 'test_*.py')))
+# determine verbosity
+verbosity = 1
+for arg,value in (('-q',0),('--quiet',0),('-v',2),('--verbose',2)):
+    if arg in sys.argv: 
+        verbosity = value
+        sys.argv.remove(arg)
 
-# enable warnings
+# find all of the planet test modules
+modules = []
+for pattern in sys.argv[1:] or ['test_*.py']:
+    modules += map(fullmodname, glob.glob(os.path.join('tests', pattern)))
+
+# enable logging
 import planet
-planet.getLogger("WARNING",None)
+if verbosity == 0: planet.getLogger("FATAL",None)
+if verbosity == 1: planet.getLogger("WARNING",None)
+if verbosity == 2: planet.getLogger("DEBUG",None)
 
 # load all of the tests into a suite
 try:
@@ -32,12 +43,6 @@ except Exception, exception:
     # attempt to produce a more specific message
     for module in modules: __import__(module)
     raise
-
-verbosity = 1
-if "-q" in sys.argv or '--quiet' in sys.argv:
-    verbosity = 0
-if "-v" in sys.argv or '--verbose' in sys.argv:
-    verbosity = 2
 
 # run test suite
 unittest.TextTestRunner(verbosity=verbosity).run(suite)

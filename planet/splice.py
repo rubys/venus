@@ -111,9 +111,37 @@ def apply(doc):
     if not os.path.exists(output_dir): os.makedirs(output_dir)
     log = planet.getLogger(config.log_level(),config.log_format())
 
+    planet_filters = config.filters('Planet')
+
     # Go-go-gadget-template
     for template_file in config.template_files():
-        shell.run(template_file, doc)
+        output_file = shell.run(template_file, doc)
+
+        # run any template specific filters
+        if config.filters(template_file) != planet_filters:
+            output = open(output_file).read()
+            for filter in config.filters(template_file):
+                if filter in planet_filters: continue
+                if filter.find('>')>0:
+                    # tee'd output
+                    filter,dest = filter.split('>',1)
+                    tee = shell.run(filter.strip(), output, mode="filter")
+                    if tee:
+                        output_dir = planet.config.output_dir()
+                        dest_file = os.path.join(output_dir, dest.strip())
+                        dest_file = open(dest_file,'w')
+                        dest_file.write(tee)
+                        dest_file.close()
+                else:
+                    # pipe'd output
+                    output = shell.run(filter, output, mode="filter")
+                    if not output:
+                        os.unlink(output_file)
+                        break
+            else:
+                handle = open(output_file,'w')
+                handle.write(output)
+                handle.close()
 
     # Process bill of materials
     for copy_file in config.bill_of_materials():
@@ -123,6 +151,9 @@ def apply(doc):
             if os.path.exists(source): break
         else:
             log.error('Unable to locate %s', copy_file)
+            log.info("Template search path:")
+            for template_dir in config.template_directories():
+                log.info("    %s", os.path.realpath(template_dir))
             continue
 
         mtime = os.stat(source).st_mtime
@@ -131,5 +162,6 @@ def apply(doc):
             if not os.path.exists(dest_dir): os.makedirs(dest_dir)
 
             log.info("Copying %s to %s", source, dest)
+            if os.path.exists(dest): os.chmod(dest, 0644)
             shutil.copyfile(source, dest)
             shutil.copystat(source, dest)

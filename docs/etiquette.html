@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC
+    "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN"
+    "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script type="text/javascript" src="docs.js"></script>
+<link rel="stylesheet" type="text/css" href="docs.css"/>
+<title>Etiquette</title>
+</head>
+<body>
+<h2>Etiquette</h2>
+<p>You would think that people who publish syndication feeds do it with the
+intent to be syndicated.  But the truth is that we live in a world where
+<a href="http://en.wikipedia.org/wiki/Deep_linking">deep linking</a> can
+cause people to complain.  Nothing is safe.  But that doesn&#8217;t
+stop us from doing links.</p>
+
+<p>These concerns tend to increase when you profit, either directly via ads or
+indirectly via search engine rankings, from the content of others.</p>
+
+<p>While there are no hard and fast rules that apply here, here&#8217;s are a
+few things you can do to mitigate the concern:</p>
+
+<ul>
+<li>Aggressively use robots.txt, meta tags, and the google/livejournal
+atom namespace to mark your pages as not to be indexed by search
+engines.</li>
+<blockquote><p><dl>
+<dt><a href="http://www.robotstxt.org/">robots.txt</a>:</dt>
+<dd><p><code>User-agent: *<br/>
+Disallow: /</code></p></dd>
+<dt>index.html:</dt>
+<dd><p><code>&lt;<a href="http://www.robotstxt.org/wc/meta-user.html">meta name="robots"</a> content="noindex,nofollow"/&gt;</code></p></dd>
+<dt>atom.xml:</dt>
+<dd><p><code>&lt;feed xmlns:indexing="<a href="http://community.livejournal.com/lj_dev/696793.html">urn:atom-extension:indexing</a>" indexing:index="no"&gt;</code></p>
+<p><code>&lt;access:restriction xmlns:access="<a href="http://www.bloglines.com/about/specs/fac-1.0">http://www.bloglines.com/about/specs/fac-1.0</a>" relationship="deny"/&gt;</code></p></dd>
+</dl></p></blockquote>
+<li><p>Ensure that all <a href="http://nightly.feedparser.org/docs/reference-entry-source.html#reference.entry.source.rights">copyright</a> and <a href="http://nightly.feedparser.org/docs/reference-entry-license.html">licensing</a> information is propagated to the
+combined feed(s) that you produce.</p></li>
+
+<li><p>Add no advertising.  Consider filtering out ads, lest you
+be accused of using someone&#8217;s content to help your friends profit.</p></li>
+
+<li><p>Most importantly, if anyone does object to their content being included,
+quickly and without any complaint, remove them.</p></li>
+</ul>
+</body>
+</html>

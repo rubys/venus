@@ -4,6 +4,7 @@ from xml.sax.saxutils import escape
 
 # Really crappy basic implementation of a DOM-core like thing
 class Node(_base.Node):
+    type = -1
     def __init__(self, name):
         self.name = name
         self.parent = None
@@ -11,14 +12,17 @@ class Node(_base.Node):
         self.childNodes = []
         self._flags = []
 
+    def __iter__(self):
+        for node in self.childNodes:
+            yield node
+            for item in node:
+                yield item
+
     def __unicode__(self):
         return self.name
 
     def toxml(self):
         raise NotImplementedError
-
-    def __repr__(self):
-        return "<%s %s>" % (self.__class__, self.name)
 
     def printTree(self, indent=0):
         tree = '\n|%s%s' % (' '* indent, unicode(self))
@@ -69,6 +73,7 @@ class Node(_base.Node):
         return bool(self.childNodes)
 
 class Document(Node):
+    type = 1
     def __init__(self):
         Node.__init__(self, None)
 
@@ -93,7 +98,13 @@ class Document(Node):
             tree += child.printTree(2)
         return tree
 
+class DocumentFragment(Document):
+    type = 2
+    def __unicode__(self):
+        return "#document-fragment"
+
 class DocumentType(Node):
+    type = 3
     def __init__(self, name):
         Node.__init__(self, name)
 
@@ -106,6 +117,7 @@ class DocumentType(Node):
         return '<code class="markup doctype">&lt;!DOCTYPE %s></code>' % self.name
 
 class TextNode(Node):
+    type = 4
     def __init__(self, value):
         Node.__init__(self, None)
         self.value = value
@@ -119,6 +131,7 @@ class TextNode(Node):
     hilite = toxml
 
 class Element(Node):
+    type = 5
     def __init__(self, name):
         Node.__init__(self, name)
         self.attributes = {}
@@ -164,6 +177,7 @@ class Element(Node):
         return tree
 
 class CommentNode(Node):
+    type = 6
     def __init__(self, data):
         Node.__init__(self, None)
         self.data = data
@@ -177,11 +191,38 @@ class CommentNode(Node):
     def hilite(self):
         return '<code class="markup comment">&lt;!--%s--></code>' % escape(self.data)
 
+class HTMLSerializer(object):
+    def serialize(self, node):
+        rv = self.serializeNode(node)
+        for child in node.childNodes:
+            rv += self.serialize(child)
+        if node.type == Element.type and node.name not in voidElements:
+            rv += "</%s>\n"%node.name
+        return rv
+    
+    def serializeNode(self, node):
+        if node.type == TextNode.type:
+            rv = node.value
+        elif node.type == Element.type:
+            rv = "<%s"%node.name
+            if node.attributes:
+                rv = rv+"".join([" %s='%s'"%(key, escape(value)) for key,value in
+                                 node.attributes.iteritems()])
+            rv += ">"
+        elif node.type == CommentNode.type:
+            rv = "<!-- %s -->" % escape(node.data)        
+        elif node.type == DocumentType.type:
+            rv = "<!DOCTYPE %s>" % node.name
+        else:
+            rv = ""
+        return rv
+
 class TreeBuilder(_base.TreeBuilder):
     documentClass = Document
     doctypeClass = DocumentType
     elementClass = Element
     commentClass = CommentNode
+    fragmentClass = DocumentFragment
     
     def testSerializer(self, node):
         return node.printTree()

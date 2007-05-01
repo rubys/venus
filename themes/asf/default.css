@@ -208,7 +208,7 @@ body > h1 {
 	text-align: right;
 }
 
-#body h2.date {
+#body > h2 {
 	text-transform: none;
 	font-size: medium;
 	color: #333;
@@ -466,9 +466,26 @@ ul.tags a:link, ul.tags a:visited {
 	color:green
 }
 
+a[rel='tag'] img {
+    border: 0;
+}  
+
 /* DiveIntoMark */
 .framed {
 	float: none;
+}
+
+/* BurningBird */
+.update:before {
+	content: 'Update';
+	font-weight: bold;
+}
+
+.update {
+    margin: 2em;
+    padding: 0 1em 0 1em;
+    background: #eee;
+    border: 1px solid #aaa;
 }
 
 /* ----------------------------- Footer ---------------------------- */

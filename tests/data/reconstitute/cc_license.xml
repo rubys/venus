@@ -1,0 +1,13 @@
+<!--
+Description:  creative commons license
+Expect:       links[0].rel == 'license' and links[0].href == 'http://www.creativecommons.org/licenses/by-nc/1.0'
+-->
+
+<rss version="2.0" xmlns:cc="http://web.resource.org/cc/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <channel>
+    <item>
+      <cc:license rdf:resource="http://www.creativecommons.org/licenses/by-nc/1.0"/>
+    </item>
+  </channel>
+</rss>
+

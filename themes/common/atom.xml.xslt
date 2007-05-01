@@ -26,7 +26,7 @@
     <xsl:copy>
       <xsl:attribute name="indexing:index">no</xsl:attribute>
       <xsl:apply-templates select="@*"/>
-      <access:restriction relationship="allow"/>
+      <access:restriction relationship="deny"/>
       <xsl:apply-templates select="node()"/>
       <xsl:text>&#10;</xsl:text>
     </xsl:copy>

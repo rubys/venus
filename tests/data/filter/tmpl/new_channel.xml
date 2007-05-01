@@ -1,0 +1,34 @@
+<!--
+Description:  source id
+Expect:       Items[0]['new_channel'] == 'http://example.com/' and not Items[1].has_key('new_channel') and Items[2]['new_channel'] == 'http://example.org/' and Items[3]['new_channel'] == 'http://example.com/'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <source>
+      <id>http://example.com/</id>
+    </source>
+  </entry>
+  <entry>
+    <source>
+      <id>http://example.com/</id>
+    </source>
+  </entry>
+  <entry>
+    <source>
+      <id>http://example.org/</id>
+    </source>
+  </entry>
+  <entry>
+    <source>
+      <id>http://example.com/</id>
+    </source>
+  </entry>
+  <planet:source xmlns:planet='http://planet.intertwingly.net/'>
+    <id>http://example.com/</id>
+  </planet:source>
+  <planet:source xmlns:planet='http://planet.intertwingly.net/'>
+    <id>http://example.org/</id>
+  </planet:source>
+</feed>
+

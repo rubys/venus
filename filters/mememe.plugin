@@ -1,0 +1,480 @@
+#
+# This Venus output filter will annotate an XHTML page with a list of
+# "memes" (or most popular linked destinations, based on the last week
+# of entries from the cache) and will update the subscription list with
+# links to recent entries from each subscription.
+#
+# Templates that don't produce XHTML natively will need their output passed
+# through html2xhtml.plugin first.
+#
+# Typical configuration (based on classic_fancy):
+#
+#   [index.html.tmpl]
+#   filters:
+#     html2xhtml.plugin
+#     mememe.plugin
+#  
+#   [mememe.plugin]
+#   sidebar = @class='sidebar'
+#
+
+import glob, libxml2, os, time, sys, sgmllib, urllib2, urlparse, re, md5
+from xml.sax.saxutils import escape
+from htmlentitydefs import entitydefs
+
+import planet
+from planet import config, feedparser
+from planet.spider import filename
+log = planet.getLogger(config.log_level(),config.log_format())
+options = config.filter_options(sys.argv[0])
+
+MEMES_ATOM = os.path.join(config.output_dir(),'memes.atom')
+
+now = time.time()
+week = 7 * 86400
+week_ago = now - week
+
+cache = config.cache_directory()
+meme_cache = os.path.join(cache, 'memes')
+if not os.path.exists(meme_cache): os.makedirs(meme_cache)
+
+bom = config.bill_of_materials()
+if not 'images/tcosm11.gif' in bom:
+  bom.append('images/tcosm11.gif')
+  config.parser.set('Planet', 'bill_of_materials', ' '.join(bom))
+
+all_links = {}
+feed_links = {}
+
+def check_cache(url):
+  try:
+    file = open(filename(meme_cache, url))
+    headers = eval(file.read())
+    file.close()
+    return headers or {}
+  except:
+    return {}
+
+def cache_meme(url, headers):
+  json = []
+  for key,value in headers.items():
+    json.append('  %s: %s' % (toj(key), toj(value)))
+  file = open(filename(meme_cache, url),'w')
+  file.write('{\n' + ',\n'.join(json) + '\n}\n')
+  file.close()
+
+urlmap = {}
+def canonicalize(url):
+  url = urlmap.get(url,url)
+  parts = list(urlparse.urlparse(url))
+
+  parts[0] = parts[0].lower()
+  parts[1] = parts[1].lower()
+  if parts[1].startswith('www.'): parts[1]=parts[1][4:]
+  if not parts[2]: parts[2] = '/'
+  parts[-1] = ''
+  return urlparse.urlunparse(parts)
+  
+log.debug("Loading cached data")
+for name in glob.glob(os.path.join(cache, '*')):
+  # ensure that this is within the past week
+  if os.path.isdir(name): continue
+  mtime = os.stat(name).st_mtime
+  if mtime < week_ago: continue
+
+  # parse the file
+  try:
+    doc = libxml2.parseFile(name)
+  except:
+    continue
+  xp = doc.xpathNewContext()
+  xp.xpathRegisterNs("atom", "http://www.w3.org/2005/Atom")
+  xp.xpathRegisterNs("planet", "http://planet.intertwingly.net/")
+
+  # determine the entry
+  entry = xp.xpathEval("/atom:entry/atom:link[@rel='alternate']")
+  if not entry: continue
+  entry = canonicalize(entry[0].prop("href"))
+
+  # determine the title
+  title = xp.xpathEval("/atom:entry/atom:title")
+  if title:
+    if title[0].prop('type') == 'html':
+      title = re.sub('<.*?>','',title[0].content)
+    else:
+      title = title[0].content
+  title = str(title or '')
+
+  # determine the feed id
+  feed = xp.xpathEval("/atom:entry/atom:source/planet:memegroup")
+  if not feed: feed = xp.xpathEval("/atom:entry/atom:source/atom:id")
+  if not feed: continue
+  feed = feed[0].content
+
+  # determine the author
+  author = xp.xpathEval("/atom:entry/atom:source/planet:name")
+  if author:
+    author = author[0].content
+  else:
+    author = ''
+
+  # track the feed_links
+  if author:
+    if not feed_links.has_key(author): feed_links[author] = list()
+    feed_links[author].append([mtime, entry, title])
+
+  # identify the unique links
+  entry_links = []
+  for node in doc.xpathEval("//*[@href and not(@rel='source')]"):
+      parent = node.parent
+      while parent:
+          if parent.name == 'source': break
+          parent = parent.parent
+      else:
+          link = canonicalize(node.prop('href'))
+          if not link in entry_links:
+              entry_links.append(link)
+          if node.hasProp('title') and node.prop('title').startswith('http'):
+              link = canonicalize(node.prop('title'))
+              if not link in entry_links:
+                  entry_links.append(link)
+
+  # add the votes
+  weight = 1.0 - (now - mtime)**2 / week**2
+  vote = [(weight, str(entry), str(feed), title, author, mtime)]
+  for link in entry_links:
+    all_links[link] = all_links.get(link,list()) + vote
+
+  # free the entry
+  doc.freeDoc()
+
+# tally the votes
+weighted_links = []
+for link, votes in all_links.items():
+  site = {}
+  updated = 0
+  for weight, entry, feed, title, author, mtime in votes:
+    site[feed] = max(site.get(feed,0), weight) 
+    if mtime > updated: updated=mtime
+  weighted_links.append((sum(site.values()), link, updated))
+weighted_links.sort()
+weighted_links.reverse()
+
+cp1252 = {
+  128: 8364, # euro sign
+  130: 8218, # single low-9 quotation mark
+  131:  402, # latin small letter f with hook
+  132: 8222, # double low-9 quotation mark
+  133: 8230, # horizontal ellipsis
+  134: 8224, # dagger
+  135: 8225, # double dagger
+  136:  710, # modifier letter circumflex accent
+  137: 8240, # per mille sign
+  138:  352, # latin capital letter s with caron
+  139: 8249, # single left-pointing angle quotation mark
+  140:  338, # latin capital ligature oe
+  142:  381, # latin capital letter z with caron
+  145: 8216, # left single quotation mark
+  146: 8217, # right single quotation mark
+  147: 8220, # left double quotation mark
+  148: 8221, # right double quotation mark
+  149: 8226, # bullet
+  150: 8211, # en dash
+  151: 8212, # em dash
+  152:  732, # small tilde
+  153: 8482, # trade mark sign
+  154:  353, # latin small letter s with caron
+  155: 8250, # single right-pointing angle quotation mark
+  156:  339, # latin small ligature oe
+  158:  382, # latin small letter z with caron
+  159:  376} # latin capital letter y with diaeresis
+
+# determine the title for a given url
+class html(sgmllib.SGMLParser):
+  def __init__(self, url):
+    sgmllib.SGMLParser.__init__(self)
+    self.title = ""
+    self.feedurl = ""
+    self.intitle = False
+
+    headers = check_cache(url)
+
+    try:
+        # fetch the page
+        request = urllib2.Request(url)
+        request.add_header('User-Agent', 'Venus/MeMeme')
+        if headers.has_key('etag'):
+            request.add_header('If-None-Match', headers['etag'])
+        if headers.has_key('last_modified'):
+            request.add_header('If-Modified-Since', headers['last-modified'])
+        response = urllib2.urlopen(request)
+        self.feed(response.read())
+
+        # ensure the data is in utf-8
+        try:
+            self.title = self.title.decode('utf-8')
+        except:
+            self.title = ''.join([unichr(cp1252.get(ord(c),ord(c)))
+                for c in self.title.decode('iso-8859-1')])
+
+        # cache the results
+        headers = {}
+        if self.feedurl: headers['feedurl'] = self.feedurl
+        if self.title: headers['title'] = self.title
+        headers.update(response.headers)
+        cache_meme(url, headers)
+    except:
+        self.feedurl = headers.get('feedurl')
+        if headers.has_key('title'):
+           if isinstance(headers['title'],str):
+               self.title=eval('u'+repr(headers['title']).replace('\\\\','\\'))
+           else:
+               self.title=headers['title']
+
+    # if there is a feed, look for an entry that matches, and take that title
+    if self.feedurl and not self.title:
+        headers = check_cache(self.feedurl)
+        data = feedparser.parse(self.feedurl, etag=headers.get('etag'),
+            modified=headers.get('last-modified'))
+
+        if data.has_key('headers') and data.has_key('status') and \
+            data.status in [200, 301, 302]:
+
+            titles = {}
+            for entry in data.entries:
+                if entry.has_key('title_detail') and entry.has_key('link'):
+                    titles[entry.link] = entry.title_detail.value
+                    if entry.title_detail.type == 'text/plain':
+                        titles[entry.link] = escape(titles[entry.link])
+
+            if titles.has_key(url): self.title = titles[url]
+
+            data.headers.update(titles)
+            cache_meme(self.feedurl, data.headers)
+        else:
+            if headers.has_key(url):
+               if isinstance(headers[url],str):
+                   self.title=eval('u'+repr(headers[url]).replace('\\\\','\\'))
+               else:
+                   self.title=headers[url]
+
+    # fallback is the basename of the URI
+    if not self.title:
+        self.title = escape(url.rstrip('/').split('/')[-1].split('?')[0])
+
+  # parse out the first autodiscovery link
+  def start_link(self, attrs):
+    if self.feedurl: return
+    attrs = dict(map(lambda (k,v): (k.lower(),v), attrs))
+    if not 'rel' in attrs: return
+    rels = attrs['rel'].split(' ')
+    if 'alternate' not in rels: return
+    if not 'type' in attrs or not attrs['type'].endswith('xml'): return
+    if 'href' in attrs:
+      self.feedurl = attrs['href']
+
+  # parse the page title
+  def start_title(self, attributes):
+    if not self.title: self.intitle = True
+  def end_title(self):
+    self.intitle = False
+  def handle_data(self, text):
+    if self.intitle: self.title += escape(text)
+
+# convert unicode string to a json string
+def toj(value):
+  result = repr(value).replace(r'\x',r'\u00')
+  if result[:1] == 'u': result=result[1:]
+  if result.startswith("'"):
+    result = '"%s"' % result.replace('"',r'\"').replace(r"\'","'")[1:-1]
+  return result
+
+seenit = []
+count = 0
+
+# construct an empty feed
+feed_doc = libxml2.newDoc("1.0")
+meme_feed = feed_doc.newChild(None, "feed", None)
+meme_feed.newNs('http://www.w3.org/2005/Atom', None)
+meme_feed.newTextChild(None, 'title', config.name() + ': Memes')
+author = meme_feed.newChild(None, 'author', None)
+author.newTextChild(None, 'name', config.owner_name())
+if config.owner_email: author.newTextChild(None, 'email', config.owner_email())
+meme_feed.newTextChild(None, 'id', os.path.join(config.link(), 'memes.atom'))
+link = meme_feed.newChild(None, 'link', None)
+link.setProp('href', os.path.join(config.link(), 'memes.atom'))
+link.setProp('rel', 'self')
+meme_feed.newTextChild(None, 'updated',
+  time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()))
+
+# parse the input
+log.debug("Parse input")
+doc=libxml2.parseDoc(sys.stdin.read())
+
+# find the sidebar/footer
+sidebar = options.get('sidebar','//*[@class="sidebar"]')
+footer = doc.xpathEval(sidebar)
+if not hasattr(footer,'__len__') or len(footer) == 0:
+  raise Exception(sidebar + ' not found')
+if len(footer) > 1:
+  log.info("%d occurrences of %s found, taking first" % (len(footer),sidebar))
+footer = footer[0]
+
+# add up to 10 entry links to each subscription
+subs_ul = footer.children
+while subs_ul.isText() or subs_ul.name != 'ul': subs_ul = subs_ul.next
+child = subs_ul.children
+while child:
+  if child.name == 'li':
+    if child.lastChild().name == 'ul': child.lastChild().unlinkNode()
+    link = child.lastChild()
+    while link.isText(): link=link.prev
+    author = link.getContent()
+    state = 'inactive'
+    if feed_links.has_key(author):
+      ul2 = child.newChild(None, 'ul', None)
+      feed_links[author].sort()
+      feed_links[author].reverse()
+      link_count = 0
+      for mtime, entry, title in feed_links[author]:
+        if not title: continue
+        li2 = ul2.newChild(None, 'li', None)
+        a = li2.newTextChild(None, 'a', title)
+        a.setProp('href', entry)
+        link_count = link_count + 1
+        if link_count >= 10: break
+      if link_count > 0: state = None
+    if state:
+      link.setProp('class',((link.prop('class') or '') + ' ' + state).strip())
+  child=child.next
+
+# create a h2 and ul for the memes list
+footer_top = footer.children
+memes = footer_top.addPrevSibling(footer.newTextChild(None, 'h2', 'Memes '))
+memes_ul = footer_top.addPrevSibling(footer.newChild(None, 'ul', None))
+
+# create a header for the memes list
+a = memes.newChild(None, 'a', None)
+a.setProp('href', 'memes.atom')
+img = a.newChild(None, 'img', None)
+img.setProp('src', 'images/feed-icon-10x10.png')
+
+# collect the results
+log.debug("Fetch titles and collect the results")
+from urllib import quote_plus
+for i in range(0,len(weighted_links)):
+  weight, link, updated = weighted_links[i]
+
+  # ensure that somebody new points to this entry.  This guards against
+  # groups of related links which several posts point to all.
+  novel = False
+  for weight, entry, feed, title, author, mtime in all_links[link]:
+    if entry not in seenit:
+      seenit.append(entry)
+      novel = True
+  if not novel: continue
+
+  all_links[link].sort()
+  all_links[link].reverse()
+  cache_file = filename(cache, link)
+  title = None
+
+  # when possible, take the title from the cache
+  if os.path.exists(cache_file):
+      entry = feedparser.parse(cache_file).entries[0]
+      if entry.has_key('title_detail'):
+        title = entry.title_detail.value
+        if entry.title_detail.type == 'text/plain': title = escape(title)
+
+  # otherwise, parse the html
+  if not title:
+    title = html(link).title
+
+  # dehtmlize
+  title = re.sub('&(\w+);',
+    lambda n: entitydefs.get(n.group(1), '&'+n.group(1)+';'), title)
+  title = re.sub('&#(\d+);',lambda n: unichr(int(n.group(1))), title)
+  title = re.sub('&#x(\w+);',lambda n: unichr(int(n.group(1),16)), title)
+
+  # title too long?  Insert zero width spaces where appropriate
+  if max(map(len,title.split())) > 30:
+    title=re.sub('(\W+)',u'\\1\u200b',title)
+
+  # save the entry title (it is used later)
+  entry_title = title.strip()
+
+  # add to the memes list
+  memes_ul.addContent('\n')
+  li = memes_ul.newChild(None, 'li', None)
+  memes_ul.addContent('\n')
+
+  # technorati link
+  a = li.newChild(None, 'a', None)
+  tlink = 'http://technorati.com/cosmos/search.html?url='
+  if link.startswith('http://'):
+    a.setProp('href',tlink + quote_plus(link[7:]))
+  else:
+    a.setProp('href',tlink + quote_plus(link))
+  a.setProp('title','cosmos')
+  img = a.newChild(None, 'img', None)
+  img.setProp('src','images/tcosm11.gif')
+
+  # main link
+  a = li.newTextChild(None, 'a', title.strip().encode('utf-8'))
+  a.setProp('href',link)
+  if (((i==0) or (updated>=weighted_links[i-1][2])) and
+    (i+1==len(weighted_links) or (updated>=weighted_links[i+1][2]))):
+    rank = 0
+    for j in range(0,len(weighted_links)):
+      if updated < weighted_links[j][2]: rank = rank + 1
+    if rank < len(weighted_links)/2:
+      a.setProp('class','rising')
+
+  # voters
+  ul2 = li.newChild(None, 'ul', None)
+  voters = []
+  for weight, entry, feed, title, author, mtime in all_links[link]:
+    if entry in voters: continue
+    li2 = ul2.newChild(None, 'li', None)
+    a = li2.newTextChild(None, 'a' , author)
+    a.setProp('href',entry)
+    if title: a.setProp('title',title)
+    voters.append(entry)
+
+  # add to the meme feed
+  if len(all_links[link]) > 2:
+    meme_feed.addContent('\n')
+    entry = meme_feed.newChild(None, 'entry', None)
+    meme_feed.addContent('\n')
+
+    # entry
+    tagbase = config.link().split('/')
+    if not tagbase[-1]: tagbase = tagbase[:-1]
+    tagbase = 'tag:%s,2007:%smeme/%%s' % (tagbase[2],'/'.join(tagbase[3:]))
+    entry.newTextChild(None, 'id', tagbase % md5.new(link).hexdigest())
+    entry.newTextChild(None, 'title', entry_title.encode('utf-8'))
+    meme_link = entry.newTextChild(None, 'link', None)
+    meme_link.setProp('href', link)
+    entry.newTextChild(None, 'updated', 
+      time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(updated)))
+
+    # voters
+    content = entry.newChild(None, 'content', None)
+    content.setProp('type', 'xhtml')
+    div = content.newTextChild(None, 'div', 'Spotted by:')
+    div.newNs('http://www.w3.org/1999/xhtml', None)
+    content_ul = div.newChild(None, 'ul', None)
+    for weight, entry, feed, title, author, mtime in all_links[link]:
+      li2 = content_ul.newTextChild(None, 'li', author + ": ")
+      a = li2.newTextChild(None, 'a' , title or 'untitled')
+      a.setProp('href',entry)
+
+  count = count + 1
+  if count >= 10: break
+
+log.info("Writing " + MEMES_ATOM)
+output=open(MEMES_ATOM,'w')
+output.write(feed_doc.serialize('utf-8'))
+output.close()
+
+sys.stdout.write(doc.serialize('utf-8'))

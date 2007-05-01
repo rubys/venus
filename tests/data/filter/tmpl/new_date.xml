@@ -1,0 +1,23 @@
+<!--
+Description:  source id
+Expect:       Items[0]['new_date'] == 'February 28, 2004' and not Items[1].has_key('new_date') and Items[2]['new_date'] == 'February 27, 2004' and Items[3]['new_date'] == 'February 26, 2004'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <updated>2004-02-28T18:14:55Z</updated>
+  </entry>
+  <entry>
+    <updated>2004-02-28T14:14:55Z</updated>
+  </entry>
+  <entry>
+    <updated>2004-02-27T14:14:55Z</updated>
+  </entry>
+  <entry>
+    <updated>2004-02-26T14:14:55Z</updated>
+  </entry>
+  <planet:source xmlns:planet='http://planet.intertwingly.net/'>
+    <id>http://example.com/</id>
+  </planet:source>
+</feed>
+

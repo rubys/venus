@@ -8,18 +8,21 @@
 <title>Venus Filters</title>
 </head>
 <body>
-<h2>Filters</h2>
-<p>Filters are simple Unix pipes.  Input comes in <code>stdin</code>,
-parameters come from the config file, and output goes to <code>stdout</code>.
-Anything written to <code>stderr</code> is logged as an ERROR message.  If no
-<code>stdout</code> is produced, the entry is not written to the cache or
-processed further; in fact, if the entry had previously been written to the cache, it will be removed.</p>
+<h2>Filters and Plugins</h2>
+<p>Filters and plugins are simple Unix pipes.  Input comes in
+<code>stdin</code>, parameters come from the config file, and output goes to
+<code>stdout</code>.  Anything written to <code>stderr</code> is logged as an
+ERROR message.  If no <code>stdout</code> is produced, the entry is not written
+to the cache or processed further; in fact, if the entry had previously been
+written to the cache, it will be removed.</p>
 
-<p>Input to a filter is a aggressively
+<p>There are two types of filters supported by Venus, input and template.</p>
+<p>Input to an input filter is a aggressively
 <a href="normalization.html">normalized</a> entry.  For
 example, if a feed is RSS 1.0 with 10 items, the filter will be called ten
 times, each with a single Atom 1.0 entry, with all textConstructs
 expressed as XHTML, and everything encoded as UTF-8.</p>
+<p>Input to a template filter will be the output produced by the template.</p>
 
 <p>You will find a small set of example filters in the <a
 href="../filters">filters</a> directory.  The <a
@@ -54,8 +57,14 @@ instead of XPath expressions.</p>
 <h3>Notes</h3>
 
 <ul>
-<li>Filters are executed when a feed is fetched, and the results are placed
-into the cache.  Changing a configuration file alone is not sufficient to
+<li>Any filters listed in the <code>[planet]</code> section of your config.ini
+will be invoked on all feeds.  Filters listed in individual
+<code>[feed]</code> sections will only be invoked on those feeds.
+Filters listed in <code>[template]</code> sections will be invoked on the
+output of that template.</li>
+
+<li>Input filters are executed when a feed is fetched, and the results are
+placed into the cache.  Changing a configuration file alone is not sufficient to
 change the contents of the cache &mdash; typically that only occurs after
 a feed is modified.</li>
 
@@ -63,18 +72,34 @@ a feed is modified.</li>
 configuration file (think unix pipes). Planet wide filters are executed before
 feed specific filters.</li>
 
-<li>Any filters listed in the <code>[planet]</code> section of your config.ini
-will be invoked on all feeds.  Filters listed in individual
-<code>[feed]</code> sections will only be invoked on those feeds.</li>
-
 <li>The file extension of the filter is significant.  <code>.py</code> invokes
 python. <code>.xslt</code> involkes XSLT.  <code>.sed</code> and
 <code>.tmpl</code> (a.k.a. htmltmp) are also options. Other languages, like
 perl or ruby or class/jar (java), aren't supported at the moment, but these
 would be easy to add.</li>
 
-<li>Templates written using htmltmpl currently only have access to a fixed set
-of fields, whereas XSLT templates have access to everything.</li>
+<li>If the filter name contains a redirection character (<code>&gt;</code>),
+then the output stream is
+<a href="http://en.wikipedia.org/wiki/Tee_(Unix)">tee</a>d; one branch flows
+through the specified filter and the output is planced into the named file; the
+other unmodified branch continues onto the next filter, if any.
+One use case for this function is to use
+<a href="../filters/xhtml2html.py">xhtml2html</a> to produce both an XHTML and
+an HTML output stream from one source.</li>
+
+<li>Templates written using htmltmpl or django currently only have access to a
+fixed set of fields, whereas XSLT and genshi templates have access to
+everything.</li>
+
+<li>Plugins differ from filters in that while filters are forked, plugins are
+<a href="http://docs.python.org/lib/module-imp.html">imported</a>.  This
+means that plugins are limited to Python and are run in-process.  Plugins
+therefore have direct access to planet internals like configuration and
+logging facitilies, as well as access to the bundled libraries like the
+<a href="http://feedparser.org/docs/">Universal Feed Parser</a> and
+<a href="http://code.google.com/p/html5lib/">html5lib</a>; but it also
+means that functions like <code>os.abort()</code> can't be recovered
+from.</li>
 </ul>
 </body>
 </html>
