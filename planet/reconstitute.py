@@ -124,7 +124,11 @@ def author(xentry, name, detail):
     xdoc = xentry.ownerDocument
     xauthor = xdoc.createElement(name)
 
-    createTextElement(xauthor, 'name', detail.get('name', None))
+    if detail.get('name', None):
+        createTextElement(xauthor, 'name', detail.get('name'))
+    else:
+        xauthor.appendChild(xdoc.createElement('name'))
+
     createTextElement(xauthor, 'email', detail.get('email', None))
     createTextElement(xauthor, 'uri', detail.get('href', None))
         
