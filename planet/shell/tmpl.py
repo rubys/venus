@@ -1,6 +1,9 @@
 from xml.sax.saxutils import escape
-import sgmllib, time, os, sys, new, urlparse
+import sgmllib, time, os, sys, new, urlparse, re
 from planet import config, feedparser, htmltmpl
+
+voids=feedparser._BaseHTMLProcessor.elements_no_end_tag
+empty=re.compile(r"<((%s)[^>]*)></\2>" % '|'.join(voids))
 
 class stripHtml(sgmllib.SGMLParser):
     "remove all tags from the data"
@@ -130,9 +133,12 @@ def tmpl_mapper(source, rules):
         node = source
         for path in rule[2:]:
             if isinstance(path, str) and path in node:
-                if path == 'value' and node.get('type','')=='text/plain':
-                    node['value'] = escape(node['value'])
-                    node['type'] = 'text/html'
+                if path == 'value':
+                    if node.get('type','')=='text/plain':
+                        node['value'] = escape(node['value'])
+                        node['type'] = 'text/html'
+                    elif node.get('type','')=='application/xhtml+xml':
+                        node['value'] = empty.sub(r"<\1 />", node['value'])
                 node = node[path]
             elif isinstance(path, int):
                 node = node[path]
