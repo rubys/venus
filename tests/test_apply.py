@@ -100,6 +100,13 @@ class ApplyTest(unittest.TestCase):
         html = open(os.path.join(workdir, 'index.html')).read()
         self.assertTrue(html.find(' href="http://example.com/default.css"')>=0)
 
+import test_filter_genshi
+for method in dir(test_filter_genshi.GenshiFilterTests):
+    if method.startswith('test_'): break
+else:
+    delattr(ApplyTest,'test_apply_genshi_fancy')
+    delattr(ApplyTest,'test_apply_filter_html')
+
 try:
     import libxml2
 except ImportError:
@@ -122,10 +129,3 @@ except ImportError:
         logger.warn("xsltproc is not available => can't test XSLT templates")
         for method in dir(ApplyTest):
             if method.startswith('test_'):  delattr(ApplyTest,method)
-
-import test_filter_genshi
-for method in dir(test_filter_genshi.GenshiFilterTests):
-    if method.startswith('test_'): break
-else:
-    delattr(ApplyTest,'test_apply_genshi_fancy')
-    delattr(ApplyTest,'test_apply_filter_html')
