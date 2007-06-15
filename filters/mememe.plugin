@@ -25,7 +25,7 @@ from htmlentitydefs import entitydefs
 import planet
 from planet import config, feedparser
 from planet.spider import filename
-log = planet.getLogger(config.log_level(),config.log_format())
+log = planet.logger
 options = config.filter_options(sys.argv[0])
 
 MEMES_ATOM = os.path.join(config.output_dir(),'memes.atom')

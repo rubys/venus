@@ -1,6 +1,7 @@
 xmlns = 'http://planet.intertwingly.net/'
 
 logger = None
+loggerParms = None
 
 import os, sys, re
 import config
@@ -11,8 +12,8 @@ from urlparse import urljoin
 
 def getLogger(level, format):
     """ get a logger with the specified log level """
-    global logger
-    if logger: return logger
+    global logger, loggerParms
+    if logger and loggerParms == (level,format): return logger
 
     try:
         import logging
@@ -21,13 +22,14 @@ def getLogger(level, format):
         import compat_logging as logging
         logging.basicConfig(format=format)
 
-    logging.getLogger().setLevel(logging.getLevelName(level))
     logger = logging.getLogger("planet.runner")
+    logger.setLevel(logging.getLevelName(level))
     try:
         logger.warning
     except:
         logger.warning = logger.warn
 
+    loggerParms = (level,format)
     return logger
 
 # Configure feed parser

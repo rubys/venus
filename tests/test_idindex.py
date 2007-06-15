@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
-import unittest
-from planet import idindex, config, logger
+import unittest, planet
+from planet import idindex, config
 
 class idIndexTest(unittest.TestCase):
 
     def setUp(self):
         # silence errors
-        import planet
-        planet.logger = None
+        self.original_logger = planet.logger
         planet.getLogger('CRITICAL',None)
 
     def tearDown(self):
         idindex.destroy()
+        planet.logger = self.original_logger
 
     def test_unicode(self):
         from planet.spider import filename
@@ -69,6 +69,6 @@ class idIndexTest(unittest.TestCase):
 try:
     module = 'dbhash'
 except ImportError:
-    logger.warn("dbhash is not available => can't test id index")
+    planet.logger.warn("dbhash is not available => can't test id index")
     for method in dir(idIndexTest):
         if method.startswith('test_'):  delattr(idIndexTest,method)

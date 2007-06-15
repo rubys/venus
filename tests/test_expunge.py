@@ -15,7 +15,7 @@ configfile = 'tests/data/expunge/config.ini'
 class ExpungeTest(unittest.TestCase):
     def setUp(self):
         # silence errors
-        planet.logger = None
+        self.original_logger = planet.logger
         planet.getLogger('CRITICAL',None)
 
         try:
@@ -29,6 +29,7 @@ class ExpungeTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(workdir)
         os.removedirs(os.path.split(workdir)[0])
+        planet.logger = self.original_logger
 
     def test_expunge(self):
         config.load(configfile)

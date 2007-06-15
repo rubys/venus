@@ -329,7 +329,7 @@ def httpThread(thread_index, input_queue, output_queue, log):
 
 def spiderPlanet(only_if_new = False):
     """ Spider (fetch) an entire planet """
-    log = planet.getLogger(config.log_level(),config.log_format())
+    log = planet.logger
 
     global index
     index = True

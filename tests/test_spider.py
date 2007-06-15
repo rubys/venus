@@ -12,7 +12,7 @@ configfile = 'tests/data/spider/config.ini'
 class SpiderTest(unittest.TestCase):
     def setUp(self):
         # silence errors
-        planet.logger = None
+        self.original_logger = planet.logger
         planet.getLogger('CRITICAL',None)
 
         try:
@@ -24,6 +24,7 @@ class SpiderTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(workdir)
         os.removedirs(os.path.split(workdir)[0])
+        planet.logger = self.original_logger
 
     def test_filename(self):
         self.assertEqual(os.path.join('.', 'example.com,index.html'),

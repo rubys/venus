@@ -139,7 +139,9 @@ def load(config_file):
 
     import config, planet
     from planet import opml, foaf
-    log = planet.getLogger(config.log_level(),config.log_format())
+    log = planet.logger
+    if not log:
+        log = planet.getLogger(config.log_level(),config.log_format())
 
     # Theme support
     theme = config.output_theme()
