@@ -4,13 +4,13 @@ venus_base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,venus_base)
 
 if __name__ == "__main__":
+    import planet
+    planet.getLogger('WARN',None)
 
     hide_planet_ns = True
 
     while len(sys.argv) > 1:
         if sys.argv[1] == '-v' or sys.argv[1] == '--verbose':
-            import planet
-            planet.getLogger('DEBUG',None)
             del sys.argv[1]
         elif sys.argv[1] == '-p' or sys.argv[1] == '--planet':
             hide_planet_ns = False
