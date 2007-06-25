@@ -340,7 +340,7 @@ def spiderPlanet(only_if_new = False):
         log.info("Socket timeout set to %d seconds", timeout)
     except:
         try:
-            from planet import timeoutsocket
+            import timeoutsocket
             timeoutsocket.setDefaultSocketTimeout(float(timeout))
             log.info("Socket timeout set to %d seconds", timeout)
         except:

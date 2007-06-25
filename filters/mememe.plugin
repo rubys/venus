@@ -23,8 +23,9 @@ from xml.sax.saxutils import escape
 from htmlentitydefs import entitydefs
 
 import planet
-from planet import config, feedparser
+from planet import config
 from planet.spider import filename
+import feedparser
 log = planet.logger
 options = config.filter_options(sys.argv[0])
 

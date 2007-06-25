@@ -3,14 +3,14 @@
 # * Phases and insertion modes are one concept in parser.py.
 # * EOF handling is slightly different to make sure <html>, <head> and <body>
 #   always exist.
-# * We also deal with content when there's no DOCTYPE.
-# It is expected that the specification will catch up with us in due course ;-)
+# * </br> creates a <br> element.
+#
+# We haven't updated DOCTYPE handling yet
 #
 # It should be trivial to add the following cases. However, we should probably
 # also look into comment handling and such then...
 # * A <p> element end tag creates an empty <p> element when there's no <p>
 #   element in scope.
-# * A <br> element end tag creates an empty <br> element.
 
 try:
     frozenset
@@ -20,6 +20,7 @@ except NameError:
     from sets import ImmutableSet as frozenset
 import gettext
 _ = gettext.gettext
+import sys
 
 import tokenizer
 
@@ -30,26 +31,31 @@ from treebuilders import simpletree
 import utils
 from constants import contentModelFlags, spaceCharacters, asciiUpper2Lower
 from constants import scopingElements, formattingElements, specialElements
-from constants import headingElements, tableInsertModeElements, voidElements
+from constants import headingElements, tableInsertModeElements
+from constants import cdataElements, rcdataElements, voidElements
 
 class HTMLParser(object):
     """HTML parser. Generates a tree structure from a stream of (possibly
         malformed) HTML"""
 
-    def __init__(self, strict = False, tree=simpletree.TreeBuilder):
+    def __init__(self, strict = False, tree=simpletree.TreeBuilder, tokenizer=tokenizer.HTMLTokenizer):
         """
         strict - raise an exception when a parse error is encountered
 
         tree - a treebuilder class controlling the type of tree that will be
-        returned. This class is almost always a subclass of
-        html5lib.treebuilders._base.TreeBuilder
+        returned. Built in treebuilders can be accessed through
+        html5lib.treebuilders.getTreeBuilder(treeType)
         """
 
         # Raise an exception on the first error encountered
         self.strict = strict
 
         self.tree = tree()
+        self.tokenizer_class = tokenizer
         self.errors = []
+
+        # "quirks" / "almost-standards" / "standards"
+        self.quirksMode = "standards"
 
         self.phases = {
             "initial": InitialPhase(self, self.tree),
@@ -78,15 +84,15 @@ class HTMLParser(object):
         self.firstStartTag = False
         self.errors = []
 
-        self.tokenizer = tokenizer.HTMLTokenizer(stream, encoding,
-                                                 parseMeta=innerHTML)
+        self.tokenizer = self.tokenizer_class(stream, encoding,
+                                              parseMeta=not innerHTML)
 
         if innerHTML:
             self.innerHTML = container.lower()
 
-            if self.innerHTML in ('title', 'textarea'):
+            if self.innerHTML in cdataElements:
                 self.tokenizer.contentModelFlag = tokenizer.contentModelFlags["RCDATA"]
-            elif self.innerHTML in ('style', 'script', 'xmp', 'iframe', 'noembed', 'noframes', 'noscript'):
+            elif self.innerHTML in rcdataElements:
                 self.tokenizer.contentModelFlag = tokenizer.contentModelFlags["CDATA"]
             elif self.innerHTML == 'plaintext':
                 self.tokenizer.contentModelFlag = tokenizer.contentModelFlags["PLAINTEXT"]
@@ -113,10 +119,12 @@ class HTMLParser(object):
             method = getattr(self.phase, "process%s" % type, None)
             if type in ("Characters", "SpaceCharacters", "Comment"):
                 method(token["data"])
-            elif type in ("StartTag", "Doctype"):
+            elif type == "StartTag":
                 method(token["name"], token["data"])
             elif type == "EndTag":
                 method(token["name"])
+            elif type == "Doctype":
+                method(token["name"], token["publicId"], token["systemId"], token["correct"])
             else:
                 self.parseError(token["data"])
 
@@ -158,10 +166,6 @@ class HTMLParser(object):
         if self.strict:
             raise ParseError
 
-    def atheistParseError(self):
-        """This error is not an error"""
-        pass
-
     def normalizeToken(self, token):
         """ HTML5 specific normalizations to the token stream """
 
@@ -171,9 +175,7 @@ class HTMLParser(object):
             # element.  If it matches a void element atheists did the wrong
             # thing and if it doesn't it's wrong for everyone.
 
-            if token["name"] in voidElements:
-                self.atheistParseError()
-            else:
+            if token["name"] not in voidElements:
                 self.parseError(_("Solidus (/) incorrectly placed in tag."))
 
             token["type"] = "StartTag"
@@ -283,7 +285,7 @@ class Phase(object):
         # overridden.
         self.tree.insertComment(data, self.tree.openElements[-1])
 
-    def processDoctype(self, name, error):
+    def processDoctype(self, name, publicId, systemId, correct):
         self.parser.parseError(_("Unexpected DOCTYPE. Ignored."))
 
     def processSpaceCharacters(self, data):
@@ -319,10 +321,101 @@ class InitialPhase(Phase):
     def processComment(self, data):
         self.tree.insertComment(data, self.tree.document)
 
-    def processDoctype(self, name, error):
-        if error:
+    def processDoctype(self, name, publicId, systemId, correct):
+        nameLower = name.translate(asciiUpper2Lower)
+        if nameLower != "html" or publicId != None or\
+          systemId != None:
             self.parser.parseError(_("Erroneous DOCTYPE."))
+        # XXX need to update DOCTYPE tokens
         self.tree.insertDoctype(name)
+        
+        if publicId == None:
+          publicId = ""
+        if publicId != "":
+          publicId = publicId.translate(asciiUpper2Lower)
+
+        if nameLower != "html":
+            # XXX quirks mode
+            pass
+        else:
+            if publicId in\
+              ("+//silmaril//dtd html pro v0r11 19970101//en",
+               "-//advasoft ltd//dtd html 3.0 aswedit + extensions//en",
+               "-//as//dtd html 3.0 aswedit + extensions//en",
+               "-//ietf//dtd html 2.0 level 1//en",
+               "-//ietf//dtd html 2.0 level 2//en",
+               "-//ietf//dtd html 2.0 strict level 1//en",
+               "-//ietf//dtd html 2.0 strict level 2//en",
+               "-//ietf//dtd html 2.0 strict//en",
+               "-//ietf//dtd html 2.0//en",
+               "-//ietf//dtd html 2.1e//en",
+               "-//ietf//dtd html 3.0//en",
+               "-//ietf//dtd html 3.0//en//",
+               "-//ietf//dtd html 3.2 final//en",
+               "-//ietf//dtd html 3.2//en",
+               "-//ietf//dtd html 3//en",
+               "-//ietf//dtd html level 0//en",
+               "-//ietf//dtd html level 0//en//2.0",
+               "-//ietf//dtd html level 1//en",
+               "-//ietf//dtd html level 1//en//2.0",
+               "-//ietf//dtd html level 2//en",
+               "-//ietf//dtd html level 2//en//2.0",
+               "-//ietf//dtd html level 3//en",
+               "-//ietf//dtd html level 3//en//3.0",
+               "-//ietf//dtd html strict level 0//en",
+               "-//ietf//dtd html strict level 0//en//2.0",
+               "-//ietf//dtd html strict level 1//en",
+               "-//ietf//dtd html strict level 1//en//2.0",
+               "-//ietf//dtd html strict level 2//en",
+               "-//ietf//dtd html strict level 2//en//2.0",
+               "-//ietf//dtd html strict level 3//en",
+               "-//ietf//dtd html strict level 3//en//3.0",
+               "-//ietf//dtd html strict//en",
+               "-//ietf//dtd html strict//en//2.0",
+               "-//ietf//dtd html strict//en//3.0",
+               "-//ietf//dtd html//en",
+               "-//ietf//dtd html//en//2.0",
+               "-//ietf//dtd html//en//3.0",
+               "-//metrius//dtd metrius presentational//en",
+               "-//microsoft//dtd internet explorer 2.0 html strict//en",
+               "-//microsoft//dtd internet explorer 2.0 html//en",
+               "-//microsoft//dtd internet explorer 2.0 tables//en",
+               "-//microsoft//dtd internet explorer 3.0 html strict//en",
+               "-//microsoft//dtd internet explorer 3.0 html//en",
+               "-//microsoft//dtd internet explorer 3.0 tables//en",
+               "-//netscape comm. corp.//dtd html//en",
+               "-//netscape comm. corp.//dtd strict html//en",
+               "-//o'reilly and associates//dtd html 2.0//en",
+               "-//o'reilly and associates//dtd html extended 1.0//en",
+               "-//spyglass//dtd html 2.0 extended//en",
+               "-//sq//dtd html 2.0 hotmetal + extensions//en",
+               "-//sun microsystems corp.//dtd hotjava html//en",
+               "-//sun microsystems corp.//dtd hotjava strict html//en",
+               "-//w3c//dtd html 3 1995-03-24//en",
+               "-//w3c//dtd html 3.2 draft//en",
+               "-//w3c//dtd html 3.2 final//en",
+               "-//w3c//dtd html 3.2//en",
+               "-//w3c//dtd html 3.2s draft//en",
+               "-//w3c//dtd html 4.0 frameset//en",
+               "-//w3c//dtd html 4.0 transitional//en",
+               "-//w3c//dtd html experimental 19960712//en",
+               "-//w3c//dtd html experimental 970421//en",
+               "-//w3c//dtd w3 html//en",
+               "-//w3o//dtd w3 html 3.0//en",
+               "-//w3o//dtd w3 html 3.0//en//",
+               "-//w3o//dtd w3 html strict 3.0//en//",
+               "-//webtechs//dtd mozilla html 2.0//en",
+               "-//webtechs//dtd mozilla html//en",
+               "-/w3c/dtd html 4.0 transitional/en",
+               "html")\
+              or (publicId in\
+              ("-//w3c//dtd html 4.01 frameset//EN",
+               "-//w3c//dtd html 4.01 transitional//EN") and systemId == None)\
+              or (systemId != None and\
+                systemId == "http://www.ibm.com/data/dtd/v11/ibmxhtml1-transitional.dtd"):
+                #XXX quirks mode
+                pass
+
         self.parser.phase = self.parser.phases["rootElement"]
 
     def processSpaceCharacters(self, data):
@@ -392,7 +485,7 @@ class BeforeHeadPhase(Phase):
         self.startTagHandler.default = self.startTagOther
 
         self.endTagHandler = utils.MethodDispatcher([
-            ("html", self.endTagHtml)
+            (("html", "head", "body", "br"), self.endTagImplyHead)
         ])
         self.endTagHandler.default = self.endTagOther
 
@@ -413,7 +506,7 @@ class BeforeHeadPhase(Phase):
         self.startTagHead("head", {})
         self.parser.phase.processStartTag(name, attributes)
 
-    def endTagHtml(self, name):
+    def endTagImplyHead(self, name):
         self.startTagHead("head", {})
         self.parser.phase.processEndTag(name)
 
@@ -437,7 +530,7 @@ class InHeadPhase(Phase):
 
         self. endTagHandler = utils.MethodDispatcher([
             ("head", self.endTagHead),
-            ("html", self.endTagHtml),
+            (("html", "body", "br"), self.endTagImplyAfterHead),
             (("title", "style", "script"), self.endTagTitleStyleScript)
         ])
         self.endTagHandler.default = self.endTagOther
@@ -499,7 +592,11 @@ class InHeadPhase(Phase):
 
     def startTagBaseLinkMeta(self, name, attributes):
         element = self.tree.createElement(name, attributes)
-        self.appendToHead(element)
+        if (self.tree.headPointer is not None and
+            self.parser.phase == self.parser.phases["inHead"]):
+            self.appendToHead(element)
+        else:
+            self.tree.openElements[-1].appendChild(element)
 
     def startTagOther(self, name, attributes):
         self.anythingElse()
@@ -512,7 +609,7 @@ class InHeadPhase(Phase):
             self.parser.parseError(_(u"Unexpected end tag (head). Ignored."))
         self.parser.phase = self.parser.phases["afterHead"]
 
-    def endTagHtml(self, name):
+    def endTagImplyAfterHead(self, name):
         self.anythingElse()
         self.parser.phase.processEndTag(name)
 
@@ -592,9 +689,9 @@ class InBodyPhase(Phase):
 
         self.startTagHandler = utils.MethodDispatcher([
             ("html", self.startTagHtml),
-            (("script", "style"), self.startTagScriptStyle),
-            (("base", "link", "meta", "title"),
-              self.startTagFromHead),
+            (("base", "link", "meta", "script", "style"),
+              self.startTagProcessInHead),
+            ("title", self.startTagTitle),
             ("body", self.startTagBody),
             (("address", "blockquote", "center", "dir", "div", "dl",
               "fieldset", "listing", "menu", "ol", "p", "pre", "ul"),
@@ -604,8 +701,9 @@ class InBodyPhase(Phase):
             ("plaintext",self.startTagPlaintext),
             (headingElements, self.startTagHeading),
             ("a", self.startTagA),
-            (("b", "big", "em", "font", "i", "nobr", "s", "small", "strike",
-              "strong", "tt", "u"),self.startTagFormatting),
+            (("b", "big", "em", "font", "i", "s", "small", "strike", "strong",
+              "tt", "u"),self.startTagFormatting),
+            ("nobr", self.startTagNobr),
             ("button", self.startTagButton),
             (("marquee", "object"), self.startTagMarqueeObject),
             ("xmp", self.startTagXmp),
@@ -642,7 +740,8 @@ class InBodyPhase(Phase):
             (("head", "frameset", "select", "optgroup", "option", "table",
               "caption", "colgroup", "col", "thead", "tfoot", "tbody", "tr",
               "td", "th"), self.endTagMisplaced),
-            (("area", "basefont", "bgsound", "br", "embed", "hr", "image",
+            ("br", self.endTagBr),
+            (("area", "basefont", "bgsound", "embed", "hr", "image",
               "img", "input", "isindex", "param", "spacer", "wbr", "frame"),
               self.endTagNone),
             (("noframes", "noscript", "noembed", "textarea", "xmp", "iframe"),
@@ -659,11 +758,13 @@ class InBodyPhase(Phase):
             self.tree.openElements[-1])
 
     # the real deal
-    def processSpaceCharactersPre(self, data):
-        #Sometimes (start of <pre> blocks) we want to drop leading newlines
+    def processSpaceCharactersDropNewline(self, data):
+        # Sometimes (start of <pre> and <textarea> blocks) we want to drop
+        # leading newlines
         self.processSpaceCharacters = self.processSpaceCharactersNonPre
-        if (data.startswith("\n") and self.tree.openElements[-1].name == "pre" 
-            and not self.tree.openElements[-1].hasContent()):
+        if (data.startswith("\n") and (self.tree.openElements[-1].name == "pre"
+          or self.tree.openElements[-1].name == "textarea")
+          and not self.tree.openElements[-1].hasContent()):
             data = data[1:]
         if data:
             self.tree.insertText(data)
@@ -675,10 +776,10 @@ class InBodyPhase(Phase):
         self.tree.reconstructActiveFormattingElements()
         self.tree.insertText(data)
 
-    def startTagScriptStyle(self, name, attributes):
+    def startTagProcessInHead(self, name, attributes):
         self.parser.phases["inHead"].processStartTag(name, attributes)
 
-    def startTagFromHead(self, name, attributes):
+    def startTagTitle(self, name, attributes):
         self.parser.parseError(_(u"Unexpected start tag (" + name +\
           ") that belongs in the head. Moved."))
         self.parser.phases["inHead"].processStartTag(name, attributes)
@@ -698,7 +799,7 @@ class InBodyPhase(Phase):
             self.endTagP("p")
         self.tree.insertElement(name, attributes)
         if name == "pre":
-            self.processSpaceCharacters = self.processSpaceCharactersPre
+            self.processSpaceCharacters = self.processSpaceCharactersDropNewline
 
     def startTagForm(self, name, attributes):
         if self.tree.formPointer:
@@ -717,9 +818,16 @@ class InBodyPhase(Phase):
         # AT Use reversed in Python 2.4...
         for i, node in enumerate(self.tree.openElements[::-1]):
             if node.name in stopName:
+                poppedNodes = []
                 for j in range(i+1):
-                    self.tree.openElements.pop()
+                    poppedNodes.append(self.tree.openElements.pop())
+                if i >= 1:
+                    self.parser.parseError("Missing end tag%s (%s)"%
+                                           (i > 1 and "s" or "",
+                                            ", ".join([item.name for item in
+                                                       poppedNodes[:-1]])))
                 break
+        
 
             # Phrasing elements are all non special, non scoping, non
             # formatting elements
@@ -738,14 +846,16 @@ class InBodyPhase(Phase):
     def startTagHeading(self, name, attributes):
         if self.tree.elementInScope("p"):
             self.endTagP("p")
-        for item in headingElements:
-            if self.tree.elementInScope(item):
-                self.parser.parseError(_("Unexpected start tag (" + name +\
-                  ")."))
-                item = self.tree.openElements.pop()
-                while item.name not in headingElements:
-                    item = self.tree.openElements.pop()
-                break
+        # Uncomment the following for IE7 behavior:
+        #
+        #for item in headingElements:
+        #    if self.tree.elementInScope(item):
+        #        self.parser.parseError(_("Unexpected start tag (" + name +\
+        #          ")."))
+        #        item = self.tree.openElements.pop()
+        #        while item.name not in headingElements:
+        #            item = self.tree.openElements.pop()
+        #        break
         self.tree.insertElement(name, attributes)
 
     def startTagA(self, name, attributes):
@@ -763,6 +873,12 @@ class InBodyPhase(Phase):
 
     def startTagFormatting(self, name, attributes):
         self.tree.reconstructActiveFormattingElements()
+        self.addFormattingElement(name, attributes)
+
+    def startTagNobr(self, name, attributes):
+        self.tree.reconstructActiveFormattingElements()
+        if self.tree.elementInScope("nobr"):
+            self.processEndTag("nobr")
         self.addFormattingElement(name, attributes)
 
     def startTagButton(self, name, attributes):
@@ -840,6 +956,7 @@ class InBodyPhase(Phase):
         # XXX Form element pointer checking here as well...
         self.tree.insertElement(name, attributes)
         self.parser.tokenizer.contentModelFlag = contentModelFlags["RCDATA"]
+        self.processSpaceCharacters = self.processSpaceCharactersDropNewline
 
     def startTagCdata(self, name, attributes):
         """iframe, noembed noframes, noscript(if scripting enabled)"""
@@ -861,11 +978,13 @@ class InBodyPhase(Phase):
         self.parser.parseError(_(u"Unexpected start tag (" + name +\
           u"). Ignored."))
 
-    def startTagNew(self, name, other):
+    def startTagNew(self, name, attributes):
         """New HTML5 elements, "event-source", "section", "nav",
         "article", "aside", "header", "footer", "datagrid", "command"
         """
-        raise NotImplementedError
+        sys.stderr.write("Warning: Undefined behaviour for start tag %s"%name)
+        self.startTagOther(name, attributes)
+        #raise NotImplementedError
 
     def startTagOther(self, name, attributes):
         self.tree.reconstructActiveFormattingElements()
@@ -1082,6 +1201,12 @@ class InBodyPhase(Phase):
         self.parser.parseError(_(u"Unexpected end tag (" + name +\
           u"). Ignored."))
 
+    def endTagBr(self, name):
+        self.parser.parseError(_(u"Unexpected end tag (br). Treated as br element."))
+        self.tree.reconstructActiveFormattingElements()
+        self.tree.insertElement(name, {})
+        self.tree.openElements.pop()
+
     def endTagNone(self, name):
         # This handles elements with no end tag.
         self.parser.parseError(_(u"This tag (" + name + u") has no end tag"))
@@ -1097,7 +1222,9 @@ class InBodyPhase(Phase):
         """New HTML5 elements, "event-source", "section", "nav",
         "article", "aside", "header", "footer", "datagrid", "command"
         """
-        raise NotImplementedError
+        sys.stderr.write("Warning: Undefined behaviour for end tag %s"%name)
+        self.endTagOther(name)
+        #raise NotImplementedError
 
     def endTagOther(self, name):
         # XXX This logic should be moved into the treebuilder
@@ -1222,10 +1349,10 @@ class InTablePhase(Phase):
         self.parser.parseError(_(u"Unexpected end tag (" + name + u") in "
           u"table context caused voodoo mode."))
         # Make all the special element rearranging voodoo kick in
-        self.parser.insertFromTable = True
+        self.tree.insertFromTable = True
         # Process the end tag in the "in body" mode
         self.parser.phases["inBody"].processEndTag(name)
-        self.parser.insertFromTable = False
+        self.tree.insertFromTable = False
 
 
 class InCaptionPhase(Phase):
@@ -1699,7 +1826,7 @@ class AfterBodyPhase(Phase):
     def __init__(self, parser, tree):
         Phase.__init__(self, parser, tree)
 
-        # XXX We should prolly add a handler for "html" here as well...
+        # XXX We should prolly add a handler for                here as well...
         self.endTagHandler = utils.MethodDispatcher([("html", self.endTagHtml)])
         self.endTagHandler.default = self.endTagOther
 

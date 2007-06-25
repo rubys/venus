@@ -1,6 +1,7 @@
 from xml.sax.saxutils import escape
 import sgmllib, time, os, sys, new, urlparse, re
-from planet import config, feedparser, htmltmpl
+from planet import config, feedparser
+import htmltmpl
 
 voids=feedparser._BaseHTMLProcessor.elements_no_end_tag
 empty=re.compile(r"<((%s)[^>]*)></\2>" % '|'.join(voids))

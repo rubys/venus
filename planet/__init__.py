@@ -32,7 +32,9 @@ def getLogger(level, format):
     loggerParms = (level,format)
     return logger
 
+sys.path.append(os.path.join(os.path.dirname(__file__),'vendor'))
+
 # Configure feed parser
-from planet import feedparser
+import feedparser
 feedparser.SANITIZE_HTML=0
 feedparser.RESOLVE_RELATIVE_URIS=0

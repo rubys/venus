@@ -16,7 +16,8 @@ Todo:
 import re, time, md5, sgmllib
 from xml.sax.saxutils import escape
 from xml.dom import minidom, Node
-from planet.html5lib import liberalxmlparser, treebuilders
+from html5lib import liberalxmlparser
+from html5lib.treebuilders import dom
 import planet, config
 
 illegal_xml_chars = re.compile("[\x01-\x08\x0B\x0C\x0E-\x1F]")
@@ -154,7 +155,7 @@ def content(xentry, name, detail, bozo):
         data = minidom.parseString(xdiv % detail.value).documentElement
         xcontent.setAttribute('type', 'xhtml')
     else:
-        parser = liberalxmlparser.XHTMLParser(tree=treebuilders.dom.TreeBuilder)
+        parser = liberalxmlparser.XHTMLParser(tree=dom.TreeBuilder)
         html = parser.parse(xdiv % detail.value, encoding="utf-8")
         for body in html.documentElement.childNodes:
             if body.nodeType != Node.ELEMENT_NODE: continue

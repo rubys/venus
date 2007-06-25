@@ -1,5 +1,5 @@
 import sys
-from planet import html5lib
+import html5lib
 tree=html5lib.treebuilders.dom.TreeBuilder
 parser = html5lib.html5parser.HTMLParser(tree=tree)
 document = parser.parse(sys.stdin)
