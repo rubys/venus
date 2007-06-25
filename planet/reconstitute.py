@@ -111,8 +111,8 @@ def date(xentry, name, parsed):
 
 def category(xentry, tag):
     xtag = xentry.ownerDocument.createElement('category')
-    if tag.has_key('term') and tag.term:
-        xtag.setAttribute('term', tag.get('term'))
+    if not tag.has_key('term') or not tag.term: return
+    xtag.setAttribute('term', tag.get('term'))
     if tag.has_key('scheme') and tag.scheme:
         xtag.setAttribute('scheme', tag.get('scheme'))
     if tag.has_key('label') and tag.label:

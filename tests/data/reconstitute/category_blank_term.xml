@@ -1,0 +1,11 @@
+<!--
+Description:  category term
+Expect:       not globals().has_key('tags')
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <category term=""/>
+  </entry>
+</feed>
+

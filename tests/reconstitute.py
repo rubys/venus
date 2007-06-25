@@ -41,7 +41,7 @@ if __name__ == "__main__":
     from planet import spider
     spider.spiderPlanet(only_if_new=False)
 
-    from planet import feedparser
+    import feedparser
     for source in glob.glob(os.path.join(work, 'sources/*')):
         feed = feedparser.parse(source).feed
         if feed.has_key('title'):
