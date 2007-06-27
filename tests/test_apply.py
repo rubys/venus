@@ -23,8 +23,7 @@ class ApplyTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(os.path.split(workdir)[0])
 
-    def test_apply_asf(self):
-        config.load(configfile % 'asf')
+    def apply_asf(self):
         splice.apply(self.feeddata)
 
         # verify that selected files are there
@@ -46,6 +45,10 @@ class ApplyTest(unittest.TestCase):
         self.assertEqual(12, content)
         self.assertEqual(3, lang)
 
+    def test_apply_asf(self):
+        config.load(configfile % 'asf')
+        self.apply_asf()
+
     def test_apply_classic_fancy(self):
         config.load(configfile % 'fancy')
         self.apply_fancy()
@@ -56,7 +59,7 @@ class ApplyTest(unittest.TestCase):
 
     def test_apply_filter_html(self):
         config.load(configfile % 'html')
-        self.apply_fancy()
+        self.apply_asf()
 
         output = open(os.path.join(workdir, 'index.html')).read()
         self.assertTrue(output.find('/>')>=0)
@@ -105,7 +108,6 @@ for method in dir(test_filter_genshi.GenshiFilterTests):
     if method.startswith('test_'): break
 else:
     delattr(ApplyTest,'test_apply_genshi_fancy')
-    delattr(ApplyTest,'test_apply_filter_html')
 
 try:
     import libxml2

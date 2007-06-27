@@ -1,0 +1,21 @@
+# Example usages:
+#
+# filters:
+#   xhtml2html.plugin?quote_attr_values=True&quote_char="'"
+#
+# -- or --
+#
+# [xhtml2html.plugin]
+# quote_attr_values=True
+# quote_char="'"
+
+import sys
+opts = zip(sys.argv[1::2],sys.argv[2::2])
+opts = [[name.lstrip('-'), eval(value)] for name,value in opts]
+
+from html5lib import liberalxmlparser, treewalkers, treebuilders, serializer
+parser = liberalxmlparser.XHTMLParser(tree=treebuilders.getTreeBuilder('dom'))
+tokens = treewalkers.getTreeWalker('dom')(parser.parse(sys.stdin))
+serializer = serializer.HTMLSerializer(**dict(opts))
+for text in serializer.serialize(tokens, encoding='utf-8'):
+    sys.stdout.write(text)

@@ -145,6 +145,13 @@ class FilterTests(unittest.TestCase):
 
         self.assertEqual('', output)
 
+    def test_xhtml2html_filter(self):
+        testfile = 'tests/data/filter/index.html'
+        filter = 'xhtml2html.plugin?quote_attr_values=True'
+        output = shell.run(filter, open(testfile).read(), mode="filter")
+        self.assertTrue(output.find('/>')<0)
+        self.assertTrue(output.find('</script>')>=0)
+
 try:
     from subprocess import Popen, PIPE
 

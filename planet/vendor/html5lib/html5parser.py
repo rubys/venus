@@ -1,16 +1,10 @@
-
 # Differences from the current specification (23 December 2006) are as follows:
 # * Phases and insertion modes are one concept in parser.py.
 # * EOF handling is slightly different to make sure <html>, <head> and <body>
 #   always exist.
-# * </br> creates a <br> element.
 #
 # We haven't updated DOCTYPE handling yet
-#
-# It should be trivial to add the following cases. However, we should probably
-# also look into comment handling and such then...
-# * A <p> element end tag creates an empty <p> element when there's no <p>
-#   element in scope.
+
 
 try:
     frozenset
@@ -485,7 +479,7 @@ class BeforeHeadPhase(Phase):
         self.startTagHandler.default = self.startTagOther
 
         self.endTagHandler = utils.MethodDispatcher([
-            (("html", "head", "body", "br"), self.endTagImplyHead)
+            (("html", "head", "body", "br", "p"), self.endTagImplyHead)
         ])
         self.endTagHandler.default = self.endTagOther
 
@@ -530,7 +524,7 @@ class InHeadPhase(Phase):
 
         self. endTagHandler = utils.MethodDispatcher([
             ("head", self.endTagHead),
-            (("html", "body", "br"), self.endTagImplyAfterHead),
+            (("html", "body", "br", "p"), self.endTagImplyAfterHead),
             (("title", "style", "script"), self.endTagTitleStyleScript)
         ])
         self.endTagHandler.default = self.endTagOther
@@ -994,9 +988,13 @@ class InBodyPhase(Phase):
         if self.tree.elementInScope("p"):
             self.tree.generateImpliedEndTags("p")
         if self.tree.openElements[-1].name != "p":
-            self.parser.parseError("Unexpected end tag (p).")
-        while self.tree.elementInScope("p"):
-            self.tree.openElements.pop()
+            self.parser.parseError(_("Unexpected end tag (p)."))
+        if self.tree.elementInScope("p"):
+            while self.tree.elementInScope("p"):
+                self.tree.openElements.pop()
+        else:
+            self.startTagCloseP("p", {})
+            self.endTagP("p")
 
     def endTagBody(self, name):
         # XXX Need to take open <p> tags into account here. We shouldn't imply
@@ -1024,7 +1022,7 @@ class InBodyPhase(Phase):
         if inScope:
             self.tree.generateImpliedEndTags()
         if self.tree.openElements[-1].name != name:
-             self.parser.parseError((u"End tag (" + name + ") seen too "
+             self.parser.parseError(_(u"End tag (" + name + ") seen too "
                u"early. Expected other end tag."))
         if inScope:
             node = self.tree.openElements.pop()
@@ -1032,7 +1030,12 @@ class InBodyPhase(Phase):
                 node = self.tree.openElements.pop()
 
     def endTagForm(self, name):
-        self.endTagBlock(name)
+        if self.tree.elementInScope(name):
+            self.tree.generateImpliedEndTags()
+        if self.tree.openElements[-1].name != name:
+            self.parser.parseError(_(u"End tag (form) seen too early. Ignored."))
+        else:
+            self.tree.openElements.pop()
         self.tree.formPointer = None
 
     def endTagListItem(self, name):
@@ -1040,7 +1043,7 @@ class InBodyPhase(Phase):
         if self.tree.elementInScope(name):
             self.tree.generateImpliedEndTags(name)
             if self.tree.openElements[-1].name != name:
-                self.parser.parseError((u"End tag (" + name + ") seen too "
+                self.parser.parseError(_(u"End tag (" + name + ") seen too "
                   u"early. Expected other end tag."))
 
         if self.tree.elementInScope(name):
@@ -1054,7 +1057,7 @@ class InBodyPhase(Phase):
                 self.tree.generateImpliedEndTags()
                 break
         if self.tree.openElements[-1].name != name:
-            self.parser.parseError((u"Unexpected end tag (" + name + "). "
+            self.parser.parseError(_(u"Unexpected end tag (" + name + "). "
                   u"Expected other end tag."))
 
         for item in headingElements:
