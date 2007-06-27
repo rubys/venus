@@ -10,8 +10,11 @@
 # quote_char="'"
 
 import sys
-opts = zip(sys.argv[1::2],sys.argv[2::2])
-opts = [[name.lstrip('-'), eval(value)] for name,value in opts]
+opts = {}
+for name,value in zip(sys.argv[1::2],sys.argv[2::2]):
+  name = name.lstrip('-')
+  try:    opts[name] = eval(value)
+  except: opts[name] = value
 
 from html5lib import liberalxmlparser, treewalkers, treebuilders, serializer
 parser = liberalxmlparser.XHTMLParser(tree=treebuilders.getTreeBuilder('dom'))
