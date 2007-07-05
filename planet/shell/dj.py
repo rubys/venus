@@ -40,7 +40,7 @@ def run(script, doc, output_file=None, options={}):
         reluri = os.path.splitext(os.path.basename(output_file))[0]
         context['url'] = urlparse.urljoin(config.link(),reluri)
         f = open(output_file, 'w')
-        f.write(t.render(context))
+        f.write(t.render(context).encode('utf-8'))
         f.close()
     else:
         # @@this is useful for testing purposes, but does it 
