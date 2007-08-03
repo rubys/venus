@@ -9,7 +9,7 @@ also actively being maintained.
 
 It uses Mark Pilgrim's Universal Feed Parser to read from CDF, RDF, RSS and
 Atom feeds; Leonard Richardson's Beautiful Soup to correct markup issues;
-and either Tomas Styblo's templating engine Daniel Viellard's implementation
+and either Tomas Styblo's templating engine or Daniel Viellard's implementation
 of XSLT to output static files in any format you can dream up.
 
 To get started, check out the documentation in the docs directory.  If you have
