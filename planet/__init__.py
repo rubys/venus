@@ -32,7 +32,7 @@ def getLogger(level, format):
     loggerParms = (level,format)
     return logger
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__),'vendor'))
+sys.path.insert(1, os.path.join(os.path.dirname(__file__),'vendor'))
 
 # Configure feed parser
 import feedparser
