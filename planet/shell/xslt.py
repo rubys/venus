@@ -52,6 +52,7 @@ def run(script, doc, output_file=None, options={}):
 
         cmdopts = []
         for key,value in options.items():
+           if value.find("'")>=0 and value.find('"')>=0: continue
            cmdopts += ['--stringparam', key, quote(value, apos=r"\'")]
 
         os.system('xsltproc %s %s %s > %s' %
