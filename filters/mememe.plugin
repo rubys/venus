@@ -310,7 +310,7 @@ meme_feed.newTextChild(None, 'updated',
 
 # parse the input
 log.debug("Parse input")
-doc=libxml2.parseDoc(sys.stdin.read())
+doc=libxml2.readDoc(sys.stdin.read(), '', 'utf-8', libxml2.XML_PARSE_NONET)
 
 # find the sidebar/footer
 sidebar = options.get('sidebar','//*[@class="sidebar"]')
