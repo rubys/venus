@@ -32,12 +32,13 @@ else:
     def htmlentityreplace_errors(exc):
         if isinstance(exc, (UnicodeEncodeError, UnicodeTranslateError)):
             res = []
-            for c in ex.object[exc.start:exc.end]:
-                c = encode_entity_map.get(c)
-                if c:
+            for c in exc.object[exc.start:exc.end]:
+                e = encode_entity_map.get(c)
+                if e:
                     res.append("&")
-                    res.append(c)
-                    res.append(";")
+                    res.append(e)
+                    if not e.endswith(";"):
+                        res.append(";")
                 else:
                     res.append(c.encode(exc.encoding, "xmlcharrefreplace"))
             return (u"".join(res), exc.end)

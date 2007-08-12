@@ -51,8 +51,11 @@ class TreeWalker(object):
     def comment(self, data):
         return {"type": "Comment", "data": unicode(data)}
 
-    def doctype(self, name):
-        return {"type": "Doctype", "name": unicode(name), "data": name.upper() == "HTML"}
+    def doctype(self, name, publicId=None, systemId=None, correct=True):
+        return {"type": "Doctype",
+                "name": name is not None and unicode(name) or u"",
+                "publicId": publicId, "systemId": systemId,
+                "correct": correct}
 
     def unknown(self, nodeType):
         return self.error(_("Unknown node type: ") + nodeType)

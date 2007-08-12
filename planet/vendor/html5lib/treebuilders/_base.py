@@ -207,8 +207,11 @@ class TreeBuilder(object):
                 return item
         return False
 
-    def insertDoctype(self, name):
-        self.document.appendChild(self.doctypeClass(name))
+    def insertDoctype(self, name, publicId, systemId):
+        doctype = self.doctypeClass(name)
+        doctype.publicId = publicId
+        doctype.systemId = systemId
+        self.document.appendChild(doctype)
 
     def insertComment(self, data, parent=None):
         if parent is None:
@@ -302,6 +305,7 @@ class TreeBuilder(object):
 
     def generateImpliedEndTags(self, exclude=None):
         name = self.openElements[-1].name
+        # XXX td, th and tr are not actually needed
         if (name in frozenset(("dd", "dt", "li", "p", "td", "th", "tr"))
             and name != exclude):
             self.openElements.pop()
