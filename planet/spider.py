@@ -154,14 +154,27 @@ def writeCache(feed_uri, feed_info, data):
     from planet import idindex
     global index
     if index != None: index = idindex.open()
-
-    # write each entry to the cache
-    cache = config.cache_directory()
+ 
+    # select latest entry for each unique id
+    ids = {}
     for entry in data.entries:
         # generate an id, if none is present
         if not entry.has_key('id') or not entry.id:
             entry['id'] = reconstitute.id(None, entry)
             if not entry['id']: continue
+
+        # determine updated date for purposes of selection
+        updated = ''
+        if entry.has_key('published'): updated=entry.published
+        if entry.has_key('updated'):   updated=entry.updated
+
+        # if not seen or newer than last seen, select it
+        if updated >= ids.get(entry.id,('',))[0]:
+            ids[entry.id] = (updated, entry)
+
+    # write each entry to the cache
+    cache = config.cache_directory()
+    for updated, entry in ids.values():
 
         # compute cache file name based on the id
         cache_file = filename(cache, entry.id)

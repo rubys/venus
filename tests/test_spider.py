@@ -88,6 +88,14 @@ class SpiderTest(unittest.TestCase):
         self.spiderFeed(testfeed % '1b')
         self.verify_spiderFeed()
 
+    def test_spiderFeedUpdatedEntries(self):
+        config.load(configfile)
+        self.spiderFeed(testfeed % '4')
+        self.assertEqual(2, len(glob.glob(workdir+"/*")))
+        data = feedparser.parse(workdir + 
+            '/planet.intertwingly.net,2006,testfeed4')
+        self.assertEqual(u'three', data.entries[0].content[0].value)
+
     def verify_spiderPlanet(self):
         files = glob.glob(workdir+"/*")
 
