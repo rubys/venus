@@ -107,7 +107,7 @@ def date(xentry, name, parsed):
     formatted = time.strftime("%Y-%m-%dT%H:%M:%SZ", parsed)
     xdate = createTextElement(xentry, name, formatted)
     formatted = time.strftime(config.date_format(), parsed)
-    xdate.setAttribute('planet:format', formatted)
+    xdate.setAttribute('planet:format', formatted.decode('utf-8'))
 
 def category(xentry, tag):
     xtag = xentry.ownerDocument.createElement('category')
