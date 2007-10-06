@@ -126,7 +126,7 @@ for name in glob.glob(os.path.join(cache, '*')):
 
   # identify the unique links
   entry_links = []
-  for node in doc.xpathEval("//*[@href and not(@rel='source')]"):
+  for node in doc.xpathEval("//*[@href and not(@rel='source') and not(@rel='license')]"):
       parent = node.parent
       while parent:
           if parent.name == 'source': break
