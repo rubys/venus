@@ -11,7 +11,7 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 262 $"[11:14] + "-svn"
+__version__ = "4.2-pre-" + "$Revision: 265 $"[11:14] + "-svn"
 __license__ = """Copyright (c) 2002-2007, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -2294,7 +2294,7 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
       'value', 'variable', 'volume', 'vspace', 'vrml', 'width', 'wrap',
       'xml:lang']
 
-    unacceptable_elements_with_end_tag = ['script', 'applet']
+    unacceptable_elements_with_end_tag = ['script', 'applet', 'style']
 
     acceptable_css_properties = ['azimuth', 'background-color',
       'border-bottom-color', 'border-collapse', 'border-color',
