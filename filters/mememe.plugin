@@ -65,6 +65,7 @@ def cache_meme(url, headers):
   file.close()
 
 urlmap = {}
+revmap = {}
 def canonicalize(url):
   url = urlmap.get(url,url)
   parts = list(urlparse.urlparse(url))
@@ -74,7 +75,10 @@ def canonicalize(url):
   if parts[1].startswith('www.'): parts[1]=parts[1][4:]
   if not parts[2]: parts[2] = '/'
   parts[-1] = ''
-  return urlparse.urlunparse(parts)
+  
+  canonurl = urlparse.urlunparse(parts)
+  revmap[canonurl] = url
+  return canonurl
   
 log.debug("Loading cached data")
 for name in glob.glob(os.path.join(cache, '*')):
@@ -341,7 +345,7 @@ while child:
         if not title: continue
         li2 = ul2.newChild(None, 'li', None)
         a = li2.newTextChild(None, 'a', title)
-        a.setProp('href', entry)
+        a.setProp('href', revmap.get(entry,entry))
         link_count = link_count + 1
         if link_count >= 10: break
       if link_count > 0: state = None
@@ -389,7 +393,7 @@ for i in range(0,len(weighted_links)):
 
   # otherwise, parse the html
   if not title:
-    title = html(link).title
+    title = html(revmap.get(link,link)).title
 
   # dehtmlize
   title = re.sub('&(\w+);',
@@ -422,7 +426,7 @@ for i in range(0,len(weighted_links)):
 
   # main link
   a = li.newTextChild(None, 'a', title.strip().encode('utf-8'))
-  a.setProp('href',link)
+  a.setProp('href',revmap.get(link,link))
   if (((i==0) or (updated>=weighted_links[i-1][2])) and
     (i+1==len(weighted_links) or (updated>=weighted_links[i+1][2]))):
     rank = 0
@@ -438,7 +442,7 @@ for i in range(0,len(weighted_links)):
     if entry in voters: continue
     li2 = ul2.newChild(None, 'li', None)
     a = li2.newTextChild(None, 'a' , author)
-    a.setProp('href',entry)
+    a.setProp('href',revmap.get(entry,entry))
     if title: a.setProp('title',title)
     voters.append(entry)
 
