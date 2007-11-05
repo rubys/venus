@@ -405,6 +405,7 @@ def spiderPlanet(only_if_new = False):
         fetch_queue.put(item=(None, None))
 
     # Process the results as they arrive
+    feeds_seen = {}
     while fetch_queue.qsize() or parse_queue.qsize() or threads:
         while parse_queue.qsize() == 0 and threads:
             time.sleep(0.1)
@@ -428,9 +429,16 @@ def spiderPlanet(only_if_new = False):
                 else:
                     data = feedparser.FeedParserDict({'version': None,
                         'headers': feed.headers, 'entries': [], 'feed': {},
-                        'bozo': 0, 'status': int(feed.headers.status)})
+                        'href': feed.url, 'bozo': 0,
+                        'status': int(feed.headers.status)})
 
-                writeCache(uri, feed_info, data)
+                id = data.feed.get('id', data.href)
+                if not feeds_seen.has_key(id):
+                    writeCache(uri, feed_info, data)
+                    feeds_seen[id] = uri
+                else:
+                    log.warn('Duplicate subscription: %s and %s' %
+                        (uri, feeds_seen[id]))
 
             except Exception, e:
                 import sys, traceback
