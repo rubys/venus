@@ -432,7 +432,10 @@ def spiderPlanet(only_if_new = False):
                         'href': feed.url, 'bozo': 0,
                         'status': int(feed.headers.status)})
 
-                id = data.feed.get('id', data.href)
+                id = data.feed.get('id', None)
+                if not id and hasattr(data, 'href'): id=data.href
+                if not id: id=uri
+
                 if not feeds_seen.has_key(id):
                     writeCache(uri, feed_info, data)
                     feeds_seen[id] = uri
