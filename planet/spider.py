@@ -80,16 +80,23 @@ def writeCache(feed_uri, feed_info, data):
 
     # process based on the HTTP status code
     if data.status == 200 and data.has_key("url"):
-        data.feed['planet_http_location'] = data.url
-        if feed_uri == data.url:
+        feed_info.feed['planet_http_location'] = data.url
+        if data.has_key("entries") and len(data.entries) == 0:
+            log.warning("No data %s", feed_uri)
+            feed_info.feed['planet_message'] = 'no data'
+        elif feed_uri == data.url:
             log.info("Updating feed %s", feed_uri)
         else:
             log.info("Updating feed %s @ %s", feed_uri, data.url)
     elif data.status == 301 and data.has_key("entries") and len(data.entries)>0:
         log.warning("Feed has moved from <%s> to <%s>", feed_uri, data.url)
         data.feed['planet_http_location'] = data.url
-    elif data.status == 304:
-        log.info("Feed %s unchanged", feed_uri)
+    elif data.status == 304 and data.has_key("url"):
+        feed_info.feed['planet_http_location'] = data.url
+        if feed_uri == data.url:
+            log.info("Feed %s unchanged", feed_uri)
+        else:
+            log.info("Feed %s unchanged @ %s", feed_uri, data.url)
 
         if not feed_info.feed.has_key('planet_message'):
             if feed_info.feed.has_key('planet_updated'):
@@ -99,7 +106,9 @@ def writeCache(feed_uri, feed_info, data):
         else:
             if feed_info.feed.planet_message.startswith("no activity in"):
                return
-            del feed_info.feed['planet_message']
+            if not feed_info.feed.planet_message.startswith("duplicate") and \
+               not feed_info.feed.planet_message.startswith("no data"):
+               del feed_info.feed['planet_message']
 
     elif data.status == 410:
         log.info("Feed %s gone", feed_uri)
@@ -432,16 +441,31 @@ def spiderPlanet(only_if_new = False):
                         'href': feed.url, 'bozo': 0,
                         'status': int(feed.headers.status)})
 
+                # duplicate feed?
                 id = data.feed.get('id', None)
-                if not id and hasattr(data, 'href'): id=data.href
-                if not id: id=uri
+                if not id: id = feed_info.feed.get('id', None)
 
-                if not feeds_seen.has_key(id):
-                    writeCache(uri, feed_info, data)
-                    feeds_seen[id] = uri
-                else:
+                href=uri
+                if data.has_key('href'): href=data.href
+
+                duplicate = None
+                if id and id in feeds_seen:
+                   duplicate = id
+                elif href and href in feeds_seen:
+                   duplicate = href
+
+                if duplicate:
+                    feed_info.feed['planet_message'] = \
+                        'duplicate subscription: ' + feeds_seen[duplicate]
                     log.warn('Duplicate subscription: %s and %s' %
-                        (uri, feeds_seen[id]))
+                        (uri, feeds_seen[duplicate]))
+                    if href: feed_info.feed['planet_http_location'] = href
+
+                if id: feeds_seen[id] = uri
+                if href: feeds_seen[href] = uri
+
+                # complete processing for the feed
+                writeCache(uri, feed_info, data)
 
             except Exception, e:
                 import sys, traceback
