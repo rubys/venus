@@ -2,6 +2,9 @@ import codecs
 import re
 import types
 
+from gettext import gettext
+_ = gettext
+
 from constants import EOF, spaceCharacters, asciiLetters, asciiUppercase
 from constants import encodings
 from utils import MethodDispatcher
@@ -31,37 +34,38 @@ class HTMLInputStream(object):
 
         """
         # List of where new lines occur
-        self.newLines = []
+        self.newLines = [0]
 
-      # Raw Stream
+        self.charEncoding = encoding
+
+        # Raw Stream - for unicode objects this will encode to utf-8 and set
+        #              self.charEncoding as appropriate
         self.rawStream = self.openStream(source)
 
         # Encoding Information
         #Number of bytes to use when looking for a meta element with
         #encoding information
         self.numBytesMeta = 512
+        #Number of bytes to use when using detecting encoding using chardet
+        self.numBytesChardet = 100
         #Encoding to use if no other information can be found
         self.defaultEncoding = "windows-1252"
         
         #Detect encoding iff no explicit "transport level" encoding is supplied
-        if encoding is None or not isValidEncoding(encoding):
-            encoding = self.detectEncoding(parseMeta, chardet)
-        self.charEncoding = encoding
+        if self.charEncoding is None or not isValidEncoding(self.charEncoding):
+            self.charEncoding = self.detectEncoding(parseMeta, chardet)
 
-        # Read bytes from stream decoding them into Unicode
-        uString = self.rawStream.read().decode(self.charEncoding, 'replace')
-
-        # Normalize new ipythonlines and null characters
-        uString = re.sub('\r\n?', '\n', uString)
-        uString = re.sub('\x00', u'\uFFFD', uString)
-
-        # Convert the unicode string into a list to be used as the data stream
-        self.dataStream = uString
+        self.dataStream = codecs.getreader(self.charEncoding)(self.rawStream,
+                                                              'replace')
 
         self.queue = []
+        self.errors = []
 
-        # Reset position in the list to read from
-        self.reset()
+        self.line = self.col = 0
+        self.lineLengths = []
+        
+        #Flag to indicate we may have a CR LF broken across a data chunk
+        self._lastChunkEndsWithCR = False
 
     def openStream(self, source):
         """Produces a file object from source.
@@ -74,6 +78,9 @@ class HTMLInputStream(object):
             stream = source
         else:
             # Otherwise treat source as a string and convert to a file object
+            if isinstance(source, unicode):
+                source = source.encode('utf-8')
+                self.charEncoding = "utf-8"
             import cStringIO
             stream = cStringIO.StringIO(str(source))
         return stream
@@ -90,10 +97,18 @@ class HTMLInputStream(object):
         #Guess with chardet, if avaliable
         if encoding is None and chardet:
             try:
-                import chardet
-                buffer = self.rawStream.read()
-                encoding = chardet.detect(buffer)['encoding']
-                self.rawStream = self.openStream(buffer)
+                from chardet.universaldetector import UniversalDetector
+                buffers = []
+                detector = UniversalDetector()
+                while not detector.done:
+                    buffer = self.rawStream.read(self.numBytesChardet)
+                    if not buffer:
+                        break
+                    buffers.append(buffer)
+                    detector.feed(buffer)
+                detector.close()
+                encoding = detector.result['encoding']
+                self.seek("".join(buffers), 0)
             except ImportError:
                 pass
         # If all else fails use the default encoding
@@ -119,98 +134,197 @@ class HTMLInputStream(object):
         }
 
         # Go to beginning of file and read in 4 bytes
-        self.rawStream.seek(0)
         string = self.rawStream.read(4)
 
         # Try detecting the BOM using bytes from the string
-        encoding = bomDict.get(string[:3])       # UTF-8
+        encoding = bomDict.get(string[:3])         # UTF-8
         seek = 3
         if not encoding:
-            encoding = bomDict.get(string[:2])   # UTF-16
-            seek = 2
+            # Need to detect UTF-32 before UTF-16
+            encoding = bomDict.get(string)         # UTF-32
+            seek = 4
             if not encoding:
-                encoding = bomDict.get(string)   # UTF-32
-                seek = 4
+                encoding = bomDict.get(string[:2]) # UTF-16
+                seek = 2
 
-        #AT - move this to the caller?
         # Set the read position past the BOM if one was found, otherwise
         # set it to the start of the stream
-        self.rawStream.seek(encoding and seek or 0)
+        self.seek(string, encoding and seek or 0)
 
         return encoding
+
+    def seek(self, buffer, n):
+        """Unget buffer[n:]"""
+        if hasattr(self.rawStream, 'unget'):
+            self.rawStream.unget(buffer[n:])
+            return 
+
+        if hasattr(self.rawStream, 'seek'):
+            try:
+                self.rawStream.seek(n)
+                return
+            except IOError:
+                pass
+
+        class BufferedStream:
+             def __init__(self, data, stream):
+                 self.data = data
+                 self.stream = stream
+             def read(self, chars=-1):
+                 if chars == -1 or chars > len(self.data):
+                     result = self.data
+                     self.data = ''
+                     if chars == -1:
+                         return result + self.stream.read()
+                     else:
+                         return result + self.stream.read(chars-len(result))
+                 elif not self.data:
+                     return self.stream.read(chars)
+                 else:
+                     result = self.data[:chars]
+                     self.data = self.data[chars:]
+                     return result
+             def unget(self, data):
+                 if self.data:
+                     self.data += data
+                 else:
+                     self.data = data
+
+        self.rawStream = BufferedStream(buffer[n:], self.rawStream)
 
     def detectEncodingMeta(self):
         """Report the encoding declared by the meta element
         """
-        parser = EncodingParser(self.rawStream.read(self.numBytesMeta))
-        self.rawStream.seek(0)
+        buffer = self.rawStream.read(self.numBytesMeta)
+        parser = EncodingParser(buffer)
+        self.seek(buffer, 0)
         return parser.getEncoding()
-
-    def determineNewLines(self):
-        # Looks through the stream to find where new lines occur so
-        # the position method can tell where it is.
-        self.newLines.append(0)
-        for i in xrange(len(self.dataStream)):
-            if self.dataStream[i] == u"\n":
-                self.newLines.append(i)
 
     def position(self):
         """Returns (line, col) of the current position in the stream."""
-        # Generate list of new lines first time around
-        if not self.newLines:
-            self.determineNewLines()
-
-        line = 0
-        tell = self.tell
-        for pos in self.newLines:
-            if pos < tell:
-                line += 1
-            else:
-                break
-        col = tell - self.newLines[line-1] - 1
-        return (line, col)
-
-    def reset(self):
-        """Resets the position in the stream back to the start."""
-        self.tell = 0
+        line, col = self.line, self.col
+        return (line + 1, col)
 
     def char(self):
         """ Read one character from the stream or queue if available. Return
             EOF when EOF is reached.
         """
-        if self.queue:
-            return self.queue.pop(0)
+        if not self.queue:
+            self.readChunk()
+        #If we still don't have a character we have reached EOF
+        if not self.queue:
+            return EOF
+        
+        char = self.queue.pop(0)
+        
+        # update position in stream
+        if char == '\n':
+            self.lineLengths.append(self.col)
+            self.line += 1
+            self.col = 0
         else:
-            try:
-                self.tell += 1
-                return self.dataStream[self.tell - 1]
-            except:
-                return EOF
+            self.col += 1
+        return char
+
+    def readChunk(self, chunkSize=10240):
+        data = self.dataStream.read(chunkSize)
+        if not data:
+            return
+        #Replace null characters
+        for i in xrange(data.count(u"\u0000")):
+            self.errors.append(_('null character found in input stream, '
+                                 'replaced with U+FFFD'))
+        data = data.replace(u"\u0000", u"\ufffd")
+        #Check for CR LF broken across chunks
+        if (self._lastChunkEndsWithCR and data[0] == "\n"):
+            data = data[1:]
+        self._lastChunkEndsWithCR = data[-1] == "\r"
+        data = data.replace("\r\n", "\n")
+        data = data.replace("\r", "\n")
+        
+        data = unicode(data)
+        self.queue.extend([char for char in data])
 
     def charsUntil(self, characters, opposite = False):
         """ Returns a string of characters from the stream up to but not
         including any character in characters or EOF. characters can be
         any container that supports the in method being called on it.
         """
-        charStack = [self.char()]
 
-        # First from the queue
-        while charStack[-1] and (charStack[-1] in characters) == opposite \
-          and self.queue:
-            charStack.append(self.queue.pop(0))
+        #This method is currently 40-50% of our total runtime and badly needs
+        #optimizing
+        #Possible improvements:
+        # - use regexp to find characters that match the required character set
+        #   (with regexp cache since we do the same searches many many times)
+        # - improve EOF handling for fewer if statements
 
-        # Then the rest
-        while charStack[-1] and (charStack[-1] in characters) == opposite:
-            try:
-                self.tell += 1
-                charStack.append(self.dataStream[self.tell - 1])
-            except:
-                charStack.append(EOF)
+        if not self.queue:
+            self.readChunk()
+        #Break if we have reached EOF
+        if not self.queue or self.queue[0] == None:
+            return u""
+        
+        i = 0
+        while (self.queue[i] in characters) == opposite:
+            i += 1
+            if i == len(self.queue):
+                self.readChunk()
+            #If the queue doesn't grow we have reached EOF
+            if i == len(self.queue) or self.queue[i] is EOF:
+                break
+            #XXX- wallpaper over bug in calculation below
+            #Otherwise change the stream position
+            if self.queue[i] == '\n':
+                self.lineLengths.append(self.col)
+                self.line += 1
+                self.col = 0
+            else:
+                self.col += 1
 
-        # Put the character stopped on back to the front of the queue
-        # from where it came.
-        self.queue.insert(0, charStack.pop())
-        return "".join(charStack)
+        rv = u"".join(self.queue[:i])
+        self.queue = self.queue[i:]
+        
+        #Calculate where we now are in the stream
+        #One possible optimisation would be to store all read characters and
+        #Calculate this on an as-needed basis (perhaps flushing the read data
+        #every time we read a new chunk) rather than once per call here and
+        #in .char()
+        
+        #XXX Temporarily disable this because there is a bug
+        
+        #lines = rv.split("\n")
+        #
+        #if lines:
+        #    #Add number of lines passed onto positon
+        #    oldCol = self.col
+        #    self.line += len(lines)-1
+        #    if len(lines) > 1:
+        #        self.col = len(lines[-1])
+        #    else:
+        #        self.col += len(lines[0])
+        #
+        #    if self.lineLengths and oldCol > 0:
+        #        self.lineLengths[-1] += len(lines[0])
+        #        lines = lines[1:-1]
+        #    else:
+        #        lines = lines[:-1]
+        #
+        #    for line in lines:
+        #        self.lineLengths.append(len(line))
+        #
+        
+        return rv
+
+    def unget(self, chars):
+        if chars:
+            self.queue = list(chars) + self.queue
+            #Alter the current line, col position
+            for c in chars[::-1]:
+                if c == '\n':
+                    self.line -= 1
+                    self.col = self.lineLengths[self.line]
+                else:
+                    self.col -= 1
 
 class EncodingBytes(str):
     """String-like object with an assosiated position and various extra methods

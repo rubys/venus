@@ -6,7 +6,7 @@ logged_modes = []
 
 def run(template_file, doc, mode='template'):
     """ select a template module based on file extension and execute it """
-    log = planet.getLogger(planet.config.log_level(),planet.config.log_format())
+    log = planet.logger
 
     if mode == 'template':
         dirs = planet.config.template_directories()

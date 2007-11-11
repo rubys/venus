@@ -12,7 +12,7 @@ configfile = 'tests/data/spider/config.ini'
 class SpiderTest(unittest.TestCase):
     def setUp(self):
         # silence errors
-        planet.logger = None
+        self.original_logger = planet.logger
         planet.getLogger('CRITICAL',None)
 
         try:
@@ -24,6 +24,7 @@ class SpiderTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(workdir)
         os.removedirs(os.path.split(workdir)[0])
+        planet.logger = self.original_logger
 
     def test_filename(self):
         self.assertEqual(os.path.join('.', 'example.com,index.html'),
@@ -86,6 +87,14 @@ class SpiderTest(unittest.TestCase):
         self.spiderFeed(testfeed % '1a')
         self.spiderFeed(testfeed % '1b')
         self.verify_spiderFeed()
+
+    def test_spiderFeedUpdatedEntries(self):
+        config.load(configfile)
+        self.spiderFeed(testfeed % '4')
+        self.assertEqual(2, len(glob.glob(workdir+"/*")))
+        data = feedparser.parse(workdir + 
+            '/planet.intertwingly.net,2006,testfeed4')
+        self.assertEqual(u'three', data.entries[0].content[0].value)
 
     def verify_spiderPlanet(self):
         files = glob.glob(workdir+"/*")

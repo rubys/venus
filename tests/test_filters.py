@@ -54,6 +54,21 @@ class FilterTests(unittest.TestCase):
             u'adipiscing elit. Nullam velit. Vivamus tincidunt, erat ' +
             u'in \u2026', excerpt.firstChild.firstChild.nodeValue)
 
+    def test_excerpt_lorem_ipsum_summary(self):
+        testfile = 'tests/data/filter/excerpt-lorem-ipsum.xml'
+        config.load('tests/data/filter/excerpt-lorem-ipsum.ini')
+        config.parser.set('excerpt.py', 'target', 'atom:summary')
+
+        output = open(testfile).read()
+        for filter in config.filters():
+            output = shell.run(filter, output, mode="filter")
+
+        dom = xml.dom.minidom.parseString(output)
+        excerpt = dom.getElementsByTagName('summary')[0]
+        self.assertEqual(u'Lorem ipsum dolor sit amet, consectetuer ' +
+            u'adipiscing elit. Nullam velit. Vivamus tincidunt, erat ' +
+            u'in \u2026', excerpt.firstChild.firstChild.nodeValue)
+
     def test_stripAd_yahoo(self):
         testfile = 'tests/data/filter/stripAd-yahoo.xml'
         config.load('tests/data/filter/stripAd-yahoo.ini')
@@ -129,6 +144,13 @@ class FilterTests(unittest.TestCase):
             output = shell.run(filter, output, mode="filter")
 
         self.assertEqual('', output)
+
+    def test_xhtml2html_filter(self):
+        testfile = 'tests/data/filter/index.html'
+        filter = 'xhtml2html.plugin?quote_attr_values=True'
+        output = shell.run(filter, open(testfile).read(), mode="filter")
+        self.assertTrue(output.find('/>')<0)
+        self.assertTrue(output.find('</script>')>=0)
 
 try:
     from subprocess import Popen, PIPE

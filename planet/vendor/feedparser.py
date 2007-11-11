@@ -11,7 +11,7 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 262 $"[11:14] + "-svn"
+__version__ = "4.2-pre-" + "$Revision: 270 $"[11:14] + "-svn"
 __license__ = """Copyright (c) 2002-2007, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -466,6 +466,7 @@ class _FeedParserMixin:
         self.baseuri = baseuri or ''
         self.lang = baselang or None
         self.svgOK = 0
+        self.hasTitle = 0
         if baselang:
             self.feeddata['language'] = baselang.replace('_','-')
 
@@ -478,6 +479,11 @@ class _FeedParserMixin:
         # track xml:base and xml:lang
         attrsD = dict(attrs)
         baseuri = attrsD.get('xml:base', attrsD.get('base')) or self.baseuri
+        if type(baseuri) != type(u''):
+            try:
+                baseuri = unicode(baseuri, self.encoding)
+            except:
+                baseuri = unicode(baseuri, 'iso-8859-1')
         self.baseuri = _urljoin(self.baseuri, baseuri)
         lang = attrsD.get('xml:lang', attrsD.get('lang'))
         if lang == '':
@@ -502,6 +508,7 @@ class _FeedParserMixin:
 
         # track inline content
         if self.incontent and self.contentparams.has_key('type') and not self.contentparams.get('type', 'xml').endswith('xml'):
+            if tag in ['xhtml:div', 'div']: return # typepad does this 10/2007
             # element declared itself as escaped markup, but it isn't really
             self.contentparams['type'] = 'application/xhtml+xml'
         if self.incontent and self.contentparams.get('type') == 'application/xhtml+xml':
@@ -569,6 +576,7 @@ class _FeedParserMixin:
         # track inline content
         if self.incontent and self.contentparams.has_key('type') and not self.contentparams.get('type', 'xml').endswith('xml'):
             # element declared itself as escaped markup, but it isn't really
+            if tag in ['xhtml:div', 'div']: return # typepad does this 10/2007
             self.contentparams['type'] = 'application/xhtml+xml'
         if self.incontent and self.contentparams.get('type') == 'application/xhtml+xml':
             tag = tag.split(':')[-1]
@@ -794,6 +802,9 @@ class _FeedParserMixin:
         # categories/tags/keywords/whatever are handled in _end_category
         if element == 'category':
             return output
+
+        if element == 'title' and self.hasTitle:
+            return output
         
         # store output in appropriate place(s)
         if self.inentry and not self.insource:
@@ -960,6 +971,7 @@ class _FeedParserMixin:
         context = self._getContext()
         context.setdefault('image', FeedParserDict())
         self.inimage = 1
+        self.hasTitle = 0
         self.push('image', 0)
             
     def _end_image(self):
@@ -970,6 +982,7 @@ class _FeedParserMixin:
         context = self._getContext()
         context.setdefault('textinput', FeedParserDict())
         self.intextinput = 1
+        self.hasTitle = 0
         self.push('textinput', 0)
     _start_textInput = _start_textinput
     
@@ -1182,6 +1195,7 @@ class _FeedParserMixin:
         self.push('item', 0)
         self.inentry = 1
         self.guidislink = 0
+        self.hasTitle = 0
         id = self._getAttribute(attrsD, 'rdf:about')
         if id:
             context = self._getContext()
@@ -1376,8 +1390,13 @@ class _FeedParserMixin:
         value = self.popContent('title')
         if not value: return
         context = self._getContext()
+        self.hasTitle = 1
     _end_dc_title = _end_title
-    _end_media_title = _end_title
+
+    def _end_media_title(self):
+        hasTitle = self.hasTitle
+        self._end_title()
+        self.hasTitle = hasTitle
 
     def _start_description(self, attrsD):
         context = self._getContext()
@@ -1466,6 +1485,7 @@ class _FeedParserMixin:
             
     def _start_source(self, attrsD):
         self.insource = 1
+        self.hasTitle = 0
 
     def _end_source(self):
         self.insource = 0
@@ -2287,7 +2307,7 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
       'value', 'variable', 'volume', 'vspace', 'vrml', 'width', 'wrap',
       'xml:lang']
 
-    unacceptable_elements_with_end_tag = ['script', 'applet']
+    unacceptable_elements_with_end_tag = ['script', 'applet', 'style']
 
     acceptable_css_properties = ['azimuth', 'background-color',
       'border-bottom-color', 'border-collapse', 'border-color',
@@ -2410,7 +2430,7 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
                 acceptable_attributes = self.svg_attributes
                 tag = self.svg_elem_map.get(tag,tag)
                 keymap = self.svg_attr_map
-            else:
+            elif not tag in self.acceptable_elements:
                 return
 
         # declare xlink namespace, if needed
@@ -3290,11 +3310,15 @@ def _stripDoctype(data):
     rss_version may be 'rss091n' or None
     stripped_data is the same XML document, minus the DOCTYPE
     '''
-    entity_pattern = re.compile(r'<!ENTITY([^>]*?)>', re.MULTILINE)
-    entity_results=entity_pattern.findall(data)
-    data = entity_pattern.sub('', data)
-    doctype_pattern = re.compile(r'<!DOCTYPE([^>]*?)>', re.MULTILINE)
-    doctype_results = doctype_pattern.findall(data)
+    start = re.search('<\w',data)
+    start = start and start.start() or -1
+    head,data = data[:start+1], data[start+1:]
+    
+    entity_pattern = re.compile(r'^\s*<!ENTITY([^>]*?)>', re.MULTILINE)
+    entity_results=entity_pattern.findall(head)
+    head = entity_pattern.sub('', head)
+    doctype_pattern = re.compile(r'^\s*<!DOCTYPE([^>]*?)>', re.MULTILINE)
+    doctype_results = doctype_pattern.findall(head)
     doctype = doctype_results and doctype_results[0] or ''
     if doctype.lower().count('netscape'):
         version = 'rss091n'
@@ -3308,7 +3332,7 @@ def _stripDoctype(data):
        safe_entities=filter(lambda e: safe_pattern.match(e),entity_results)
        if safe_entities:
            replacement='<!DOCTYPE feed [\n  <!ENTITY %s>\n]>' % '>\n  <!ENTITY '.join(safe_entities)
-    data = doctype_pattern.sub(replacement, data)
+    data = doctype_pattern.sub(replacement, head) + data
 
     return version, data, dict(replacement and safe_pattern.findall(replacement))
     

@@ -16,7 +16,8 @@ Todo:
 import re, time, md5, sgmllib
 from xml.sax.saxutils import escape
 from xml.dom import minidom, Node
-from planet.html5lib import liberalxmlparser, treebuilders
+from html5lib import liberalxmlparser
+from html5lib.treebuilders import dom
 import planet, config
 
 illegal_xml_chars = re.compile("[\x01-\x08\x0B\x0C\x0E-\x1F]")
@@ -106,12 +107,12 @@ def date(xentry, name, parsed):
     formatted = time.strftime("%Y-%m-%dT%H:%M:%SZ", parsed)
     xdate = createTextElement(xentry, name, formatted)
     formatted = time.strftime(config.date_format(), parsed)
-    xdate.setAttribute('planet:format', formatted)
+    xdate.setAttribute('planet:format', formatted.decode('utf-8'))
 
 def category(xentry, tag):
     xtag = xentry.ownerDocument.createElement('category')
-    if tag.has_key('term') and tag.term:
-        xtag.setAttribute('term', tag.get('term'))
+    if not tag.has_key('term') or not tag.term: return
+    xtag.setAttribute('term', tag.get('term'))
     if tag.has_key('scheme') and tag.scheme:
         xtag.setAttribute('scheme', tag.get('scheme'))
     if tag.has_key('label') and tag.label:
@@ -124,7 +125,11 @@ def author(xentry, name, detail):
     xdoc = xentry.ownerDocument
     xauthor = xdoc.createElement(name)
 
-    createTextElement(xauthor, 'name', detail.get('name', None))
+    if detail.get('name', None):
+        createTextElement(xauthor, 'name', detail.get('name'))
+    else:
+        xauthor.appendChild(xdoc.createElement('name'))
+
     createTextElement(xauthor, 'email', detail.get('email', None))
     createTextElement(xauthor, 'uri', detail.get('href', None))
         
@@ -150,7 +155,7 @@ def content(xentry, name, detail, bozo):
         data = minidom.parseString(xdiv % detail.value).documentElement
         xcontent.setAttribute('type', 'xhtml')
     else:
-        parser = liberalxmlparser.XHTMLParser(tree=treebuilders.dom.TreeBuilder)
+        parser = liberalxmlparser.XHTMLParser(tree=dom.TreeBuilder)
         html = parser.parse(xdiv % detail.value, encoding="utf-8")
         for body in html.documentElement.childNodes:
             if body.nodeType != Node.ELEMENT_NODE: continue
@@ -232,7 +237,7 @@ def reconstitute(feed, entry):
     links(xentry, entry)
 
     bozo = feed.bozo
-    if not entry.has_key('title'):
+    if not entry.has_key('title') or not entry.title:
         xentry.appendChild(xdoc.createElement('title'))
 
     content(xentry, 'title', entry.get('title_detail',None), bozo)

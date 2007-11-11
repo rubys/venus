@@ -5,8 +5,7 @@ from spider import filename
 
 def expungeCache():
     """ Expunge old entries from a cache of entries """
-    import planet
-    log = planet.getLogger(config.log_level(),config.log_format())
+    log = planet.logger
 
     log.info("Determining feed subscriptions")
     entry_count = {}

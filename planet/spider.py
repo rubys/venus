@@ -80,16 +80,23 @@ def writeCache(feed_uri, feed_info, data):
 
     # process based on the HTTP status code
     if data.status == 200 and data.has_key("url"):
-        data.feed['planet_http_location'] = data.url
-        if feed_uri == data.url:
+        feed_info.feed['planet_http_location'] = data.url
+        if data.has_key("entries") and len(data.entries) == 0:
+            log.warning("No data %s", feed_uri)
+            feed_info.feed['planet_message'] = 'no data'
+        elif feed_uri == data.url:
             log.info("Updating feed %s", feed_uri)
         else:
             log.info("Updating feed %s @ %s", feed_uri, data.url)
     elif data.status == 301 and data.has_key("entries") and len(data.entries)>0:
         log.warning("Feed has moved from <%s> to <%s>", feed_uri, data.url)
         data.feed['planet_http_location'] = data.url
-    elif data.status == 304:
-        log.info("Feed %s unchanged", feed_uri)
+    elif data.status == 304 and data.has_key("url"):
+        feed_info.feed['planet_http_location'] = data.url
+        if feed_uri == data.url:
+            log.info("Feed %s unchanged", feed_uri)
+        else:
+            log.info("Feed %s unchanged @ %s", feed_uri, data.url)
 
         if not feed_info.feed.has_key('planet_message'):
             if feed_info.feed.has_key('planet_updated'):
@@ -99,7 +106,9 @@ def writeCache(feed_uri, feed_info, data):
         else:
             if feed_info.feed.planet_message.startswith("no activity in"):
                return
-            del feed_info.feed['planet_message']
+            if not feed_info.feed.planet_message.startswith("duplicate") and \
+               not feed_info.feed.planet_message.startswith("no data"):
+               del feed_info.feed['planet_message']
 
     elif data.status == 410:
         log.info("Feed %s gone", feed_uri)
@@ -154,14 +163,27 @@ def writeCache(feed_uri, feed_info, data):
     from planet import idindex
     global index
     if index != None: index = idindex.open()
-
-    # write each entry to the cache
-    cache = config.cache_directory()
+ 
+    # select latest entry for each unique id
+    ids = {}
     for entry in data.entries:
         # generate an id, if none is present
         if not entry.has_key('id') or not entry.id:
             entry['id'] = reconstitute.id(None, entry)
             if not entry['id']: continue
+
+        # determine updated date for purposes of selection
+        updated = ''
+        if entry.has_key('published'): updated=entry.published
+        if entry.has_key('updated'):   updated=entry.updated
+
+        # if not seen or newer than last seen, select it
+        if updated >= ids.get(entry.id,('',))[0]:
+            ids[entry.id] = (updated, entry)
+
+    # write each entry to the cache
+    cache = config.cache_directory()
+    for updated, entry in ids.values():
 
         # compute cache file name based on the id
         cache_file = filename(cache, entry.id)
@@ -329,7 +351,7 @@ def httpThread(thread_index, input_queue, output_queue, log):
 
 def spiderPlanet(only_if_new = False):
     """ Spider (fetch) an entire planet """
-    log = planet.getLogger(config.log_level(),config.log_format())
+    log = planet.logger
 
     global index
     index = True
@@ -340,7 +362,7 @@ def spiderPlanet(only_if_new = False):
         log.info("Socket timeout set to %d seconds", timeout)
     except:
         try:
-            from planet import timeoutsocket
+            import timeoutsocket
             timeoutsocket.setDefaultSocketTimeout(float(timeout))
             log.info("Socket timeout set to %d seconds", timeout)
         except:
@@ -392,6 +414,7 @@ def spiderPlanet(only_if_new = False):
         fetch_queue.put(item=(None, None))
 
     # Process the results as they arrive
+    feeds_seen = {}
     while fetch_queue.qsize() or parse_queue.qsize() or threads:
         while parse_queue.qsize() == 0 and threads:
             time.sleep(0.1)
@@ -415,8 +438,33 @@ def spiderPlanet(only_if_new = False):
                 else:
                     data = feedparser.FeedParserDict({'version': None,
                         'headers': feed.headers, 'entries': [], 'feed': {},
-                        'bozo': 0, 'status': int(feed.headers.status)})
+                        'href': feed.url, 'bozo': 0,
+                        'status': int(feed.headers.status)})
 
+                # duplicate feed?
+                id = data.feed.get('id', None)
+                if not id: id = feed_info.feed.get('id', None)
+
+                href=uri
+                if data.has_key('href'): href=data.href
+
+                duplicate = None
+                if id and id in feeds_seen:
+                   duplicate = id
+                elif href and href in feeds_seen:
+                   duplicate = href
+
+                if duplicate:
+                    feed_info.feed['planet_message'] = \
+                        'duplicate subscription: ' + feeds_seen[duplicate]
+                    log.warn('Duplicate subscription: %s and %s' %
+                        (uri, feeds_seen[duplicate]))
+                    if href: feed_info.feed['planet_http_location'] = href
+
+                if id: feeds_seen[id] = uri
+                if href: feeds_seen[href] = uri
+
+                # complete processing for the feed
                 writeCache(uri, feed_info, data)
 
             except Exception, e:

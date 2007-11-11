@@ -138,8 +138,10 @@ def load(config_file):
     parser.read(config_file)
 
     import config, planet
-    from planet import opml, foaf
-    log = planet.getLogger(config.log_level(),config.log_format())
+    from planet import opml, foaf, csv_config
+    log = planet.logger
+    if not log:
+        log = planet.getLogger(config.log_level(),config.log_format())
 
     # Theme support
     theme = config.output_theme()
@@ -191,18 +193,22 @@ def load(config_file):
             os.makedirs(config.cache_lists_directory())
 
         def data2config(data, cached_config):
-                if content_type(list).find('opml')>=0:
-                    opml.opml2config(data, cached_config)
-                elif content_type(list).find('foaf')>=0:
-                    foaf.foaf2config(data, cached_config)
-                else:
-                    from planet import shell
-                    import StringIO
-                    cached_config.readfp(StringIO.StringIO(shell.run(
-                        content_type(list), data.getvalue(), mode="filter")))
+            if content_type(list).find('opml')>=0:
+                opml.opml2config(data, cached_config)
+            elif content_type(list).find('foaf')>=0:
+                foaf.foaf2config(data, cached_config)
+            elif content_type(list).find('csv')>=0:
+                csv_config.csv2config(data, cached_config)
+            elif content_type(list).find('config')>=0:
+                cached_config.readfp(data)
+            else:
+                from planet import shell
+                import StringIO
+                cached_config.readfp(StringIO.StringIO(shell.run(
+                    content_type(list), data.getvalue(), mode="filter")))
 
-                if cached_config.sections() in [[], [list]]: 
-                    raise Exception
+            if cached_config.sections() in [[], [list]]: 
+                raise Exception
 
         for list in reading_lists:
             downloadReadingList(list, parser, data2config)
@@ -344,7 +350,9 @@ def reading_lists():
     for section in parser.sections():
         if parser.has_option(section, 'content_type'):
             type = parser.get(section, 'content_type')
-            if type.find('opml')>=0 or type.find('foaf')>=0 or type.find('.')>=0:
+            if type.find('opml')>=0 or type.find('foaf')>=0 or \
+               type.find('csv')>=0 or type.find('config')>=0 or \
+               type.find('.')>=0:
                 result.append(section)
     return result
 

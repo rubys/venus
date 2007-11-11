@@ -1,5 +1,5 @@
 import _base
-from constants import voidElements
+from html5lib.constants import voidElements
 from xml.sax.saxutils import escape
 
 # Really crappy basic implementation of a DOM-core like thing
@@ -30,7 +30,7 @@ class Node(_base.Node):
             tree += child.printTree(indent + 2)
         return tree
 
-    def appendChild(self, node, index=None):
+    def appendChild(self, node):
         if (isinstance(node, TextNode) and self.childNodes and
           isinstance(self.childNodes[-1], TextNode)):
             self.childNodes[-1].value += node.value
@@ -63,8 +63,9 @@ class Node(_base.Node):
 
     def cloneNode(self):
         newNode = type(self)(self.name)
-        for attr, value in self.attributes.iteritems():
-            newNode.attributes[attr] = value
+        if hasattr(self, 'attributes'):
+            for attr, value in self.attributes.iteritems():
+                newNode.attributes[attr] = value
         newNode.value = self.value
         return newNode
 
@@ -107,9 +108,11 @@ class DocumentType(Node):
     type = 3
     def __init__(self, name):
         Node.__init__(self, name)
+        self.publicId = u""
+        self.systemId = u""
 
     def __unicode__(self):
-        return "<!DOCTYPE %s>" % self.name
+        return u"<!DOCTYPE %s>" % self.name
 
     toxml = __unicode__
     
@@ -123,7 +126,7 @@ class TextNode(Node):
         self.value = value
 
     def __unicode__(self):
-        return "\"%s\"" % self.value
+        return u"\"%s\"" % self.value
 
     def toxml(self):
         return escape(self.value)
@@ -137,20 +140,20 @@ class Element(Node):
         self.attributes = {}
         
     def __unicode__(self):
-        return "<%s>" % self.name
+        return u"<%s>" % self.name
 
     def toxml(self):
         result = '<' + self.name
         if self.attributes:
             for name,value in self.attributes.iteritems():
-                result += ' %s="%s"' % (name, escape(value,{'"':'&quot;'}))
+                result += u' %s="%s"' % (name, escape(value,{'"':'&quot;'}))
         if self.childNodes:
             result += '>'
             for child in self.childNodes:
                 result += child.toxml()
-            result += '</%s>' % self.name
+            result += u'</%s>' % self.name
         else:
-            result += '/>'
+            result += u'/>'
         return result
     
     def hilite(self):
@@ -190,32 +193,6 @@ class CommentNode(Node):
 
     def hilite(self):
         return '<code class="markup comment">&lt;!--%s--></code>' % escape(self.data)
-
-class HTMLSerializer(object):
-    def serialize(self, node):
-        rv = self.serializeNode(node)
-        for child in node.childNodes:
-            rv += self.serialize(child)
-        if node.type == Element.type and node.name not in voidElements:
-            rv += "</%s>\n"%node.name
-        return rv
-    
-    def serializeNode(self, node):
-        if node.type == TextNode.type:
-            rv = node.value
-        elif node.type == Element.type:
-            rv = "<%s"%node.name
-            if node.attributes:
-                rv = rv+"".join([" %s='%s'"%(key, escape(value)) for key,value in
-                                 node.attributes.iteritems()])
-            rv += ">"
-        elif node.type == CommentNode.type:
-            rv = "<!-- %s -->" % escape(node.data)        
-        elif node.type == DocumentType.type:
-            rv = "<!DOCTYPE %s>" % node.name
-        else:
-            rv = ""
-        return rv
 
 class TreeBuilder(_base.TreeBuilder):
     documentClass = Document

@@ -38,6 +38,10 @@ a.rising {
 	font-weight: bold;
 }
 
+a[rel~='license'] {
+    text-decoration: none;
+}  
+
 body > h1 {
 	font-size: x-large;
 	text-transform: uppercase;

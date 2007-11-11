@@ -26,6 +26,9 @@ feed = '''
 
 configData = '''
 [testfeed]
+ignore_in_feed = 
+future_dates = 
+
 name_type = html
 title_type = html
 summary_type = html
@@ -37,16 +40,21 @@ class ScrubTest(unittest.TestCase):
     def test_scrub_ignore(self):
         base = feedparser.parse(feed)
 
+        self.assertTrue(base.entries[0].has_key('author'))
+        self.assertTrue(base.entries[0].has_key('author_detail'))
         self.assertTrue(base.entries[0].has_key('id'))
         self.assertTrue(base.entries[0].has_key('updated'))
         self.assertTrue(base.entries[0].has_key('updated_parsed'))
         self.assertTrue(base.entries[0].summary_detail.has_key('language'))
 
         config.parser.readfp(StringIO.StringIO(configData))
-        config.parser.set('testfeed', 'ignore_in_feed', 'id updated xml:lang')
+        config.parser.set('testfeed', 'ignore_in_feed',
+          'author id updated xml:lang')
         data = deepcopy(base)
         scrub('testfeed', data)
 
+        self.assertFalse(data.entries[0].has_key('author'))
+        self.assertFalse(data.entries[0].has_key('author_detail'))
         self.assertFalse(data.entries[0].has_key('id'))
         self.assertFalse(data.entries[0].has_key('updated'))
         self.assertFalse(data.entries[0].has_key('updated_parsed'))

@@ -18,13 +18,13 @@ class DjangoFilterTests(unittest.TestCase):
         results = dj.tmpl.template_info("<feed/>")
         self.assertEqual(type(results['date']), datetime.datetime)
 
-    def test_django_item_title(self):
+    def test_django_entry_title(self):
         config.load('tests/data/filter/django/test.ini')
         feed = open('tests/data/filter/django/test.xml')
         input = feed.read(); feed.close()
         results = dj.run(
             os.path.realpath('tests/data/filter/django/title.html.dj'), input)
-        self.assertEqual(results, "Atom-Powered Robots Run Amok\n")
+        self.assertEqual(results, "\xc2\xa1Atom-Powered Robots Run Amok!\n")
 
     def test_django_config_context(self):
         config.load('tests/data/filter/django/test.ini')

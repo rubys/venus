@@ -4,6 +4,7 @@ Generate an excerpt from either the summary or a content of an entry.
 Parameters:
   width:  maximum number of characters in the excerpt.  Default: 500
   omit:   whitespace delimited list of html tags to remove.  Default: none
+  target: name of element created.  Default: planet:excerpt
 
 Notes:
  * if 'img' is in the list of tags to be omitted <img> tags are replaced with
@@ -23,6 +24,7 @@ args = dict(zip([name.lstrip('-') for name in sys.argv[1::2]], sys.argv[2::2]))
 
 wrapper = textwrap.TextWrapper(width=int(args.get('width','500')))
 omit = args.get('omit', '').split()
+target = args.get('target', 'planet:excerpt')
 
 class copy:
     """ recursively copy a source to a target, up to a given width """
@@ -94,10 +96,14 @@ if not source:
 
 # if present, recursively copy it to a planet:excerpt element
 if source:
-    dom.documentElement.setAttribute('xmlns:planet', planetNS)
-    target = dom.createElementNS(planetNS, 'planet:excerpt')
-    source[0].parentNode.appendChild(target)
-    copy(dom, source[0], target)
+    if target.startswith('planet:'):
+        dom.documentElement.setAttribute('xmlns:planet', planetNS)
+    if target.startswith('atom:'): target = target.split(':',1)[1]
+    excerpt = dom.createElementNS(planetNS, target)
+    source[0].parentNode.appendChild(excerpt)
+    copy(dom, source[0], excerpt)
+    if source[0].nodeName == excerpt.nodeName:
+        source[0].parentNode.removeChild(source[0])
 
 # print out results
 print dom.toxml('utf-8')
