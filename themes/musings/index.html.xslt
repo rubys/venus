@@ -190,15 +190,53 @@
       <!-- entry footer -->
       <xsl:text>&#10;</xsl:text>
       <div class="permalink">
+        <xsl:if test="atom:link[@rel='license'] or
+                      atom:source/atom:link[@rel='license'] or
+                      atom:rights or atom:source/atom:rights">
+          <a>
+            <xsl:if test="atom:source/atom:link[@rel='license']/@href">
+              <xsl:attribute name="rel">license</xsl:attribute>
+              <xsl:attribute name="href">
+                <xsl:value-of select="atom:source/atom:link[@rel='license']/@href"/>
+              </xsl:attribute>
+            </xsl:if>
+            <xsl:if test="atom:link[@rel='license']/@href">
+              <xsl:attribute name="rel">license</xsl:attribute>
+              <xsl:attribute name="href">
+                <xsl:value-of select="atom:link[@rel='license']/@href"/>
+              </xsl:attribute>
+           </xsl:if>
+            <xsl:if test="atom:source/atom:rights">
+              <xsl:attribute name="title">
+                <xsl:value-of select="atom:source/atom:rights"/>
+              </xsl:attribute>
+            </xsl:if>
+            <xsl:if test="atom:rights">
+              <xsl:attribute name="title">
+                <xsl:value-of select="atom:rights"/>
+              </xsl:attribute>
+            </xsl:if>
+            <xsl:text>&#169;</xsl:text>
+          </a>
+          <xsl:text> </xsl:text>
+        </xsl:if>
         <a href="{atom:link[@rel='alternate']/@href}" class="permalink">
           <xsl:choose>
             <xsl:when test="atom:author/atom:name">
-              <xsl:text>by </xsl:text>
+              <xsl:if test="not(atom:link[@rel='license'] or
+                                atom:source/atom:link[@rel='license'] or
+                                atom:rights or atom:source/atom:rights)">
+                <xsl:text>by </xsl:text>
+              </xsl:if>
               <xsl:value-of select="atom:author/atom:name"/>
               <xsl:text> at </xsl:text>
             </xsl:when>
             <xsl:when test="atom:source/atom:author/atom:name">
-              <xsl:text>by </xsl:text>
+              <xsl:if test="not(atom:link[@rel='license'] or
+                                atom:source/atom:link[@rel='license'] or
+                                atom:rights or atom:source/atom:rights)">
+                <xsl:text>by </xsl:text>
+              </xsl:if>
               <xsl:value-of select="atom:source/atom:author/atom:name"/>
               <xsl:text> at </xsl:text>
             </xsl:when>

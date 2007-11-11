@@ -20,6 +20,10 @@ a:visited {
 	color: #555;
 }
 
+a[rel~='license'] {
+    text-decoration: none;
+}  
+
 h1 {
 	font-size: 1.75em;
 	text-transform: uppercase;
@@ -294,7 +298,7 @@ div.permalink:hover a {
 /* Musings/String Coffee Table */
 math[display=block] {overflow:auto;}
 math { white-space: nowrap }
-.eqno {float:right}
+.numberedEq span, .eqno {float:right}
 merror {display:inline;font-size:1em;}
 img.mathlogo, img.svglogo {
 	float:right;
@@ -315,6 +319,12 @@ table.plaintable {border-collapse:collapse;}
         text-align:center;
         margin-left:30px;
 }
+.centeredfigure {
+        position:relative;
+        margin:auto;
+        text-align:center;
+}
+.figurecaption {color:#630;}
 
 /* Bosker Blog */
 p.center {text-align:center}
