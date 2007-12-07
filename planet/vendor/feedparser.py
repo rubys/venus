@@ -2340,7 +2340,7 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
 
     mathml_attributes = ['actiontype', 'align', 'columnalign', 'columnalign',
       'columnalign', 'columnlines', 'columnspacing', 'columnspan', 'depth',
-      'display', 'displaystyle', 'equalcolumns', 'equalrows', 'fence',
+      'display', 'displaystyle', 'encoding', 'equalcolumns', 'equalrows', 'fence',
       'fontstyle', 'fontweight', 'frame', 'height', 'linethickness', 'lspace',
       'mathbackground', 'mathcolor', 'mathvariant', 'mathvariant', 'maxsize',
       'minsize', 'other', 'rowalign', 'rowalign', 'rowalign', 'rowlines',
