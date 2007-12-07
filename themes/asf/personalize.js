@@ -95,6 +95,7 @@ function addOption(event) {
 
   var h2 = null;
   for (var i=entries.length; --i>=0;) {
+    if (document.getElementById("news-" + i)) break;
     if (entries[i].parent.offsetTop > 0) {
       var a = entries[i].anchor = document.createElement('a');
       a.id = "news-" + i;
@@ -103,7 +104,7 @@ function addOption(event) {
     }
   }
 
-  if (h2 != null) {
+  if (h2 != null && !document.getElementById("navkeys")) {
     h2.appendChild(document.createTextNode('Options'));
     sidebar.appendChild(h2);
 

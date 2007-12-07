@@ -80,6 +80,12 @@ def canonicalize(url):
   revmap[canonurl] = url
   return canonurl
   
+def unique_votes(links):
+  voters = []
+  for weight, entry, feed, title, author, mtime in links:
+    if feed not in voters: voters.append(feed)
+  return len(voters)
+
 log.debug("Loading cached data")
 for name in glob.glob(os.path.join(cache, '*')):
   # ensure that this is within the past week
@@ -447,7 +453,7 @@ for i in range(0,len(weighted_links)):
     voters.append(entry)
 
   # add to the meme feed
-  if len(all_links[link]) > 2:
+  if unique_votes(all_links[link]) > 2:
     meme_feed.addContent('\n')
     entry = meme_feed.newChild(None, 'entry', None)
     meme_feed.addContent('\n')
