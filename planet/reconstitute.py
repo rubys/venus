@@ -252,11 +252,11 @@ def reconstitute(feed, entry):
         category(xentry, tag)
 
     # known, simple text extensions
-    for ns,name in [('feedburner','origlink')]:
-        if entry.has_key('%s_%s' % (ns,name)) and \
+    for ns,name in [('feedburner','origLink')]:
+        if entry.has_key('%s_%s' % (ns,name.lower())) and \
             feed.namespaces.has_key(ns):
             xoriglink = createTextElement(xentry, '%s:%s' % (ns,name),
-                entry['%s_%s' % (ns,name)])
+                entry['%s_%s' % (ns,name.lower())])
             xoriglink.setAttribute('xmlns:%s' % ns, feed.namespaces[ns])
 
     # author / contributor
