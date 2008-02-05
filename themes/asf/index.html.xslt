@@ -108,7 +108,13 @@
                 <xsl:text> </xsl:text>
 
                 <!-- name -->
-                <a href="{atom:link[@rel='alternate']/@href}">
+                <a>
+                  <xsl:if test="atom:link[@rel='alternate']/@href">
+                    <xsl:attribute name="href">
+                      <xsl:value-of select="atom:link[@rel='alternate']/@href"/>
+                    </xsl:attribute>
+                  </xsl:if>
+
                   <xsl:choose>
                     <xsl:when test="planet:message">
                       <xsl:attribute name="class">
@@ -189,7 +195,14 @@
         <xsl:if test="atom:source/atom:icon">
           <img src="{atom:source/atom:icon}" class="icon"/>
         </xsl:if>
-        <a href="{atom:source/atom:link[@rel='alternate']/@href}">
+        <a>
+          <xsl:if test="atom:source/atom:link[@rel='alternate']/@href">
+            <xsl:attribute name="href">
+              <xsl:value-of
+                select="atom:source/atom:link[@rel='alternate']/@href"/>
+            </xsl:attribute>
+          </xsl:if>
+
           <xsl:attribute name="title">
             <xsl:value-of select="atom:source/atom:title"/>
           </xsl:attribute>
