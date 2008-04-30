@@ -80,12 +80,8 @@ dl.compact {
   margin-top: 1em;
 }
 
-dl.code > dt {
-  font-family: monospace;
-  font-size: large;
-}
-
 dl.compact > dt {
+  clear: left;
   float: left;
   margin-bottom: 0;
   padding-right: 8px;
