@@ -38,7 +38,7 @@ def run(script, doc, output_file=None, options={}):
         if output_file:
             style.saveResultToFilename(output_file, output, 0)
         else:
-            result = str(output)
+            result = output.serialize('utf-8')
         style.freeStylesheet()
         output.freeDoc()
     elif output_file:
