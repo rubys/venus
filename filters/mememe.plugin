@@ -28,6 +28,7 @@ from planet.spider import filename
 import feedparser
 log = planet.logger
 options = config.filter_options(sys.argv[0])
+spam = options.get('spam', '').split()
 
 MEMES_ATOM = os.path.join(config.output_dir(),'memes.atom')
 
@@ -375,6 +376,7 @@ log.debug("Fetch titles and collect the results")
 from urllib import quote_plus
 for i in range(0,len(weighted_links)):
   weight, link, updated = weighted_links[i]
+  if link in spam: continue
 
   # ensure that somebody new points to this entry.  This guards against
   # groups of related links which several posts point to all.
