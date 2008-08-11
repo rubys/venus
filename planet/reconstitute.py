@@ -186,6 +186,18 @@ def content(xentry, name, detail, bozo):
 
     xentry.appendChild(xcontent)
 
+def location(xentry, long, lat):
+    """ insert geo location into the entry """
+    if not lat or not long: return
+
+    xlat = createTextElement(xentry, '%s:%s' % ('geo','lat'), '%f' % lat)
+    xlat.setAttribute('xmlns:%s' % 'geo', 'http://www.w3.org/2003/01/geo/wgs84_pos#')
+    xlong = createTextElement(xentry, '%s:%s' % ('geo','long'), '%f' % long)
+    xlong.setAttribute('xmlns:%s' % 'geo', 'http://www.w3.org/2003/01/geo/wgs84_pos#')
+
+    xentry.appendChild(xlat)
+    xentry.appendChild(xlong)
+
 def source(xsource, source, bozo, format):
     """ copy source information to the entry """
     xdoc = xsource.ownerDocument
@@ -258,6 +270,21 @@ def reconstitute(feed, entry):
             xoriglink = createTextElement(xentry, '%s:%s' % (ns,name),
                 entry['%s_%s' % (ns,name.lower())])
             xoriglink.setAttribute('xmlns:%s' % ns, feed.namespaces[ns])
+
+    # geo location
+    if entry.has_key('where') and \
+        entry.get('where',[]).has_key('type') and \
+        entry.get('where',[]).has_key('coordinates'):
+        where = entry.get('where',[])
+        type = where.get('type',None)
+        coordinates = where.get('coordinates',None)
+        if type == 'Point':
+            location(xentry, coordinates[0], coordinates[1])
+        elif type == 'Box' or type == 'LineString' or type == 'Polygon':
+            location(xentry, coordinates[0][0], coordinates[0][1])
+    if entry.has_key('geo_lat') and \
+        entry.has_key('geo_long'):
+        location(xentry, (float)(entry.get('geo_long',None)), (float)(entry.get('geo_lat',None)))
 
     # author / contributor
     author_detail = entry.get('author_detail',{})
