@@ -162,13 +162,14 @@ function localizeDate(element) {
 
   var local = date.toLocaleString();
   var match = local.match(localere);
-  if (match) {
+  if (match) { /* Firefox */
     element.innerHTML = match[4] + ' ' + match[5].toLowerCase();
     element.title = match[6] + " \u2014 " + 
       match[1] + ', ' + match[3] + ' ' + match[2];
     return days[date.getDay()] + ', ' + months[date.getMonth()] + ' ' +
       date.getDate() + ', ' + date.getFullYear();
   } else {
+    local = local.replace(/GMT(-\d\d\d\d) \(.*\)$/, '$1'); /* Webkit */
     element.title = element.innerHTML + ' GMT';
     element.innerHTML = local;
     return days[date.getDay()] + ', ' + date.getDate() + ' ' +
