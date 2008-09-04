@@ -245,6 +245,7 @@ body > h1 {
 
 .news > h3 > a:first-child:before {
 	content: '⌘';
+	font-family: Code2000;
 	color: #D70;
 	margin-left: -18px;
 	margin-right: 2px;
