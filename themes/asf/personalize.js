@@ -17,9 +17,10 @@ function stopPropagation(event) {
 
 // scroll back to the previous article
 function prevArticle(event) {
+  var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
   for (var i=entries.length; --i>=0;) {
     if (!entries[i].anchor) continue;
-    if (entries[i].anchor.offsetTop < document.documentElement.scrollTop) {
+    if (entries[i].anchor.offsetTop < scrollTop) {
       window.location.hash=entries[i].anchor.id;
       stopPropagation(event);
       break;
@@ -29,9 +30,10 @@ function prevArticle(event) {
 
 // advance to the next article
 function nextArticle(event) {
+  var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
   for (var i=1; i<entries.length; i++) {
     if (!entries[i].anchor) continue;
-    if (entries[i].anchor.offsetTop-20 > document.documentElement.scrollTop) {
+    if (entries[i].anchor.offsetTop-20 >scrollTop) {
       window.location.hash=entries[i].anchor.id;
       stopPropagation(event);
       break;
