@@ -329,8 +329,11 @@ footer = doc.xpathEval(sidebar)
 if not hasattr(footer,'__len__') or len(footer) == 0:
   raise Exception(sidebar + ' not found')
 if len(footer) > 1:
-  log.info("%d occurrences of %s found, taking first" % (len(footer),sidebar))
-footer = footer[0]
+  log.info("%d occurrences of %s found, taking last" % (len(footer),sidebar))
+  if '@id' in sidebar:
+    for element in footer[:-1]:
+      element.unsetProp('id')
+footer = footer[-1]
 
 # add up to 10 entry links to each subscription
 subs_ul = footer.children
