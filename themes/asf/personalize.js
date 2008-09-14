@@ -241,10 +241,6 @@ function moveSidebar() {
   if (sidebar.currentStyle && sidebar.currentStyle['float'] == 'none') return;
   if (window.getComputedStyle && document.defaultView.getComputedStyle(sidebar,null).getPropertyValue('float') == 'none') return;
 
-  var h1 = sidebar.previousSibling;
-  while (h1.nodeType != 1) h1=h1.previousSibling;
-  if (h1.nodeName.toLowerCase() == 'h1') h1.parentNode.removeChild(h1);
-
   var footer = document.getElementById('footer');
   var ul = footer.lastChild;
   while (ul.nodeType != 1) ul=ul.previousSibling;
