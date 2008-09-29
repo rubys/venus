@@ -161,6 +161,7 @@ function localizeDate(element) {
   if (!date.getTime()) return;
 
   var local = date.toLocaleString();
+  if (element.parentNode.nodeName == 'a') local = date.toLocaleTimeString();
   var match = local.match(localere);
   if (match) { /* Firefox */
     element.innerHTML = match[4] + ' ' + match[5].toLowerCase();
@@ -169,7 +170,7 @@ function localizeDate(element) {
     return days[date.getDay()] + ', ' + months[date.getMonth()] + ' ' +
       date.getDate() + ', ' + date.getFullYear();
   } else {
-    local = local.replace(/GMT(-\d\d\d\d) \(.*\)$/, '$1'); /* Webkit */
+    local = local.replace(/ GMT(-\d\d\d\d) \(.*\)$/, ''); /* Webkit */
     element.title = element.innerHTML + ' GMT';
     element.innerHTML = local;
     return days[date.getDay()] + ', ' + date.getDate() + ' ' +
@@ -241,6 +242,10 @@ function moveSidebar() {
   if (sidebar.currentStyle && sidebar.currentStyle['float'] == 'none') return;
   if (window.getComputedStyle && document.defaultView.getComputedStyle(sidebar,null).getPropertyValue('float') == 'none') return;
 
+  var h1 = sidebar.previousSibling;
+  while (h1.nodeType != 1) h1=h1.previousSibling;
+  if (h1.nodeName.toLowerCase() == 'h1') h1.parentNode.removeChild(h1);
+
   var footer = document.getElementById('footer');
   var ul = footer.lastChild;
   while (ul.nodeType != 1) ul=ul.previousSibling;
@@ -288,11 +293,4 @@ function personalize() {
 }
 
 // hook event
-window.onload = personalize;
-if (document.addEventListener) {
-    onDOMLoad = function() {
-      window.onload = undefined;
-      personalize();
-    };
-    document.addEventListener("DOMContentLoaded", onDOMLoad, false);
-}
+document.addEventListener("DOMContentLoaded", personalize, false);

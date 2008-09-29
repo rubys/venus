@@ -1,5 +1,6 @@
 /*
- * Written by Stefano Mazzocchi <stefano at apache dot org>
+ * Originally written by Stefano Mazzocchi <stefano at apache dot org>
+ * Adapted by Sam Ruby <rubys at intertwingly dot net>
  */
 
 /* ----------------------------- Global Definitions -------------------- */
@@ -40,7 +41,7 @@ a.rising {
 
 a[rel~='license'] {
     text-decoration: none;
-}  
+}
 
 body > h1 {
 	font-size: x-large;
@@ -48,10 +49,12 @@ body > h1 {
 	letter-spacing: 0.25em;
 	padding: 10px;
 	margin: 0px 0px 0px 0px;
-	color: #000;
-	font-weight: normal;
+	color: #889;
+	font-family: Sans-Serif;
+	font-weight: bold;
+	font-style: italic;
 	background-color: #eee;
-	border-bottom: 2px solid #bbb
+	border-bottom: 2px solid #ccd;
 }
 
 /* ----------------------------- Sidebar --------------------------- */
@@ -63,10 +66,12 @@ body > h1 {
 	width: 210px;
 	background-color: white;
 
-	padding: 0px 0px 20px 0px;
+	padding: 0px 0px 10px 0px;
 	margin: 0px 0px 20px 20px;
-	border-left: 1px solid #ccc;
-	border-bottom: 1px solid #ccc;
+	border-left: 2px solid #ccd;
+	border-bottom: 2px solid #ccd;
+	-webkit-border-bottom-left-radius: 1em;
+	-moz-border-radius: 0 0 0 1em;
 }
 
 #sidebar h2 {
@@ -75,16 +80,19 @@ body > h1 {
 	font-size: x-small;
 	color: #666;
 	font-weight: normal;
-	padding: 2px 0px 2px 4px;
+	padding: 2px 0px 2px 12px;
 	margin: 15px 0px 5px 10px;
 	border-top: 1px solid #ccc;
 	border-left: 1px solid #ccc;
 	border-bottom: 1px solid #ccc;
+	-webkit-border-top-left-radius: 6px;
+	-webkit-border-bottom-left-radius: 6px;
+	-moz-border-radius: 6px 0 0 6px;
 }
 
 #sidebar h2 a img {
-        margin-bottom: 2px;
-        vertical-align: middle;
+	margin-bottom: 4px;
+	vertical-align: middle;
 }
 
 #sidebar p {
@@ -128,6 +136,8 @@ body > h1 {
 
 #sidebar ul li:hover ul {
 	background-color: #EEE;
+	-webkit-border-radius: 0.5em;
+	-moz-border-radius: 0.5em;
 	border: 2px solid #BBB;
 	color:#000;
 	display: block;
@@ -142,6 +152,7 @@ body > h1 {
 }
 
 #sidebar img {
+	margin-top: 2px;
 	border: 0;
 }
 
@@ -177,7 +188,12 @@ body > h1 {
 }
 
 #sidebar input[name=q] {
-        margin: 4px 0 0 24px;
+	padding-left: 0.5em;
+	border: 1px solid #ccd;
+	-webkit-border-radius: 0.8em;
+	-moz-border-radius: 0.8em;
+	width: 12.5em;
+	margin: 4px 0 0 24px;
 }
 
 /* ---------------------------- Footer --------------------------- */
@@ -213,16 +229,20 @@ body > h1 {
 }
 
 #body > h2 {
+	float: right;
+	min-width: 25%;
+	-webkit-border-top-left-radius: 0.5em;
+	-webkit-border-bottom-left-radius: 0.5em;
+	-moz-border-radius: 0.5em 0 0 0.5em;
 	text-transform: none;
 	font-size: medium;
-	color: #333;
+	color: #667;
 	font-weight: bold;
-	text-align: right;
-	border-top: 1px solid #ccc;
+	text-align: center;
+	border: 2px solid #ccd;
 	background-color: #eee;
-	border-bottom: 1px solid #ccc;
-	padding: 1px 15px 1px 5px;
-	margin: 0;
+	padding: 1px 1.5em 1px 1.5em;
+	margin: -0.2em -22px 0 0;
 }
 
 /* ----------------------------- News ---------------------------- */
@@ -473,7 +493,7 @@ ul.tags a:link, ul.tags a:visited {
 
 a[rel='tag'] img {
     border: 0;
-}  
+}
 
 /* DiveIntoMark */
 .framed {
