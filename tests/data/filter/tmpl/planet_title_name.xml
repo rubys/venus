@@ -1,0 +1,13 @@
+<!--
+Description:  id
+Expect:       Items[0]['channel_name'] == 'blog title'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <source>
+      <title>blog title</title>
+    </source>
+  </entry>
+</feed>
+
