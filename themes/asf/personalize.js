@@ -282,6 +282,7 @@ function moveSidebar() {
   var body = document.getElementById('body');
   sidebar.parentNode.removeChild(sidebar);
   body.parentNode.insertBefore(sidebar, body);
+  body.style.marginRight = 0;
 }
 
 // adjust dates to local time zones, optionally provide navigation keys
