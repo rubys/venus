@@ -1,12 +1,12 @@
 <!--
 Description:  id
-Expect:       Items[0]['channel_name'] == 'blog title'
+Expect:       Items[0]['channel_name'] == 'Se\xc3\xb1or Frog'
 -->
 
 <feed xmlns="http://www.w3.org/2005/Atom">
   <entry>
     <source>
-      <title>blog title</title>
+      <title type="html">Se&ntilde;or Frog</title>
     </source>
   </entry>
 </feed>

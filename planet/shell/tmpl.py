@@ -167,8 +167,9 @@ def tmpl_mapper(source, rules):
         for name,value in source.source.items():
             if name.startswith('planet_'):
                 output['channel_' + name[7:]] = String(value)
-            if not output.get('channel_name'):
-                output['channel_name'] = source.source.get('title', '')
+            if not output.get('channel_name') and \
+                source.source.has_key('title_detail'):
+                output['channel_name'] = Plain(source.source.title_detail.value)
 
     return output
 
