@@ -18,14 +18,14 @@
 			<foaf:name>Lee Feigenbaum</foaf:name>
 			<foaf:homepage rdf:resource="http://thefigtrees.net/"/>
 			<foaf:mbox_sha1sum>15b51eca0082d66bee850ce4774ff2d9921c1f08</foaf:mbox_sha1sum>
-			<rdfs:seeAlso rdf:resource="ldf-card.foaf"/>
+			<rdfs:seeAlso rdf:resource="tests/data/config/ldf-card.foaf"/>
 		</foaf:Person>
 	</foaf:knows>
 	<foaf:knows>
 		<foaf:Person>
 			<foaf:name>Sam Ruby</foaf:name>
 			<foaf:mbox_sha1sum>703471c6f39094d88665d24ce72c42fdc5f20585</foaf:mbox_sha1sum>
-			<rdfs:seeAlso rdf:resource="rubys-card.foaf"/>
+			<rdfs:seeAlso rdf:resource="tests/data/config/rubys-card.foaf"/>
 		</foaf:Person>
 	</foaf:knows>
 
