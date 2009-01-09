@@ -426,7 +426,7 @@ for i in range(0,len(weighted_links)):
 
   # technorati link
   a = li.newChild(None, 'a', None)
-  tlink = 'http://technorati.com/blogs/'
+  tlink = 'http://technorati.com/search/'
   if link.startswith('http://'):
     a.setProp('href',tlink + quote_plus(link[7:]))
   else:

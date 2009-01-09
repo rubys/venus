@@ -197,11 +197,12 @@ def template_info(source):
     # apply rules to convert feed parser output to htmltmpl input
     output = {'Channels': [], 'Items': []}
     output.update(tmpl_mapper(data.feed, Base))
-    sources = [(source.get('planet_name',None),source)
-        for source in data.feed.get('sources',[])]
+    sources = []
+    for feed in data.feed.get('sources',[]):
+        source = tmpl_mapper(feed, Base)
+        sources.append([source.get('name'), source])
     sources.sort()
-    for name, feed in sources:
-        output['Channels'].append(tmpl_mapper(feed, Base))
+    output['Channels'] = [source for name,source in sources]
     for entry in data.entries:
         output['Items'].append(tmpl_mapper(entry, Items))
 
