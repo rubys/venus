@@ -11,7 +11,7 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 291 $"[11:14] + "-svn"
+__version__ = "4.2-pre-" + "$Revision: 293 $"[11:14] + "-svn"
 __license__ = """Copyright (c) 2002-2008, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -1654,7 +1654,7 @@ class _BaseHTMLProcessor(sgmllib.SGMLParser):
     def feed(self, data):
         data = re.compile(r'<!((?!DOCTYPE|--|\[))', re.IGNORECASE).sub(r'&lt;!\1', data)
         #data = re.sub(r'<(\S+?)\s*?/>', self._shorttag_replace, data) # bug [ 1399464 ] Bad regexp for _shorttag_replace
-        data = re.sub(r'<([^<\s]+?)\s*/>', self._shorttag_replace, data) 
+        data = re.sub(r'<([^<>\s]+?)\s*/>', self._shorttag_replace, data) 
         data = data.replace('&#39;', "'")
         data = data.replace('&#34;', '"')
         if self.encoding and type(data) == type(u''):
@@ -2287,9 +2287,9 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
       'bordercolor', 'bordercolordark', 'bordercolorlight', 'bottompadding',
       'cellpadding', 'cellspacing', 'ch', 'challenge', 'char', 'charoff',
       'choff', 'charset', 'checked', 'cite', 'class', 'clear', 'color', 'cols',
-      'colspan', 'compact', 'contenteditable', 'coords', 'data', 'datafld',
-      'datapagesize', 'datasrc', 'datetime', 'default', 'delay', 'dir',
-      'disabled', 'draggable', 'dynsrc', 'enctype', 'end', 'face', 'for',
+      'colspan', 'compact', 'contenteditable', 'controls', 'coords', 'data',
+      'datafld', 'datapagesize', 'datasrc', 'datetime', 'default', 'delay',
+      'dir', 'disabled', 'draggable', 'dynsrc', 'enctype', 'end', 'face', 'for',
       'form', 'frame', 'galleryimg', 'gutter', 'headers', 'height', 'hidefocus',
       'hidden', 'high', 'href', 'hreflang', 'hspace', 'icon', 'id', 'inputmode',
       'ismap', 'keytype', 'label', 'leftspacing', 'lang', 'list', 'longdesc',
