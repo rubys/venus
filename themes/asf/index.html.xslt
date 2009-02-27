@@ -15,6 +15,7 @@
       <!-- head -->
       <xsl:text>&#10;&#10;</xsl:text>
       <head>
+        <meta charset="utf-8"/>
         <link rel="stylesheet" href="default.css" type="text/css" />
         <title><xsl:value-of select="atom:title"/></title>
         <meta name="robots" content="noindex,nofollow" />
