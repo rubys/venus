@@ -51,11 +51,12 @@ def filename(directory, filename):
   
     return os.path.join(directory, filename)
 
-def write(xdoc, out):
+def write(xdoc, out, mtime=None):
     """ write the document out to disk """
     file = open(out,'w')
     file.write(xdoc)
     file.close()
+    if mtime: os.utime(out, (mtime, mtime))
 
 def _is_http_uri(uri):
     parsed = urlparse.urlparse(uri)
@@ -221,8 +222,7 @@ def writeCache(feed_uri, feed_info, data):
           continue
 
         # write out and timestamp the results
-        write(output, cache_file) 
-        os.utime(cache_file, (mtime, mtime))
+        write(output, cache_file, mtime) 
     
         # optionally index
         if index != None: 
