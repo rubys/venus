@@ -14,7 +14,8 @@ class Filter(_base.Filter):
         for previous, token, next in self.slider():
             type = token["type"]
             if type == "StartTag":
-                if token["data"] or not self.is_optional_start(token["name"], previous, next):
+                if (token["data"] or 
+                    not self.is_optional_start(token["name"], previous, next)):
                     yield token
             elif type == "EndTag":
                 if not self.is_optional_end(token["name"], next):
@@ -31,7 +32,11 @@ class Filter(_base.Filter):
         elif tagname == 'head':
             # A head element's start tag may be omitted if the first thing
             # inside the head element is an element.
-            return type == "StartTag"
+            # XXX: we also omit the start tag if the head element is empty
+            if type in ("StartTag", "EmptyTag"):
+                return True
+            elif type == "EndTag":
+                return next["name"] == "head"
         elif tagname == 'body':
             # A body element's start tag may be omitted if the first thing
             # inside the body element is not a space character or a comment,
@@ -52,7 +57,7 @@ class Filter(_base.Filter):
             # inside the colgroup element is a col element, and if the element
             # is not immediately preceeded by another colgroup element whose
             # end tag has been omitted.
-            if type == "StartTag":
+            if type in ("StartTag", "EmptyTag"):
                 # XXX: we do not look at the preceding event, so instead we never
                 # omit the colgroup element's end tag when it is immediately
                 # followed by another colgroup element. See is_optional_end.
@@ -81,15 +86,12 @@ class Filter(_base.Filter):
             # An html element's end tag may be omitted if the html element
             # is not immediately followed by a space character or a comment.
             return type not in ("Comment", "SpaceCharacters")
-        elif tagname in ('li', 'optgroup', 'option', 'tr'):
+        elif tagname in ('li', 'optgroup', 'tr'):
             # A li element's end tag may be omitted if the li element is
             # immediately followed by another li element or if there is
             # no more content in the parent element.
             # An optgroup element's end tag may be omitted if the optgroup
             # element is immediately followed by another optgroup element,
-            # or if there is no more content in the parent element.
-            # An option element's end tag may be omitted if the option
-            # element is immediately followed by another option element,
             # or if there is no more content in the parent element.
             # A tr element's end tag may be omitted if the tr element is
             # immediately followed by another tr element, or if there is
@@ -112,14 +114,39 @@ class Filter(_base.Filter):
                 return False
         elif tagname == 'p':
             # A p element's end tag may be omitted if the p element is
-            # immediately followed by an address, blockquote, dl, fieldset,
-            # form, h1, h2, h3, h4, h5, h6, hr, menu, ol, p, pre, table,
-            # or ul  element, or if there is no more content in the parent
+            # immediately followed by an address, article, aside,
+            # blockquote, datagrid, dialog, dir, div, dl, fieldset,
+            # footer, form, h1, h2, h3, h4, h5, h6, header, hr, menu,
+            # nav, ol, p, pre, section, table, or ul, element, or if
+            # there is no more content in the parent element.
+            if type in ("StartTag", "EmptyTag"):
+                return next["name"] in ('address', 'article', 'aside',
+                                        'blockquote', 'datagrid', 'dialog', 
+                                        'dir', 'div', 'dl', 'fieldset', 'footer',
+                                        'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                                        'header', 'hr', 'menu', 'nav', 'ol', 
+                                        'p', 'pre', 'section', 'table', 'ul')
+            else:
+                return type == "EndTag" or type is None
+        elif tagname == 'option':
+            # An option element's end tag may be omitted if the option
+            # element is immediately followed by another option element,
+            # or if it is immediately followed by an <code>optgroup</code>
+            # element, or if there is no more content in the parent
             # element.
             if type == "StartTag":
-                return next["name"] in ('address', 'blockquote', \
-                    'dl', 'fieldset', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', \
-                    'h6', 'hr', 'menu', 'ol', 'p', 'pre', 'table', 'ul')
+                return next["name"] in ('option', 'optgroup')
+            else:
+                return type == "EndTag" or type is None
+        elif tagname in ('rt', 'rp'):
+            # An rt element's end tag may be omitted if the rt element is
+            # immediately followed by an rt or rp element, or if there is
+            # no more content in the parent element.
+            # An rp element's end tag may be omitted if the rp element is
+            # immediately followed by an rt or rp element, or if there is
+            # no more content in the parent element.
+            if type == "StartTag":
+                return next["name"] in ('rt', 'rp')
             else:
                 return type == "EndTag" or type is None
         elif tagname == 'colgroup':

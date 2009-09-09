@@ -11,5 +11,6 @@ f = open("my_document.html")
 p = html5lib.HTMLParser()
 tree = p.parse(f) 
 """
-from html5parser import HTMLParser
-from liberalxmlparser import XMLParser, XHTMLParser
+from html5parser import HTMLParser, parse
+from treebuilders import getTreeBuilder
+from serializer import serialize

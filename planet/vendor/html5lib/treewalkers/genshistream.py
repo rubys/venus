@@ -1,4 +1,4 @@
-from genshi.core import START, END, XML_DECL, DOCTYPE, TEXT, \
+from genshi.core import START, END, XML_NAMESPACE, DOCTYPE, TEXT, \
     START_NS, END_NS, START_CDATA, END_CDATA, PI, COMMENT
 from genshi.output import NamespaceFlattener
 
@@ -11,9 +11,7 @@ class TreeWalker(_base.TreeWalker):
         depth = 0
         ignore_until = None
         previous = None
-        for event in NamespaceFlattener(prefixes={
-            'http://www.w3.org/1999/xhtml': ''
-          })(self.tree):
+        for event in self.tree:
             if previous is not None:
                 if previous[0] == START:
                     depth += 1
@@ -38,16 +36,21 @@ class TreeWalker(_base.TreeWalker):
         kind, data, pos = event
         if kind == START:
             tag, attrib = data
+            name = tag.localname
+            namespace = tag.namespace
             if tag in voidElements:
-                for token in self.emptyTag(tag, list(attrib), \
-                  not next or next[0] != END or next[1] != tag):
+                for token in self.emptyTag(namespace, name, list(attrib),
+                                           not next or next[0] != END 
+                                           or next[1] != tag):
                     yield token
             else:
-                yield self.startTag(tag, list(attrib))
+                yield self.startTag(namespace, name, list(attrib))
 
         elif kind == END:
-            if data not in voidElements:
-                yield self.endTag(data)
+            name = data.localname
+            namespace = data.namespace
+            if (namespace, name) not in voidElements:
+                yield self.endTag(namespace, name)
 
         elif kind == COMMENT:
             yield self.comment(data)
@@ -59,7 +62,7 @@ class TreeWalker(_base.TreeWalker):
         elif kind == DOCTYPE:
             yield self.doctype(*data)
 
-        elif kind in (XML_DECL, DOCTYPE, START_NS, END_NS, \
+        elif kind in (XML_NAMESPACE, DOCTYPE, START_NS, END_NS, \
           START_CDATA, END_CDATA, PI):
             pass
 

@@ -1,6 +1,6 @@
 <!--
 Description:  illegal control character
-Expect:       content[0].value == u'Page 1\ufffdPage 2'
+Expect:       content[0].value == u'Page 1 Page 2'
 -->
 
 <feed xmns="http://www.w3.org/2005/Atom">
