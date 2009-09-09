@@ -10,6 +10,11 @@ from xml.dom import minidom
 import planet, config, feedparser, reconstitute, shell, socket, scrub
 from StringIO import StringIO 
 
+try:
+  from hashlib import md5
+except:
+  from md5 import new as md5
+
 # Regular expressions to sanitise cache filenames
 re_url_scheme    = re.compile(r'^\w+:/*(\w+:|www\.)?')
 re_slash         = re.compile(r'[?/:|]+')
@@ -44,9 +49,8 @@ def filename(directory, filename):
         parts=filename.split(',')
         for i in range(len(parts),0,-1):
             if len(','.join(parts[:i])) < 220:
-                import md5
                 filename = ','.join(parts[:i]) + ',' + \
-                    md5.new(','.join(parts[i:])).hexdigest()
+                    md5(','.join(parts[i:])).hexdigest()
                 break
   
     return os.path.join(directory, filename)
@@ -277,7 +281,7 @@ def writeCache(feed_uri, feed_info, data):
     xdoc.unlink()
 
 def httpThread(thread_index, input_queue, output_queue, log):
-    import httplib2, md5
+    import httplib2
     from httplib import BadStatusLine
 
     h = httplib2.Http(config.http_cache_directory())
@@ -312,7 +316,7 @@ def httpThread(thread_index, input_queue, output_queue, log):
             (resp, content) = h.request(idna, 'GET', headers=headers)
 
             # unchanged detection
-            resp['-content-hash'] = md5.new(content or '').hexdigest()
+            resp['-content-hash'] = md5(content or '').hexdigest()
             if resp.status == 200:
                 if resp.fromcache:
                     resp.status = 304
