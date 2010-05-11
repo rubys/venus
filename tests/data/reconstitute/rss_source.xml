@@ -1,6 +1,6 @@
 <!--
 Description:  source element
-Expect:       source.title == 'foo' 
+Expect:       source.title == 'org' 
 -->
 
 <rss version="2.0">

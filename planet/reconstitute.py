@@ -226,6 +226,14 @@ def source(xsource, source, bozo, format):
         author(xsource, 'contributor', contributor)
 
     links(xsource, source)
+    if not source.links and source.has_key('href'): #rss
+        xlink = xdoc.createElement('link')
+        xlink.setAttribute('href', source.get('href'))
+        xsource.appendChild(xlink)
+        if source.has_key('title'):
+            xtitle = xdoc.createElement('title')
+            xtitle.appendChild(xdoc.createTextNode(source.get('title')))
+            xsource.appendChild(xtitle)
 
     content(xsource, 'rights', source.get('rights_detail',None), bozo)
     content(xsource, 'subtitle', source.get('subtitle_detail',None), bozo)

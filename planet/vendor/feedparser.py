@@ -11,7 +11,7 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 293 $"[11:14] + "-svn"
+__version__ = "4.2-pre-" + "$Revision: 308 $"[11:14] + "-svn"
 __license__ = """Copyright (c) 2002-2008, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -40,7 +40,8 @@ __contributors__ = ["Jason Diamond <http://injektilo.org/>",
                     "Fazal Majid <http://www.majid.info/mylos/weblog/>",
                     "Aaron Swartz <http://aaronsw.com/>",
                     "Kevin Marks <http://epeus.blogspot.com/>",
-                    "Sam Ruby <http://intertwingly.net/>"]
+                    "Sam Ruby <http://intertwingly.net/>",
+                    "Ade Oshineye <http://blog.oshineye.com/>"]
 _debug = 0
 
 # HTTP "User-Agent" header to send to servers when downloading feeds.
@@ -407,6 +408,8 @@ class _FeedParserMixin:
                   'http://example.com/DTDs/PodCast-1.0.dtd':              'itunes',
                   'http://purl.org/rss/1.0/modules/link/':                'l',
                   'http://search.yahoo.com/mrss':                         'media',
+                  #Version 1.1.2 of the Media RSS spec added the trailing slash on the namespace
+                  'http://search.yahoo.com/mrss/':                         'media',
                   'http://madskills.com/public/xml/rss/module/pingback/': 'pingback',
                   'http://prismstandard.org/namespaces/1.2/basic/':       'prism',
                   'http://www.w3.org/1999/02/22-rdf-syntax-ns#':          'rdf',
@@ -547,7 +550,15 @@ class _FeedParserMixin:
             method = getattr(self, methodname)
             return method(attrsD)
         except AttributeError:
-            return self.push(prefix + suffix, 1)
+            # Since there's no handler or something has gone wrong we explicitly add the element and its attributes
+            unknown_tag = prefix + suffix
+            if len(attrsD) == 0:
+                # No attributes so merge it into the encosing dictionary
+                return self.push(unknown_tag, 1)
+            else:
+                # Has attributes so create it in its own dictionary
+                context = self._getContext()
+                context[unknown_tag] = attrsD
 
     def unknown_endtag(self, tag):
         if _debug: sys.stderr.write('end %s\n' % tag)
@@ -643,12 +654,19 @@ class _FeedParserMixin:
         if _debug: sys.stderr.write('entering parse_declaration\n')
         if self.rawdata[i:i+9] == '<![CDATA[':
             k = self.rawdata.find(']]>', i)
-            if k == -1: k = len(self.rawdata)
+            if k == -1:
+                # CDATA block began but didn't finish
+                k = len(self.rawdata)
+                return k
             self.handle_data(_xmlescape(self.rawdata[i+9:k]), 0)
             return k+3
         else:
             k = self.rawdata.find('>', i)
-            return k+1
+            if k >= 0:
+                return k+1
+            else:
+                # We have an incomplete CDATA block.
+                return k
 
     def mapContentType(self, contentType):
         contentType = contentType.lower()
@@ -919,7 +937,10 @@ class _FeedParserMixin:
                       '0.92': 'rss092',
                       '0.93': 'rss093',
                       '0.94': 'rss094'}
-        if not self.version:
+        #If we're here then this is an RSS feed.
+        #If we don't have a version or have a version that starts with something
+        #other than RSS then there's been a mistake. Correct it.
+        if not self.version or not self.version.startswith('rss'):
             attr_version = attrsD.get('version', '')
             version = versionmap.get(attr_version)
             if version:
@@ -1481,11 +1502,18 @@ class _FeedParserMixin:
             context['id'] = href
             
     def _start_source(self, attrsD):
+        if 'url' in attrsD:
+          # This means that we're processing a source element from an RSS 2.0 feed
+          self.sourcedata['href'] = attrsD[u'url']
+        self.push('source', 1)
         self.insource = 1
         self.hasTitle = 0
 
     def _end_source(self):
         self.insource = 0
+        value = self.pop('source')
+        if value:
+          self.sourcedata['title'] = value
         self._getContext()['source'] = copy.deepcopy(self.sourcedata)
         self.sourcedata.clear()
 
@@ -1531,6 +1559,33 @@ class _FeedParserMixin:
     def _end_itunes_explicit(self):
         value = self.pop('itunes_explicit', 0)
         self._getContext()['itunes_explicit'] = (value == 'yes') and 1 or 0
+
+    def _start_media_content(self, attrsD):
+        context = self._getContext()
+        context.setdefault('media_content', [])
+        context['media_content'].append(attrsD)
+
+    def _start_media_thumbnail(self, attrsD):
+        context = self._getContext()
+        context.setdefault('media_thumbnail', [])
+        self.push('url', 1) # new
+        context['media_thumbnail'].append(attrsD)
+
+    def _end_media_thumbnail(self):
+        url = self.pop('url')
+        context = self._getContext()
+        if url != None and len(url.strip()) != 0:
+            if not context['media_thumbnail'][-1].has_key('url'):
+                context['media_thumbnail'][-1]['url'] = url
+
+    def _start_media_player(self, attrsD):
+        self.push('media_player', 0)
+        self._getContext()['media_player'] = FeedParserDict(attrsD)
+
+    def _end_media_player(self):
+        value = self.pop('media_player')
+        context = self._getContext()
+        context['media_player']['content'] = value
 
 if _XML_AVAILABLE:
     class _StrictFeedParser(_FeedParserMixin, xml.sax.handler.ContentHandler):
@@ -1616,7 +1671,7 @@ if _XML_AVAILABLE:
         def error(self, exc):
             self.bozo = 1
             self.exc = exc
-            
+
         def fatalError(self, exc):
             self.error(exc)
             raise exc
@@ -1624,15 +1679,18 @@ if _XML_AVAILABLE:
 class _BaseHTMLProcessor(sgmllib.SGMLParser):
     special = re.compile('''[<>'"]''')
     bare_ampersand = re.compile("&(?!#\d+;|#x[0-9a-fA-F]+;|\w+;)")
-    elements_no_end_tag = ['area', 'base', 'basefont', 'br', 'col', 'frame', 'hr',
-      'img', 'input', 'isindex', 'link', 'meta', 'param']
-    
+    elements_no_end_tag = [
+      'area', 'base', 'basefont', 'br', 'col', 'command', 'embed', 'frame', 
+      'hr', 'img', 'input', 'isindex', 'keygen', 'link', 'meta', 'param',
+      'source', 'track', 'wbr'
+    ]
+
     def __init__(self, encoding, type):
         self.encoding = encoding
         self.type = type
         if _debug: sys.stderr.write('entering BaseHTMLProcessor, encoding=%s\n' % self.encoding)
         sgmllib.SGMLParser.__init__(self)
-        
+
     def reset(self):
         self.pieces = []
         sgmllib.SGMLParser.reset(self)
@@ -1730,7 +1788,7 @@ class _BaseHTMLProcessor(sgmllib.SGMLParser):
         # called for each block of plain text, i.e. outside of any tag and
         # not containing any character or entity references
         # Store the original text verbatim.
-        if _debug: sys.stderr.write('_BaseHTMLProcessor, handle_text, text=%s\n' % text)
+        if _debug: sys.stderr.write('_BaseHTMLProcessor, handle_data, text=%s\n' % text)
         self.pieces.append(text)
         
     def handle_comment(self, text):
@@ -2257,12 +2315,16 @@ class _RelativeURIResolver(_BaseHTMLProcessor):
         return _urljoin(self.baseuri, uri.strip())
     
     def unknown_starttag(self, tag, attrs):
+        if _debug:
+            sys.stderr.write('tag: [%s] with attributes: [%s]\n' % (tag, str(attrs)))
         attrs = self.normalize_attrs(attrs)
         attrs = [(key, ((tag, key) in self.relative_uris) and self.resolveURI(value) or value) for key, value in attrs]
         _BaseHTMLProcessor.unknown_starttag(self, tag, attrs)
-        
+
 def _resolveRelativeURIs(htmlSource, baseURI, encoding, type):
-    if _debug: sys.stderr.write('entering _resolveRelativeURIs\n')
+    if _debug:
+        sys.stderr.write('entering _resolveRelativeURIs\n')
+
     p = _RelativeURIResolver(baseURI, encoding, type)
     p.feed(htmlSource)
     return p.output()
@@ -2475,7 +2537,8 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
 
         # gauntlet
         if not re.match("""^([:,;#%.\sa-zA-Z0-9!]|\w-\w|'[\s\w]+'|"[\s\w]+"|\([\d,\s]+\))*$""", style): return ''
-        if not re.match("^(\s*[-\w]+\s*:\s*[^:;]*(;|$))*$", style): return ''
+        # This replaced a regexp that used re.match and was prone to pathological back-tracking.
+        if re.sub("\s*[-\w]+\s*:\s*[^:;]*;?", '', style).strip(): return ''
 
         clean = []
         for prop,value in re.findall("([-\w]+)\s*:\s*([^:;]*)",style):
@@ -2721,7 +2784,8 @@ _iso8601_re = [
     'OOO', r'(?P<ordinal>[0123]\d\d)').replace(
     'CC', r'(?P<century>\d\d$)')
     + r'(T?(?P<hour>\d{2}):(?P<minute>\d{2})'
-    + r'(:(?P<second>\d{2}(\.\d*)?))?'
+    + r'(:(?P<second>\d{2}))?'
+    + r'(\.(?P<fracsecond>\d+))?'
     + r'(?P<tz>[+-](?P<tzhour>\d{2})(:(?P<tzmin>\d{2}))?|Z)?)?'
     for tmpl in _iso8601_tmpl]
 del tmpl
@@ -3352,7 +3416,7 @@ def parse(url_file_stream_or_string, etag=None, modified=None, agent=None, refer
     except Exception, e:
         result['bozo'] = 1
         result['bozo_exception'] = e
-        data = ''
+        data = None
         f = None
 
     # if feed is gzip-compressed, decompress it
@@ -3410,8 +3474,9 @@ def parse(url_file_stream_or_string, etag=None, modified=None, agent=None, refer
             bozo_message = 'no Content-type specified'
         result['bozo'] = 1
         result['bozo_exception'] = NonXMLContentType(bozo_message)
-        
-    result['version'], data, entities = _stripDoctype(data)
+
+    if data is not None:
+        result['version'], data, entities = _stripDoctype(data)
 
     baseuri = http_headers.get('content-location', result.get('href'))
     baselang = http_headers.get('content-language', None)
@@ -3424,7 +3489,7 @@ def parse(url_file_stream_or_string, etag=None, modified=None, agent=None, refer
         return result
 
     # if there was a problem downloading, we're done
-    if not data:
+    if data is None:
         return result
 
     # determine character encoding
