@@ -1,6 +1,6 @@
 <!--
 Description:  illegal control character
-Expect:       content[0].value == u'Page 1 Page 2'
+Expect:       'U+000c' in content[0].value
 -->
 
 <feed xmns="http://www.w3.org/2005/Atom">

@@ -60,8 +60,12 @@ class TreeWalker(object):
     def doctype(self, name, publicId=None, systemId=None, correct=True):
         return {"type": "Doctype",
                 "name": name is not None and unicode(name) or u"",
-                "publicId": publicId, "systemId": systemId,
+                "publicId": publicId,
+                "systemId": systemId,
                 "correct": correct}
+
+    def entity(self, name):
+        return {"type": "Entity", "name": unicode(name)}
 
     def unknown(self, nodeType):
         return self.error(_("Unknown node type: ") + nodeType)
@@ -88,6 +92,7 @@ DOCTYPE = Node.DOCUMENT_TYPE_NODE
 TEXT = Node.TEXT_NODE
 ELEMENT = Node.ELEMENT_NODE
 COMMENT = Node.COMMENT_NODE
+ENTITY = Node.ENTITY_NODE
 UNKNOWN = "<#UNKNOWN#>"
 
 class NonRecursiveTreeWalker(TreeWalker):
@@ -121,7 +126,8 @@ class NonRecursiveTreeWalker(TreeWalker):
             elif type == ELEMENT:
                 namespace, name, attributes, hasChildren = details
                 if name in voidElements:
-                    for token in self.emptyTag(namespace, name, attributes, hasChildren):
+                    for token in self.emptyTag(namespace, name, attributes, 
+                                               hasChildren):
                         yield token
                     hasChildren = False
                 else:
@@ -130,6 +136,9 @@ class NonRecursiveTreeWalker(TreeWalker):
 
             elif type == COMMENT:
                 yield self.comment(details[0])
+
+            elif type == ENTITY:
+                yield self.entity(details[0])
 
             elif type == DOCUMENT:
                 hasChildren = True
@@ -152,11 +161,12 @@ class NonRecursiveTreeWalker(TreeWalker):
                         namespace, name, attributes, hasChildren = details
                         if name not in voidElements:
                             yield self.endTag(namespace, name)
+                    if self.tree is currentNode:
+                        currentNode = None
+                        break
                     nextSibling = self.getNextSibling(currentNode)
                     if nextSibling is not None:
                         currentNode = nextSibling
                         break
-                    if self.tree is currentNode:
-                        currentNode = None
                     else:
                         currentNode = self.getParentNode(currentNode)

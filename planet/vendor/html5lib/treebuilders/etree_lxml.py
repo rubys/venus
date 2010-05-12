@@ -86,12 +86,8 @@ def testSerializer(element):
                 ns = nsmatch.group(1)
                 tag = nsmatch.group(2)
                 prefix = constants.prefixes[ns]
-                if prefix != "html":
-                    rv.append("|%s<%s %s>"%(' '*indent, prefix,
-                                            filter.fromXmlName(tag)))
-                else:
-                    rv.append("|%s<%s>"%(' '*indent,
-                                         filter.fromXmlName(tag)))
+                rv.append("|%s<%s %s>"%(' '*indent, prefix,
+                                        filter.fromXmlName(tag)))
             else:
                 rv.append("|%s<%s>"%(' '*indent,
                                      filter.fromXmlName(element.tag)))
@@ -207,12 +203,12 @@ class TreeBuilder(_base.TreeBuilder):
                 self._attributes = Attributes(self)
 
             def _setName(self, name):
-                self._name = filter.coerceElement(name)                
+                self._name = filter.coerceElement(name)
                 self._element.tag = self._getETreeTag(
                     self._name, self._namespace)
         
             def _getName(self):
-                return self._name
+                return filter.fromXmlName(self._name)
         
             name = property(_getName, _setName)
 
@@ -281,8 +277,9 @@ class TreeBuilder(_base.TreeBuilder):
         publicId = token["publicId"]
         systemId = token["systemId"]
 
-        if not name or ihatexml.nonXmlBMPRegexp.search(name):
+        if not name or ihatexml.nonXmlNameBMPRegexp.search(name) or name[0] == '"':
             warnings.warn("lxml cannot represent null or non-xml doctype", DataLossWarning)
+
         doctype = self.doctypeClass(name, publicId, systemId)
         self.doctype = doctype
     
@@ -296,15 +293,14 @@ class TreeBuilder(_base.TreeBuilder):
         #Therefore we need to use the built-in parser to create our iniial 
         #tree, after which we can add elements like normal
         docStr = ""
-        if self.doctype and self.doctype.name:
+        if self.doctype and self.doctype.name and not self.doctype.name.startswith('"'):
             docStr += "<!DOCTYPE %s"%self.doctype.name
             if (self.doctype.publicId is not None or 
                 self.doctype.systemId is not None):
                 docStr += ' PUBLIC "%s" "%s"'%(self.doctype.publicId or "",
                                                self.doctype.systemId or "")
             docStr += ">"
-        #TODO - this needs to work when elements are not put into the default ns
-        docStr += "<html xmlns='http://www.w3.org/1999/xhtml'></html>"
+        docStr += "<THIS_SHOULD_NEVER_APPEAR_PUBLICLY/>"
         
         try:
             root = etree.fromstring(docStr)
@@ -320,9 +316,17 @@ class TreeBuilder(_base.TreeBuilder):
         self.document = self.documentClass()
         self.document._elementTree = root.getroottree()
         
+        # Give the root element the right name
+        name = token["name"]
+        namespace = token.get("namespace", self.defaultNamespace)
+        if namespace is None:
+            etree_tag = name
+        else:
+            etree_tag = "{%s}%s"%(namespace, name)
+        root.tag = etree_tag
+        
         #Add the root element to the internal child/open data structures
-        namespace = token.get("namespace", None)
-        root_element = self.elementClass(token["name"], namespace)
+        root_element = self.elementClass(name, namespace)
         root_element._element = root
         self.document._childNodes.append(root_element)
         self.openElements.append(root_element)

@@ -131,7 +131,7 @@ def getETreeBuilder(ElementTreeImplementation, fullTree=False):
                     self._element.text += data
     
         def cloneNode(self):
-            element = Element(self.name)
+            element = Element(self.name, self.namespace)
             for name, value in self.attributes.iteritems():
                 element.attributes[name] = value
             return element
@@ -227,8 +227,7 @@ def getETreeBuilder(ElementTreeImplementation, fullTree=False):
                 else:
                     ns, name = nsmatch.groups()
                     prefix = constants.prefixes[ns]
-                    if prefix != "html":
-                        name = "%s %s"%(prefix, name)
+                    name = "%s %s"%(prefix, name)
                 rv.append("|%s<%s>"%(' '*indent, name))
 
                 if hasattr(element, "attrib"):
@@ -322,7 +321,11 @@ def getETreeBuilder(ElementTreeImplementation, fullTree=False):
             if fullTree:
                 return self.document._element
             else:
-                return self.document._element.find("html")
+                if self.defaultNamespace is not None:
+                    return self.document._element.find(
+                        "{%s}html"%self.defaultNamespace)
+                else:
+                    return self.document._element.find("html")
         
         def getFragment(self):
             return _base.TreeBuilder.getFragment(self)._element

@@ -128,13 +128,24 @@ def scrub(feed_uri, data):
                 node['value'] = feedparser._resolveRelativeURIs(
                     node.value, node.base, 'utf-8', node.type)
 
-            # Run this through HTML5's serializer
-            from html5lib import html5parser, sanitizer, treebuilders
+            # Run this through HTML5's sanitizer
+            doc = None
+            if 'xhtml' in node['type']:
+              try:
+                from xml.dom import minidom
+                doc = minidom.parseString(node['value'])
+              except:
+                node['type']='text/html'
+
+            if not doc:
+              from html5lib import html5parser, treebuilders
+              p=html5parser.HTMLParser(tree=treebuilders.getTreeBuilder('dom'))
+              doc = p.parseFragment(node['value'], encoding='utf-8')
+
             from html5lib import treewalkers, serializer
-            p = html5parser.HTMLParser(tokenizer=sanitizer.HTMLSanitizer,
-              tree=treebuilders.getTreeBuilder('dom'))
-            doc = p.parseFragment(node.value, encoding='utf-8')
+            from html5lib.filters import sanitizer
+            walker = sanitizer.Filter(treewalkers.getTreeWalker('dom')(doc))
             xhtml = serializer.XHTMLSerializer(inject_meta_charset = False)
-            walker = treewalkers.getTreeWalker('dom')
-            tree = xhtml.serialize(walker(doc), encoding='utf-8')
+            tree = xhtml.serialize(walker, encoding='utf-8')
+
             node['value'] = ''.join([str(token) for token in tree])

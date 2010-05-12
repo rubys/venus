@@ -29,7 +29,8 @@ class ReconstituteTest(unittest.TestCase):
 
         # verify the results
         results = feedparser.parse(work.getvalue().encode('utf-8'))
-        self.assertFalse(results.bozo, 'xml is well formed')
+        if 'illegal' not in name:
+            self.assertFalse(results.bozo, 'xml is well formed')
         if not self.simple_re.match(expect):
             self.assertTrue(eval(expect, results.entries[0]), expect)
         else:

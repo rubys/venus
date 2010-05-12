@@ -3,12 +3,12 @@ import gettext
 _ = gettext.gettext
 
 from BeautifulSoup import BeautifulSoup, Declaration, Comment, Tag
-
+from html5lib.constants import namespaces
 import _base
 
 class TreeWalker(_base.NonRecursiveTreeWalker):
     doctype_regexp = re.compile(
-        r'(?P<name>[^\s]*)(\s*PUBLIC\s*"(?P<publicId>.*)"\s*"(?P<systemId1>.*)"|\s*SYSTEM\s*"(?P<systemId2>.*)")?')
+        r'DOCTYPE\s+(?P<name>[^\s]*)(\s*PUBLIC\s*"(?P<publicId>.*)"\s*"(?P<systemId1>.*)"|\s*SYSTEM\s*"(?P<systemId2>.*)")?')
     def getNodeDetails(self, node):
         if isinstance(node, BeautifulSoup): # Document or DocumentFragment
             return (_base.DOCUMENT,)
@@ -26,6 +26,7 @@ class TreeWalker(_base.NonRecursiveTreeWalker):
             #been modified at all
             #We could just feed to it a html5lib tokenizer, I guess...
             assert m is not None, "DOCTYPE did not match expected format"
+
             name = m.group('name')
             publicId = m.group('publicId')
             if publicId is not None:
@@ -44,8 +45,8 @@ class TreeWalker(_base.NonRecursiveTreeWalker):
             return _base.TEXT, node
 
         elif isinstance(node, Tag): # Element
-            return _base.ELEMENT, node.name, \
-                dict(node.attrs).items(), node.contents
+            return (_base.ELEMENT, namespaces["html"], node.name,
+                    dict(node.attrs).items(), node.contents)
         else:
             return _base.UNKNOWN, node.__class__.__name__
 

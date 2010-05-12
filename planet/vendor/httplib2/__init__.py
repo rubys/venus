@@ -353,7 +353,7 @@ def _decompressContent(response, new_content):
             # Record the historical presence of the encoding in a way the won't interfere.
             response['-content-encoding'] = response['content-encoding']
             del response['content-encoding']
-    except IOError:
+    except (IOError, zlib.error), e:
         content = ""
         raise FailedToDecompressContent(_("Content purported to be compressed with %s but failed to decompress.") % response.get('content-encoding'), response, content)
     return content
@@ -884,6 +884,7 @@ the same interface as FileCache."""
         if auth: 
             auth.request(method, request_uri, headers, body)
 
+        conn.connect()
         (response, content) = self._conn_request(conn, request_uri, method, body, headers)
 
         if auth: 

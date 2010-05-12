@@ -8,8 +8,8 @@ import gettext
 _ = gettext.gettext
 
 from html5lib.constants import voidElements, booleanAttributes, spaceCharacters
-from html5lib.constants import rcdataElements
-
+from html5lib.constants import rcdataElements, entities, xmlEntities
+from html5lib import utils
 from xml.sax.saxutils import escape
 
 spaceCharacters = u"".join(spaceCharacters)
@@ -27,20 +27,33 @@ else:
     for k, v in entities.items():
         if v != "&" and encode_entity_map.get(v) != k.lower():
             # prefer &lt; over &LT; and similarly for &amp;, &gt;, etc.
-            encode_entity_map[v] = k
+            encode_entity_map[ord(v)] = k
 
     def htmlentityreplace_errors(exc):
         if isinstance(exc, (UnicodeEncodeError, UnicodeTranslateError)):
             res = []
-            for c in exc.object[exc.start:exc.end]:
-                e = encode_entity_map.get(c)
+            codepoints = []
+            skip = False
+            for i, c in enumerate(exc.object[exc.start:exc.end]):
+                if skip:
+                    skip = False
+                    continue
+                index = i + exc.start
+                if utils.isSurrogatePair(exc.object[index:min([exc.end, index+2])]):
+                    codepoint = utils.surrogatePairToCodepoint(exc.object[index:index+2])
+                    skip = True
+                else:
+                    codepoint = ord(c)
+                codepoints.append(codepoint)
+            for cp in codepoints:
+                e = encode_entity_map.get(cp)
                 if e:
                     res.append("&")
                     res.append(e)
                     if not e.endswith(";"):
                         res.append(";")
                 else:
-                    res.append(c.encode(exc.encoding, "xmlcharrefreplace"))
+                    res.append("&#x%s;"%(hex(cp)[2:]))
             return (u"".join(res), exc.end)
         else:
             return xmlcharrefreplace_errors(exc)
@@ -54,26 +67,32 @@ def encode(text, encoding):
 
 class HTMLSerializer(object):
 
+    # attribute quoting options
     quote_attr_values = False
     quote_char = '"'
     use_best_quote_char = True
-    minimize_boolean_attributes = True
 
+    # tag syntax options
+    omit_optional_tags = True
+    minimize_boolean_attributes = True
     use_trailing_solidus = False
     space_before_trailing_solidus = True
+
+    # escaping options
     escape_lt_in_attrs = False
     escape_rcdata = False
+    resolve_entities = True
 
+    # miscellaneous options
     inject_meta_charset = True
     strip_whitespace = False
     sanitize = False
-    omit_optional_tags = True
 
     options = ("quote_attr_values", "quote_char", "use_best_quote_char",
           "minimize_boolean_attributes", "use_trailing_solidus",
           "space_before_trailing_solidus", "omit_optional_tags",
           "strip_whitespace", "inject_meta_charset", "escape_lt_in_attrs",
-          "escape_rcdata", 'use_trailing_solidus', "sanitize")
+          "escape_rcdata", "resolve_entities", "sanitize")
 
     def __init__(self, **kwargs):
         if kwargs.has_key('quote_char'):
@@ -103,7 +122,23 @@ class HTMLSerializer(object):
         for token in treewalker:
             type = token["type"]
             if type == "Doctype":
-                doctype = u"<!DOCTYPE %s>" % token["name"]
+                doctype = u"<!DOCTYPE %s" % token["name"]
+                
+                if token["publicId"]:
+                    doctype += u' PUBLIC "%s"' % token["publicId"]
+                elif token["systemId"]:
+                    doctype += u" SYSTEM"
+                if token["systemId"]:                
+                    if token["systemId"].find(u'"') >= 0:
+                        if token["systemId"].find(u"'") >= 0:
+                            self.serializeError(_("System identifer contains both single and double quote characters"))
+                        quote_char = u"'"
+                    else:
+                        quote_char = u'"'
+                    doctype += u" %s%s%s" % (quote_char, token["systemId"], quote_char)
+                
+                doctype += u">"
+                
                 if encoding:
                     yield doctype.encode(encoding)
                 else:
@@ -197,6 +232,19 @@ class HTMLSerializer(object):
                 if encoding:
                     comment = comment.encode(encoding, unicode_encode_errors)
                 yield comment
+
+            elif type == "Entity":
+                name = token["name"]
+                key = name + ";"
+                if not key in entities:
+                    self.serializeError(_("Entity %s not recognized" % name))
+                if self.resolve_entities and key not in xmlEntities:
+                    data = entities[key]
+                else:
+                    data = u"&%s;" % name
+                if encoding:
+                    data = data.encode(encoding, unicode_encode_errors)
+                yield data
 
             else:
                 self.serializeError(token["data"])

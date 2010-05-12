@@ -180,6 +180,8 @@ E = {
          u"table context caused voodoo mode."),
     "unexpected-hidden-input-in-table":
        _(u"Unexpected input with type hidden in table context."),
+    "unexpected-form-in-table":
+       _(u"Unexpected form in table context."),
     "unexpected-start-tag-implies-table-voodoo":
        _(u"Unexpected start tag (%(name)s) in "
          u"table context caused voodoo mode."),
@@ -256,19 +258,16 @@ E = {
        _(u"Unexpected end of file. Expected select content."),
     "eof-in-frameset":
        _(u"Unexpected end of file. Expected frameset content."),
+    "eof-in-script-in-script":
+       _(u"Unexpected end of file. Expected script content."),
     "non-void-element-with-trailing-solidus":
        _(u"Trailing solidus not allowed on element %(name)s"),
     "unexpected-html-element-in-foreign-content":
        _(u"Element %(name)s not allowed in a non-html context"),
+    "unexpected-end-tag-before-html":
+        _(u"Unexpected end tag (%(name)s) before html."),
     "XXX-undefined-error":
         (u"Undefined error (this sucks and should be fixed)"),
-}
-
-contentModelFlags = {
-    "PCDATA":0,
-    "RCDATA":1,
-    "CDATA":2,
-    "PLAINTEXT":3
 }
 
 namespaces = {
@@ -508,6 +507,8 @@ entitiesWindows1252 = (
     382,   # 0x9E  0x017E  LATIN SMALL LETTER Z WITH CARON
     376    # 0x9F  0x0178  LATIN CAPITAL LETTER Y WITH DIAERESIS
 )
+
+xmlEntities = frozenset(('lt;', 'gt;', 'amp;', 'apos;', 'quot;'))
 
 entities = {
     "AElig;": u"\u00C6",
@@ -876,6 +877,44 @@ entities = {
     "zeta;": u"\u03B6",
     "zwj;": u"\u200D",
     "zwnj;": u"\u200C"
+}
+
+replacementCharacters = {
+    0x0:u"\uFFFD",
+    0x0d:u"\u000A",
+    0x80:u"\u20AC",
+    0x81:u"\u0081",
+    0x81:u"\u0081",
+    0x82:u"\u201A",
+    0x83:u"\u0192",
+    0x84:u"\u201E",
+    0x85:u"\u2026",
+    0x86:u"\u2020",
+    0x87:u"\u2021",
+    0x88:u"\u02C6",
+    0x89:u"\u2030",
+    0x8A:u"\u0160",
+    0x8B:u"\u2039",
+    0x8C:u"\u0152",
+    0x8D:u"\u008D",
+    0x8E:u"\u017D",
+    0x8F:u"\u008F",
+    0x90:u"\u0090",
+    0x91:u"\u2018",
+    0x92:u"\u2019",
+    0x93:u"\u201C",
+    0x94:u"\u201D",
+    0x95:u"\u2022",
+    0x96:u"\u2013",
+    0x97:u"\u2014",
+    0x98:u"\u02DC",
+    0x99:u"\u2122",
+    0x9A:u"\u0161",
+    0x9B:u"\u203A",
+    0x9C:u"\u0153",
+    0x9D:u"\u009D",
+    0x9E:u"\u017E",
+    0x9F:u"\u0178",
 }
 
 encodings = {

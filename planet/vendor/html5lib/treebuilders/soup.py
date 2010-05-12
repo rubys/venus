@@ -1,5 +1,7 @@
 import warnings
 
+warnings.warn("BeautifulSoup 3.x (as of 3.1) is not fully compatible with html5lib and support will be removed in the future", DeprecationWarning)
+
 from BeautifulSoup import BeautifulSoup, Tag, NavigableString, Comment, Declaration
 
 import _base
@@ -134,6 +136,11 @@ class TextNode(Element):
         raise NotImplementedError
 
 class TreeBuilder(_base.TreeBuilder):
+    def __init__(self, namespaceHTMLElements):
+        if namespaceHTMLElements:
+            warnings.warn("BeautifulSoup cannot represent elements in any namespace", DataLossWarning)
+        _base.TreeBuilder.__init__(self, namespaceHTMLElements)
+        
     def documentClass(self):
         self.soup = BeautifulSoup("")
         return Element(self.soup, self.soup, None)
@@ -144,16 +151,16 @@ class TreeBuilder(_base.TreeBuilder):
         systemId = token["systemId"]
 
         if publicId:
-            self.soup.insert(0, Declaration("%s PUBLIC \"%s\" \"%s\""%(name, publicId, systemId or "")))
+            self.soup.insert(0, Declaration("DOCTYPE %s PUBLIC \"%s\" \"%s\""%(name, publicId, systemId or "")))
         elif systemId:
-            self.soup.insert(0, Declaration("%s SYSTEM \"%s\""%
+            self.soup.insert(0, Declaration("DOCTYPE %s SYSTEM \"%s\""%
                                             (name, systemId)))
         else:
-            self.soup.insert(0, Declaration(name))
+            self.soup.insert(0, Declaration("DOCTYPE %s"%name))
     
     def elementClass(self, name, namespace):
-        if namespace not in (None, namespaces["html"]):
-            warnings.warn("BeautifulSoup cannot represent elemens in nn-html namespace", DataLossWarning)
+        if namespace is not None:
+            warnings.warn("BeautifulSoup cannot represent elements in any namespace", DataLossWarning)
         return Element(Tag(self.soup, name), self.soup, namespace)
         
     def commentClass(self, data):
@@ -181,7 +188,7 @@ def testSerializer(element):
     rv = []
     def serializeElement(element, indent=0):
         if isinstance(element, Declaration):
-            doctype_regexp = r'(?P<name>[^\s]*)( PUBLIC "(?P<publicId>.*)" "(?P<systemId1>.*)"| SYSTEM "(?P<systemId2>.*)")?'
+            doctype_regexp = r'DOCTYPE\s+(?P<name>[^\s]*)( PUBLIC "(?P<publicId>.*)" "(?P<systemId1>.*)"| SYSTEM "(?P<systemId2>.*)")?'
             m = re.compile(doctype_regexp).match(element.string)
             assert m is not None, "DOCTYPE did not match expected format"
             name = m.group('name')

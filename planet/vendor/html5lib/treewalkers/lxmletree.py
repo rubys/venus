@@ -96,6 +96,9 @@ class FragmentWrapper(object):
     def __str__(self):
         return str(self.obj)
 
+    def __unicode__(self):
+        return unicode(self.obj)
+
     def __len__(self):
         return len(self.obj)
 
@@ -125,6 +128,9 @@ class TreeWalker(_base.NonRecursiveTreeWalker):
 
         elif node.tag == etree.Comment:
             return _base.COMMENT, node.text
+
+        elif node.tag == etree.Entity:
+            return _base.ENTITY, node.text[1:-1] # strip &;
 
         else:
             #This is assumed to be an ordinary element

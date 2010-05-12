@@ -1,5 +1,4 @@
-import warnings
-from html5lib.constants import scopingElements, tableInsertModeElements
+from html5lib.constants import scopingElements, tableInsertModeElements, namespaces
 try:
     frozenset
 except NameError:
@@ -115,7 +114,6 @@ class TreeBuilder(object):
             self.defaultNamespace = "http://www.w3.org/1999/xhtml"
         else:
             self.defaultNamespace = None
-            warnings.warn(u"namespaceHTMLElements=False is currently rather broken, you probably don't want to use it")
         self.reset()
     
     def reset(self):
@@ -130,24 +128,23 @@ class TreeBuilder(object):
 
         self.document = self.documentClass()
 
-    def elementInScope(self, target, tableVariant=False):
+    def elementInScope(self, target, variant=None):
         # Exit early when possible.
-        if self.openElements[-1].name == target:
-            return True
+        listElementsMap = {
+            None:scopingElements,
+            "list":scopingElements | set([(namespaces["html"], "ol"),
+                                          (namespaces["html"], "ul")]),
+            "table":set([(namespaces["html"], "html"),
+                         (namespaces["html"], "table")])
+            }
+        listElements = listElementsMap[variant]
 
-        # AT Use reverse instead of [::-1] when we can rely on Python 2.4
-        # AT How about while True and simply set node to [-1] and set it to
-        # [-2] at the end...
-        for node in self.openElements[::-1]:
+        for node in reversed(self.openElements):
             if node.name == target:
                 return True
-            elif node.name == "table":
+            elif node.nameTuple in listElements:
                 return False
-            elif (not tableVariant and (node.nameTuple in
-                                        scopingElements)):
-                return False
-            elif node.name == "html":
-                return False
+
         assert False # We should never reach this point
 
     def reconstructActiveFormattingElements(self):
@@ -160,27 +157,28 @@ class TreeBuilder(object):
             return
 
         # Step 2 and step 3: we start with the last element. So i is -1.
-        i = -1
+        i = len(self.activeFormattingElements) - 1
         entry = self.activeFormattingElements[i]
         if entry == Marker or entry in self.openElements:
             return
 
         # Step 6
         while entry != Marker and entry not in self.openElements:
-            # Step 5: let entry be one earlier in the list.
-            i -= 1
-            try:
-                entry = self.activeFormattingElements[i]
-            except:
-                # Step 4: at this point we need to jump to step 8. By not doing
-                # i += 1 which is also done in step 7 we achieve that.
+            if i == 0:
+                #This will be reset to 0 below
+                i = -1
                 break
+            i -= 1
+            # Step 5: let entry be one earlier in the list.
+            entry = self.activeFormattingElements[i]
+
         while True:
             # Step 7
             i += 1
 
             # Step 8
-            clone = self.activeFormattingElements[i].cloneNode()
+            entry = self.activeFormattingElements[i]
+            clone = entry.cloneNode() #Mainly to get a new copy of the attributes
 
             # Step 9
             element = self.insertElement({"type":"StartTag", 
