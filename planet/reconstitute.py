@@ -230,7 +230,7 @@ def source(xsource, source, bozo, format):
         author(xsource, 'contributor', contributor)
 
     links(xsource, source)
-    if not source.links and source.has_key('href'): #rss
+    if not source.has_key('links') and source.has_key('href'): #rss
         xlink = xdoc.createElement('link')
         xlink.setAttribute('href', source.get('href'))
         xsource.appendChild(xlink)
