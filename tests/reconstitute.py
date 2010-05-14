@@ -71,7 +71,8 @@ if __name__ == "__main__":
             child = source.firstChild
             source.removeChild(child)
             feed.insertBefore(child, source)
-        for source in doc.getElementsByTagName('source'):
+        atomNS='http://www.w3.org/2005/Atom'
+        for source in doc.getElementsByTagNameNS(atomNS, 'source'):
             source.parentNode.removeChild(source)
 
     splice.apply(doc.toxml('utf-8'))

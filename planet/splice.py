@@ -68,6 +68,7 @@ def splice():
     # insert entry information
     items = 0
     count = {}
+    atomNS='http://www.w3.org/2005/Atom'
     new_feed_items = config.new_feed_items()
     for mtime,file in dir:
         if index != None:
@@ -81,7 +82,7 @@ def splice():
             # number of entries contributed by this feed does not exceed
             # config.new_feed_items
             entry.normalize()
-            sources = entry.getElementsByTagName('source')
+            sources = entry.getElementsByTagNameNS(atomNS, 'source')
             if sources:
                 ids = sources[0].getElementsByTagName('id')
                 if ids:
