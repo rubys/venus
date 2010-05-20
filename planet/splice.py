@@ -59,15 +59,16 @@ def splice():
         if data.feed.has_key('id'): sub_ids.append(data.feed.id)
         if not data.feed: continue
 
-        for link in data.feed.links:
-          if link.rel == 'self': break
-        else:
-          log.warn('missing self link for ' + sub)
+        if not data.feed.has_key('planet_message'):
+            for link in data.feed.links:
+              if link.rel == 'self': break
+            else:
+              log.warn('missing self link for ' + sub)
 
-        for link in data.feed.links:
-          if link.rel == 'alternate' and 'html' in link.type: break
-        else:
-          log.warn('missing html link for ' + sub)
+            for link in data.feed.links:
+              if link.rel == 'alternate' and 'html' in link.type: break
+            else:
+              log.warn('missing html link for ' + sub)
 
         xdoc=minidom.parseString('''<planet:source xmlns:planet="%s"
              xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)

@@ -103,6 +103,8 @@ def links(xentry, entry):
             xlink.setAttribute('type', link.get('type'))
         if link.has_key('rel'):
             xlink.setAttribute('rel', link.get('rel',None))
+        if link.has_key('title'):
+            xlink.setAttribute('title', link.get('title'))
         if link.has_key('length'):
             xlink.setAttribute('length', link.get('length'))
         xentry.appendChild(xlink)
@@ -229,15 +231,11 @@ def source(xsource, source, bozo, format):
     for contributor in source.get('contributors',[]):
         author(xsource, 'contributor', contributor)
 
-    links(xsource, source)
     if not source.has_key('links') and source.has_key('href'): #rss
-        xlink = xdoc.createElement('link')
-        xlink.setAttribute('href', source.get('href'))
-        xsource.appendChild(xlink)
-        if source.has_key('title'):
-            xtitle = xdoc.createElement('title')
-            xtitle.appendChild(xdoc.createTextNode(source.get('title')))
-            xsource.appendChild(xtitle)
+        source['links'] = [{ 'href': source.get('href') }]
+        if source.has_key('title'): 
+            source['links'][0]['title'] = source.get('title')
+    links(xsource, source)
 
     content(xsource, 'rights', source.get('rights_detail',None), bozo)
     content(xsource, 'subtitle', source.get('subtitle_detail',None), bozo)
