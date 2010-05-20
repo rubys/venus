@@ -18,9 +18,14 @@
 #   sidebar = @class='sidebar'
 #
 
-import glob, libxml2, os, time, sys, sgmllib, urllib2, urlparse, re, md5
+import glob, libxml2, os, time, sys, sgmllib, urllib2, urlparse, re
 from xml.sax.saxutils import escape
 from htmlentitydefs import entitydefs
+
+try:
+  from hashlib import md5
+except:
+  from md5 import new as md5
 
 import planet
 from planet import config
@@ -467,7 +472,7 @@ for i in range(0,len(weighted_links)):
     tagbase = config.link().split('/')
     if not tagbase[-1]: tagbase = tagbase[:-1]
     tagbase = 'tag:%s,2007:%smeme/%%s' % (tagbase[2],'/'.join(tagbase[3:]))
-    entry.newTextChild(None, 'id', tagbase % md5.new(link).hexdigest())
+    entry.newTextChild(None, 'id', tagbase % md5(link).hexdigest())
     entry.newTextChild(None, 'title', entry_title.encode('utf-8'))
     meme_link = entry.newTextChild(None, 'link', None)
     meme_link.setProp('href', link)
