@@ -19,6 +19,7 @@ def run(script, doc, output_file=None, options={}):
     # I need to re-import the settings at every call because I have to 
     # set the TEMPLATE_DIRS variable programmatically
     from django.conf import settings
+    settings._wrapped=None
     try:
         settings.configure(
             DEBUG=True, TEMPLATE_DEBUG=True, 
