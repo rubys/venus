@@ -61,7 +61,7 @@ def splice():
 
         # warn on missing links
         if not data.feed.has_key('planet_message'):
-            if not data.has_key('links'): data.feed['links'] = []
+            if not data.feed.has_key('links'): data.feed['links'] = []
 
             for link in data.feed.links:
               if link.rel == 'self': break
