@@ -125,7 +125,7 @@ def writeCache(feed_uri, feed_info, data):
         log.info("Updating feed %s", feed_uri)
 
     # if read failed, retain cached information
-    if not data.has_key('version') and feed_info.has_key('version'):
+    if not data.get('version') and feed_info.get('version'):
         data.feed = feed_info.feed
         data.bozo = feed_info.feed.get('planet_bozo','true') == 'true'
         data.version = feed_info.feed.get('planet_format')
@@ -147,7 +147,7 @@ def writeCache(feed_uri, feed_info, data):
             data.feed['planet_content_hash'] = data.headers['-content-hash']
 
     # capture feed and data from the planet configuration file
-    if data.has_key('version') and data.version:
+    if data.get('version'):
         if not data.feed.has_key('links'): data.feed['links'] = list()
         feedtype = 'application/atom+xml'
         if data.version.startswith('rss'): feedtype = 'application/rss+xml'
