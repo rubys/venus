@@ -69,6 +69,7 @@ def _is_http_uri(uri):
 def writeCache(feed_uri, feed_info, data):
     log = planet.logger
     sources = config.cache_sources_directory()
+    blacklist = config.cache_blacklist_directory()
 
     # capture http status
     if not data.has_key("status"):
@@ -189,6 +190,13 @@ def writeCache(feed_uri, feed_info, data):
     # write each entry to the cache
     cache = config.cache_directory()
     for updated, entry in ids.values():
+
+        # compute blacklist file name based on the id
+        blacklist_file = filename(blacklist, entry.id)  
+
+        # check if blacklist file exists. If so, skip it. 
+        if os.path.exists(blacklist_file):
+           continue
 
         # compute cache file name based on the id
         cache_file = filename(cache, entry.id)
