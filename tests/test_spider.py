@@ -82,6 +82,27 @@ class SpiderTest(unittest.TestCase):
         self.spiderFeed(testfeed % '1b')
         self.assertEqual(1, len(glob.glob(workdir+"/*")))
 
+    def test_spiderFeed_blacklist(self):
+        config.load(configfile)
+        self.spiderFeed(testfeed % '1b')
+
+        # verify that exactly four entries were produced
+        self.assertEqual(4, len(glob.glob(workdir+"/planet*")))
+
+        # verify that the file names are as expected
+        self.assertTrue(os.path.exists(os.path.join(workdir,
+            'planet.intertwingly.net,2006,testfeed1,1')))
+        
+        os.mkdir(os.path.join(workdir, "blacklist"))
+
+        os.rename(os.path.join(workdir,
+            'planet.intertwingly.net,2006,testfeed1,1'),
+                  os.path.join(workdir, "blacklist", 
+            'planet.intertwingly.net,2006,testfeed1,1'))
+
+	self.spiderFeed(testfeed % '1b')
+        self.assertEqual(3, len(glob.glob(workdir+"/planet*")))
+
     def test_spiderUpdate(self):
         config.load(configfile)
         self.spiderFeed(testfeed % '1a')
