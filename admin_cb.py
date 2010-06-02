@@ -62,6 +62,12 @@ if not "command" in form:
 
 elif form['command'].value == "blacklist":
 
+
+  # Create the blacklist dir if it does not exist
+  if not os.path.exists(blacklist):
+    os.mkdir(blacklist)
+    print "<p>Created directory %s</p>" % blacklist
+  
   # find list of urls, in the form bl[n]=url
 
   for key in form.keys():
@@ -79,11 +85,17 @@ elif form['command'].value == "blacklist":
 
       os.rename(cache_file, blacklist_file)
 
-      print "<p>Blacklisted <a href='" + url + "'>" + url + "</a></p>"
+      print "<p>Blacklisted <a href='%s'>%s</a></p>" % (url, url)
 
     else:
 
-      print "<p>Unknown file: " + cache_file + "</p>"
+      print "<p>Unknown file: %s</p>" % cache_file
+
+    print """
+<p>Note that blacklisting does not automatically 
+refresh the planet. You will need to either wait for
+a scheduled planet run, or refresh manually from the admin interface.</p>
+"""
 
 
 elif form['command'].value == "run":

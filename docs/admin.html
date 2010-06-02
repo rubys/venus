@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC
+    "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN"
+    "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script type="text/javascript" src="docs.js"></script>
+<link rel="stylesheet" type="text/css" href="docs.css"/>
+<title>Administration interface</title>
+</head>
+<body>
+<h2>Administration interface</h2>
+<p>Venus comes with a basic administration interface, allowing you to manually run planet, do a refresh from cache, expunge the cache or blacklist individual entries from the planet.</p>
+
+<h3>Using the administration interface</h3>
+
+<p>The administration interface allows you to manage the everyday tasks related to your venus installation.</p>
+
+<ul><li><strong>Running planet</strong>. By clicking the "Run planet" button, you can do a full run of the planet script, rechecking all the feeds and recreating the generated files. This corresponds to running <code>python planet.py config.ini</code> with no arguments. Note that, depending on the numer of feeds, this operation may take some time.</li> 
+<li><strong>Refreshing planet</strong>. By clicking the "Refresh planet" button, you can do an "offline" run of the planet script, without rechecking all the feeds but still recreating the generated files. This corresponds to running <code>python planet.py -o config.ini</code>.</li>
+<li><strong>Expunging the planet cache</strong>. By clicking the "Expunge cache" button, you can clean the cache from outdated entries. This corresponds to running <code>python planet.py -x config.ini</code>.</li>
+<li><strong>Blacklisting</strong>. By selecting one or more of the entries in the list of entries, and clicking the "Blacklist" button, you can stop these items from displaying on the planet. This is very useful for quickly blocking inappropriate or malformed content from your planet. <i>Note that blacklisting does not take effect until you refresh or rerun the planet</i>. (Blacklisting can also be done manually on the server by moving files from the cache directory to the blacklist directory.)</li>
+</ul>
+
+<p>Installing the administration interface securely requires some knowledge of web server configuration.</p>
+
+<p>The admin interface consists of two parts: the admin template file and the server callback script. Both must be correctly installed for the administration interface to work.</p>
+
+<h3>Installing the admin template</h3> 
+
+The admin page template is found in <code>themes/common/admin.html.tmpl</code>. This template needs to be added to your config file along with your other templates, and optionally customized. Make sure that <code>action="admin_cb.py"</code> found in several places in the file points to the URL (or relative URL) of the admin callback script below.
+
+<h3>Installing the admin callback script</h3>
+
+<p>The admin callback script, admin_cb.py, needs to be copied to somewhere among your web server files. Depending on the details of your web server, your permissions, etc., this can be done in several different ways and in different places. There are three steps involved:</p>
+<ol><li>Configuring the script</li>
+<li>Enabling CGI</li>
+<li>Secure access</li></ol>
+
+
+<h4>Configuring the script</h4>
+
+<p>At the top of the script, there are four variables you must customize. The correct values of the first three variables can be found by analyzing how you normally run the <code>planet.py</code> script. If you typically run planet from within the working directory <code>BASE_DIR</code>, using a command like <blockquote><code>python [VENUS_INSTALL]/planet.py [CONFIG_FILE]</code></blockquote> you know all three values.</p>
+
+<dl><dt><code>BASE_DIR</code></dt><dd>
+This variable must contain the directory from where you usually run the planet.py script, to ensure that relative file names in the config files work correctly.</dd>
+<dt><code>VENUS_INSTALL</code></dt><dd>
+This variable must contain your venus installation directory, relative to BASE_DIR above.</dd>
+<dt><code>CONFIG_FILE</code></dt><dd>
+This variable must contain your configuration file, relative to BASE_DIR above.</dd>
+<dt><code>ADMIN_URL</code></dt><dd>
+This variable must contain the URL (or relative URL) of the administration page, relative to this script's URL.</dd>
+</dl>
+
+<h4>Enabling CGI</h4>
+
+<p>You will need to ensure that it can be run as a CGI script. This is done differently on different web server platforms, but there are at least three common patterns</p>
+
+<ul><li><b>Apache with <code>.htaccess</code></b>. If your server allows you to use <code>.htaccess</code> files, you can simply add
+<blockquote><code>Options +ExecCGI<br />
+AddHandler cgi-script .py</code></blockquote>
+in an .htaccess file in the planet output directory to enable the server to run the script. In this case, the admin_cb.py file can be put alongside the rest of the planet output files.
+</li>
+<li><b>Apache without <code>.htaccess</code></b>. If your server does not allow you to add CGI handlers to <code>.htaccess</code> files, you can add
+<blockquote><code>Options +ExecCGI<br />
+AddHandler cgi-script .py</code></blockquote>
+to the relevant part of the central apache configuration files.
+</li>
+<li><b>Apache with cgi-bin</b>. If your server only allow CGI handlers in pre-defined directories, you can place the <code>admin_cb.py</code> file there, and make sure to update the <code>action="admin_cb.py"</code> code in the template file <code>admin.html.tmpl</code>, as well as the <code>ADMIN_URL</code> in the callback script.
+</li>
+</ul>
+
+<p>In all cases, it is necessary to make sure that the script is executed as the same user that owns the planet output files and the cache. Either the planet output is owned by the apache user (usually <code>www-data</code>), or Apache's <a href="http://httpd.apache.org/docs/2.0/suexec.html">suexec</a> feature can be used to run the script as the right user.</p> 
+
+<h4>Securing the admin interface</h4>
+<p>If you don't want every user to be able to administrate your planet, you must secure at least the <code>admin_cb.py</code> file, and preferrably the <code>admin.html</code> file as well. This can be done using your web server's regular access control features. See <a href="http://httpd.apache.org/docs/2.0/howto/auth.html">here</a> for Apache documentation.</p>
+
+</body>
+</html>

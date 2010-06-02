@@ -1,10 +1,9 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
-        <title><TMPL_VAR name></title>
+        <title><TMPL_VAR name> administration</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <meta name="generator" content="<TMPL_VAR generator ESCAPE="HTML">">
-        <link rel="stylesheet" href="planet.css" type="text/css">
     </head>
 
     <body>
@@ -12,11 +11,11 @@
          <form action="admin_cb.py" method="GET">
             <input type="hidden" name="command" value="refresh" />
             <input type="submit" value="Refresh planet" />
-         </form>
+         </form><br />
          <form action="admin_cb.py" method="GET">
             <input type="hidden" name="command" value="run" />
             <input type="submit" value="Run planet" />
-         </form>
+         </form><br />
          <form action="admin_cb.py" method="GET">
             <input type="hidden" name="command" value="expunge" />
             <input type="submit" value="Expunge planet" />
