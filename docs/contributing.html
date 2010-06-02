@@ -1,6 +1,4 @@
-<!DOCTYPE html PUBLIC
-    "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN"
-    "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <script type="text/javascript" src="docs.js"></script>
@@ -22,46 +20,46 @@ contribution.</p>
 <p>Documentation can be found in the <code>docs</code> directory.  It is
 straight XHTML.</p>
 <p>Test cases can be found in the
-<a href="http://localhost/~rubys/venus/tests/">tests</a> directory, and
+<a href="http://intertwingly.net/code/venus/tests/">tests</a> directory, and
 make use of the
 <a href="http://docs.python.org/lib/module-unittest.html">Python Unit testing framework</a>.  To run them, simply enter:</p>
 <blockquote><pre>python runtests.py</pre></blockquote>
 
-<h3>Bzr</h3>
-<p>If you have done a <a href="index.html">bzr get</a>, you have already set up
+<h3>Git</h3>
+<p>If you have done a <a href="index.html">git pull</a>, you have already set up
 a repository.  The only additional step you might need to do is to introduce
-yourself to <a href="http://bazaar-vcs.org/">bzr</a>.  Type in the following,
+yourself to <a href="http://git-scm.com/">git</a>.  Type in the following,
 after replacing the <b>bold text</b> with your information:</p>
 
-<blockquote><pre>bzr whoami '<b>Your Name</b> &lt;<b>youremail</b>@<b>example.com</b>&gt;'</pre></blockquote>
+<blockquote><pre>git config --global user.name '<b>Your Name</b>'
+git config --global user.email '<b>youremail</b>@<b>example.com</b>'</pre></blockquote>
 
 <p>Then, simply make the changes you like.  When you are done, type:</p>
 
-<blockquote><pre>bzr st</pre></blockquote>
+<blockquote><pre>git status</pre></blockquote>
 
 <p>This will tell you which files you have modified, and which ones you may
 have added.  If you add files and you want them to be included, simply do a:</p>
 
-<blockquote><pre>bzr add file1 file2...</pre></blockquote>
+<blockquote><pre>git add file1 file2...</pre></blockquote>
 
-<p>You can also do a <code>bzr diff</code> to see if there are any changes
+<p>You can also do a <code>git diff</code> to see if there are any changes
 which you made that you don't want included.  I can't tell you how many
 debug print statements I have caught this way.</p>
 
 <p>Next, type:</p>
 
-<blockquote><pre>bzr commit</pre></blockquote>
+<blockquote><pre>git commit -a</pre></blockquote>
 
 <p>This will allow you to enter a comment describing your change.  If your
 repository is already on your web server, simple let others know where they
-can find it.  If not, you can simply ftp or scp the files to your web server
-&mdash; no additional software needs to be installed on that machine.</p>
+can find it.  If not, consider using <a href="">github</a> to host your
+<a href="http://help.github.com/forking/">fork</a> of Venus.</p>
 
 <h3>Telling others</h3>
 <p>Once you have a change worth sharing, post a message on the
-<a href="http://lists.planetplanet.org/mailman/listinfo/devel">mailing list</a>.</p>
-<p>Also, consider setting up a <a href="http://bzr.mfd-consult.dk/bzr-feed/">bzr-feed</a> for your repository, so people who wish to do so can automatically
-be notified of every change.</p>
-<p>There now is even an nascent <a href="http://planet.intertwingly.net/venus/">planet</a> being formed which combines these feeds of changes.  You can <a href="http://planet.intertwingly.net/venus/atom.xml">subscribe</a> to it too.</p>
+<a href="http://lists.planetplanet.org/mailman/listinfo/devel">mailing
+list</a>, or use github to send a <a
+href="http://github.com/guides/pull-requests">pull request</a>.</p>
 </body>
 </html>
