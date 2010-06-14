@@ -68,7 +68,7 @@ def run(script, doc, output_file=None, options={}):
     context = Context(**options)
 
     tmpl_fileobj = open(script)
-    tmpl = MarkupTemplate(tmpl_fileobj, script)
+    tmpl = MarkupTemplate(tmpl_fileobj, script, lookup="lenient")
     tmpl_fileobj.close()
 
     if not output_file: 
