@@ -44,6 +44,12 @@ def splice():
             link.setAttribute('type', "application/%s+xml" % config.feedtype())
         feed.appendChild(link)
 
+    if config.pubsubhubbub_hub():
+        hub = doc.createElement('link')
+        hub.setAttribute('rel', 'hub')
+        hub.setAttribute('href', config.pubsubhubbub_hub())
+        feed.appendChild(hub)
+
     if config.link():
         link = doc.createElement('link')
         link.setAttribute('rel', 'alternate')
