@@ -256,8 +256,10 @@ def run(script, doc, output_file=None, options={}):
         tp.set(key, value)
 
     if output_file:
+        basename = os.path.basename(output_file)
         reluri = os.path.splitext(os.path.basename(output_file))[0]
         tp.set('url', urlparse.urljoin(config.link(),reluri))
+        tp.set('fullurl', urlparse.urljoin(config.link(),basename))
 
         output = open(output_file, "w")
         output.write(tp.process(template))

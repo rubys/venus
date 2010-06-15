@@ -9,6 +9,9 @@
 	<TMPL_IF pubsubhubbub_hub>
 	<atom:link rel="hub" href="<TMPL_VAR pubsubhubbub_hub ESCAPE="HTML">"/>
 	</TMPL_IF>
+	<TMPL_IF fullurl>
+	<atom:link rel="self" href="<TMPL_VAR fullurl ESCAPE="HTML">" type="application/rss+xml"/>
+	</TMPL_IF>
 
 <TMPL_LOOP Items>
 <item>
