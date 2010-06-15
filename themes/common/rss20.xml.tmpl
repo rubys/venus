@@ -1,11 +1,14 @@
 <?xml version="1.0"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 
 <channel>
 	<title><TMPL_VAR name></title>
 	<link><TMPL_VAR link ESCAPE="HTML"></link>
 	<language>en</language>
 	<description><TMPL_VAR name ESCAPE="HTML"> - <TMPL_VAR link ESCAPE="HTML"></description>
+	<TMPL_IF pubsubhubbub_hub>
+	<atom:link rel="hub" href="<TMPL_VAR pubsubhubbub_hub ESCAPE="HTML">"/>
+	</TMPL_IF>
 
 <TMPL_LOOP Items>
 <item>

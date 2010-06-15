@@ -219,6 +219,7 @@ def template_info(source):
     output['link'] = config.link()
     output['owner_name'] = config.owner_name()
     output['owner_email'] = config.owner_email()
+    output['pubsubhubbub_hub'] = config.pubsubhubbub_hub()
     if config.feed():
         output['feed'] = config.feed()
         output['feedtype'] = config.feed().find('rss')>=0 and 'rss' or 'atom'

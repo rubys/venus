@@ -105,6 +105,8 @@ def __init__():
     define_planet('output_theme', '')
     define_planet('output_dir', 'output')
     define_planet('spider_threads', 0) 
+    # set pubsubhubbub_hub to None to prevent it from being emitted
+    define_planet('pubsubhubbub_hub', 'http://pubsubhubbub.appspot.com') 
 
     define_planet_int('new_feed_items', 0) 
     define_planet_int('feed_timeout', 20)
