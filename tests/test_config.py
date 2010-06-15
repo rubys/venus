@@ -30,6 +30,9 @@ class ConfigTest(unittest.TestCase):
     def test_link(self):
         self.assertEqual('http://example.com/', config.link())
 
+    def test_pubsubhubbub_hub(self):
+        self.assertEqual('http://pubsubhubbub.appspot.com', config.pubsubhubbub_hub())
+
     # per template configuration
 
     def test_days_per_page(self):
