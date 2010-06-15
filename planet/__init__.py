@@ -38,3 +38,5 @@ sys.path.insert(1, os.path.join(os.path.dirname(__file__),'vendor'))
 import feedparser
 feedparser.SANITIZE_HTML=1
 feedparser.RESOLVE_RELATIVE_URIS=0
+
+import publish
