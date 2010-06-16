@@ -106,6 +106,7 @@ def __init__():
     define_planet('output_dir', 'output')
     define_planet('spider_threads', 0) 
     define_planet('pubsubhubbub_hub', '')
+    define_planet_list('pubsubhubbub_feeds', 'atom.xml rss10.xml rss20.xml')
 
     define_planet_int('new_feed_items', 0) 
     define_planet_int('feed_timeout', 20)
