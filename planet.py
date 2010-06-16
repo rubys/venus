@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     splice.apply(doc.toxml('utf-8'))
 
-    if config.pubsubhubbub.hub() and not no_publish:
+    if config.pubsubhubbub_hub() and not no_publish:
         from planet import publish
         publish.publish(config)
 
