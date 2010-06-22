@@ -410,6 +410,7 @@ for i in range(0,len(weighted_links)):
   # otherwise, parse the html
   if not title:
     title = html(revmap.get(link,link)).title
+    if not title: title = link.strip('/').split('/')[-1]
 
   # dehtmlize
   title = re.sub('&(\w+);',
