@@ -11,7 +11,7 @@ Recommended: Python 2.3 or later
 Recommended: CJKCodecs and iconv_codec <http://cjkpython.i18n.org/>
 """
 
-__version__ = "4.2-pre-" + "$Revision: 308 $"[11:14] + "-svn"
+__version__ = "4.2-pre-" + "$Revision: 314 $"[11:14] + "-svn"
 __license__ = """Copyright (c) 2002-2008, Mark Pilgrim, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -2466,6 +2466,15 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
         if not tag in self.acceptable_elements or self.svgOK:
             if tag in self.unacceptable_elements_with_end_tag:
                 self.unacceptablestack += 1
+
+            # add implicit namespaces to html5 inline svg/mathml
+            if self.type.endswith('html'):
+                if tag=='svg':
+                    if not dict(attrs).get('xmlns'):
+                        attrs.append( ('xmlns','http://www.w3.org/2000/svg') )
+                if tag=='math':
+                    if not dict(attrs).get('xmlns'):
+                        attrs.append( ('xmlns','http://www.w3.org/1998/Math/MathML') )
 
             # not otherwise acceptable, perhaps it is MathML or SVG?
             if tag=='math' and ('xmlns','http://www.w3.org/1998/Math/MathML') in attrs:
