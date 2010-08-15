@@ -419,7 +419,7 @@ for i in range(0,len(weighted_links)):
   title = re.sub('&#x(\w+);',lambda n: unichr(int(n.group(1),16)), title)
 
   # title too long?  Insert zero width spaces where appropriate
-  if max(map(len,title.split())) > 30:
+  if len(title.strip())>0 and max(map(len,title.split())) > 30:
     title=re.sub('(\W+)',u'\\1\u200b',title)
 
   # save the entry title (it is used later)
