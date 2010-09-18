@@ -294,4 +294,8 @@ function personalize() {
 }
 
 // hook event
-document.addEventListener("DOMContentLoaded", personalize, false);
+if (document.getElementById('footer')) {
+  personalize();
+} else {
+  document.addEventListener("DOMContentLoaded", personalize, false);
+}
