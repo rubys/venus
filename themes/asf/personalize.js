@@ -20,7 +20,7 @@ function prevArticle(event) {
   var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
   for (var i=entries.length; --i>=0;) {
     if (!entries[i].anchor) continue;
-    if (entries[i].anchor.offsetTop < scrollTop) {
+    if (entries[i].anchor.offsetTop+20 < scrollTop) {
       window.location.hash=entries[i].anchor.id;
       stopPropagation(event);
       break;

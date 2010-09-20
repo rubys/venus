@@ -72,6 +72,7 @@ body > h1 {
 	border-bottom: 2px solid #ccd;
 	-webkit-border-bottom-left-radius: 1em;
 	-moz-border-radius: 0 0 0 1em;
+	border-radius: 0 0 0 1em;
 }
 
 #sidebar h2 {
@@ -88,6 +89,7 @@ body > h1 {
 	-webkit-border-top-left-radius: 6px;
 	-webkit-border-bottom-left-radius: 6px;
 	-moz-border-radius: 6px 0 0 6px;
+	border-radius: 6px 0 0 6px;
 }
 
 #sidebar h2 a img {
@@ -138,6 +140,7 @@ body > h1 {
 	background-color: #EEE;
 	-webkit-border-radius: 0.5em;
 	-moz-border-radius: 0.5em;
+	border-radius: 0.5em;
 	border: 2px solid #BBB;
 	color:#000;
 	display: block;
@@ -192,6 +195,7 @@ body > h1 {
 	border: 1px solid #ccd;
 	-webkit-border-radius: 0.8em;
 	-moz-border-radius: 0.8em;
+	border-radius: 0.8em;
 	width: 12.5em;
 	margin: 4px 0 0 24px;
 }
@@ -235,6 +239,7 @@ body > h1 {
 	-webkit-border-top-left-radius: 0.5em;
 	-webkit-border-bottom-left-radius: 0.5em;
 	-moz-border-radius: 0.5em 0 0 0.5em;
+	border-radius: 0.5em 0 0 0.5em;
 	text-transform: none;
 	font-size: medium;
 	color: #667;
