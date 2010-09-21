@@ -28,7 +28,7 @@ if first < minhead:
   for i in range(6,0,-1):
     for oldhead in doc.getElementsByTagName('h%d' % i):
       newhead = doc.createElementNS(XHTML_NAMESPACE, 'h%d' % (i+minhead-first))
-      for child in oldhead.childNodes:
+      for child in oldhead.childNodes[:]:
         newhead.appendChild(child)
       oldhead.parentNode.replaceChild(newhead, oldhead)
 
