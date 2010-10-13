@@ -214,6 +214,7 @@ class html(sgmllib.SGMLParser):
     self.feedurl = ""
     self.intitle = False
 
+    url = url.split('#')[0]
     headers = check_cache(url)
 
     try:
