@@ -1,0 +1,10 @@
+<!--
+Description:  polygon inside an entry
+Expect:       geo_lat == '34.052610' and geo_long == '-118.432212'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <georss:polygon>34.052610 -118.432212 34.05260997 -118.37216196 34.11240804 -118.37216196 34.11240804 -118.43221212</georss:polygon>
+  </entry>
+</feed>

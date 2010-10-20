@@ -1,0 +1,10 @@
+<!--
+Description:  box inside an entry (center point calculated)
+Expect:       geo_lat == '42.991000' and geo_long == '-70.444000'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <georss:box>42.943 -71.032 43.039 -69.856</georss:box>
+  </entry>
+</feed>

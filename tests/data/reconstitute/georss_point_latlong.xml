@@ -1,0 +1,11 @@
+<!--
+Description:  point inside an entry
+Expect:       geo_lat == '34.101646' and geo_long == '-118.326454'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom"
+  xmlns:twitter="http://api.twitter.com">
+  <entry>
+    <georss:point>34.10164620,-118.32645359</georss:point>
+  </entry>
+</feed>
