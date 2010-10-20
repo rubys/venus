@@ -1,0 +1,15 @@
+<!--
+Description:  polygon inside bounding box inside place inside an entry
+Expect:       geo_lat == '34.052610' and geo_long == '-118.432212'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom"
+  xmlns:twitter="http://api.twitter.com">
+  <entry>
+    <twitter:place xmlns:georss="http://www.georss.org/georss">
+      <twitter:bounding_box>
+        <georss:polygon>34.05260997 -118.43221212 34.05260997 -118.37216196 34.11240804 -118.37216196 34.11240804 -118.43221212</georss:polygon>
+      </twitter:bounding_box>
+    </twitter:place>
+  </entry>
+</feed>

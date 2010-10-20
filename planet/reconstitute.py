@@ -304,6 +304,21 @@ def reconstitute(feed, entry):
     if entry.has_key('geo_lat') and \
         entry.has_key('geo_long'):
         location(xentry, (float)(entry.get('geo_long',None)), (float)(entry.get('geo_lat',None)))
+    if entry.has_key('georss_point'):
+        coordinates = re.split('[,\s]', entry.get('georss_point'))
+        location(xentry, (float)(coordinates[1]), (float)(coordinates[0]))
+    elif entry.has_key('georss_line'):
+        coordinates = re.split('[,\s]', entry.get('georss_line'))
+        location(xentry, (float)(coordinates[1]), (float)(coordinates[0]))
+    elif entry.has_key('georss_circle'):
+        coordinates = re.split('[,\s]', entry.get('georss_circle'))
+        location(xentry, (float)(coordinates[1]), (float)(coordinates[0]))
+    elif entry.has_key('georss_box'):
+        coordinates = re.split('[,\s]', entry.get('georss_box'))
+        location(xentry, ((float)(coordinates[1])+(float)(coordinates[3]))/2, ((float)(coordinates[0])+(float)(coordinates[2]))/2)
+    elif entry.has_key('georss_polygon'):
+        coordinates = re.split('[,\s]', entry.get('georss_polygon'))
+        location(xentry, (float)(coordinates[1]), (float)(coordinates[0]))
 
     # author / contributor
     author_detail = entry.get('author_detail',{})
