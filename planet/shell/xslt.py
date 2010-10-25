@@ -8,7 +8,7 @@ def quote(string, apos):
 
     if string.find("'")<0:
         return "'" + string + "'"
-    elif string.find("'")<0:
+    elif string.find('"')<0:
         return '"' + string + '"'
     else:
         # unclear how to quote strings with both types of quotes for libxslt
