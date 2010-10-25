@@ -428,8 +428,6 @@ def spiderPlanet(only_if_new = False):
     # Process the results as they arrive
     feeds_seen = {}
     while fetch_queue.qsize() or parse_queue.qsize() or threads:
-        while parse_queue.qsize() == 0 and threads:
-            time.sleep(0.1)
         while parse_queue.qsize():
             (uri, feed_info, feed) = parse_queue.get(False)
             try:
@@ -486,6 +484,8 @@ def spiderPlanet(only_if_new = False):
                 for line in (traceback.format_exception_only(type, value) +
                     traceback.format_tb(tb)):
                     log.error(line.rstrip())
+
+        time.sleep(0.1)
 
         for index in threads.keys():
             if not threads[index].isAlive():
