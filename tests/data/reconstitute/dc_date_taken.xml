@@ -1,0 +1,12 @@
+<!--
+Description:  Dublin Core date: Taken (as used by e.g. flickr)
+Expect:       dc_date_taken == '2010-10-15T16:10:05-01:00'
+-->
+
+<feed xmlns="http://www.w3.org/2005/Atom"
+  xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <entry>
+    <dc:date.Taken>2010-10-15T16:10:05-01:00</dc:date.Taken>
+  </entry>
+</feed>
+
