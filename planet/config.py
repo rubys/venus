@@ -116,6 +116,7 @@ def __init__():
     define_planet_list('bill_of_materials')
     define_planet_list('template_directories', '.')
     define_planet_list('filter_directories')
+    define_planet('django_autoescape', 'on')
 
     # template options
     define_tmpl_int('days_per_page', 0)

@@ -21,7 +21,7 @@
 
   <ul>
     {% for channel in Channels %}
-    <li>{{ channel.title }} by {{ channel.author_name }}</li>
+    <li>{{ channel.title|safe }} by {{ channel.author_name }}</li>
     {% endfor %}
   </ul>
 </div>
@@ -32,9 +32,9 @@
 {% endifchanged %}
 
 <div class="entry">
-  {% if item.title %}<h4>{{ item.title }}</h4>{% endif %}
+  {% if item.title %}<h4>{{ item.title|safe }}</h4>{% endif %}
 
-  {{ item.content }}
+  {{ item.content|safe }}
   
   <p class="entry-tools">
     by {{ item.channel_author }}  on 

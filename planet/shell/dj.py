@@ -32,7 +32,7 @@ def run(script, doc, output_file=None, options={}):
 
     # set up the Django context by using the default htmltmpl 
     # datatype converters
-    context = Context()
+    context = Context(autoescape=(config.django_autoescape()=='on'))
     context.update(tmpl.template_info(doc))
     context['Config'] = config.planet_options()
     t = get_template(script)
