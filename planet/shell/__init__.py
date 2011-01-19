@@ -33,7 +33,7 @@ def run(template_file, doc, mode='template'):
                 log.info("    %s", os.path.realpath(template_dir))
             logged_modes.append(mode)
         return
-    template_resolved = os.path.realpath(template_resolved)
+    template_resolved = os.path.abspath(template_resolved)
 
     # Add shell directory to the path, if not already there
     shellpath = os.path.join(sys.path[0],'planet','shell')
