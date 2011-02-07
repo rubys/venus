@@ -70,6 +70,7 @@ def id(xentry, entry):
 
     if entry.has_key("id") and entry.id:
         entry_id = entry.id
+        if hasattr(entry_id, 'values'): entry_id = entry_id.values()[0]
     elif entry.has_key("link") and entry.link:
         entry_id = entry.link
     elif entry.has_key("title") and entry.title:

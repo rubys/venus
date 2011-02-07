@@ -176,7 +176,9 @@ def writeCache(feed_uri, feed_info, data):
         # generate an id, if none is present
         if not entry.has_key('id') or not entry.id:
             entry['id'] = reconstitute.id(None, entry)
-            if not entry['id']: continue
+        elif hasattr(entry['id'], 'values'):
+            entry['id'] = entry['id'].values()[0]
+        if not entry['id']: continue
 
         # determine updated date for purposes of selection
         updated = ''
