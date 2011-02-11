@@ -17,7 +17,7 @@ __license__ = "Python"
 import os, sys
 
 if __name__ == "__main__":
-    config_file = "config.ini"
+    config_file = []
     offline = 0
     verbose = 0
     only_if_new = 0
@@ -54,10 +54,10 @@ if __name__ == "__main__":
             print >>sys.stderr, "Unknown option:", arg
             sys.exit(1)
         else:
-            config_file = arg
+            config_file.append(arg)
 
     from planet import config
-    config.load(config_file)
+    config.load(config_file or 'config.ini')
 
     if verbose:
         import planet
