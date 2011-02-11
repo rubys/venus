@@ -193,9 +193,14 @@
       <!-- entry title -->
       <xsl:text>&#10;</xsl:text>
       <h3>
-        <xsl:if test="atom:source/atom:icon">
-          <img src="{atom:source/atom:icon}" class="icon"/>
-        </xsl:if>
+        <xsl:choose>
+          <xsl:when test="atom:source/atom:icon">
+            <img src="{atom:source/atom:icon}" class="icon"/>
+          </xsl:when>
+          <xsl:when test="atom:source/planet:favicon">
+            <img src="{atom:source/planet:favicon}" class="icon"/>
+          </xsl:when>
+        </xsl:choose>
         <a>
           <xsl:if test="atom:source/atom:link[@rel='alternate']/@href">
             <xsl:attribute name="href">
