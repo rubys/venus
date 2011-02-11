@@ -32,11 +32,11 @@ for sub in config.subscriptions():
 def favicon(page):
   parser=html5parser.HTMLParser(tree=treebuilders.getTreeBuilder('dom'))
   doc=parser.parse(urlopen(page))
+  favicon = urljoin(page, '/favicon.ico')
   for link in doc.getElementsByTagName('link'):
     if link.hasAttribute('rel') and link.hasAttribute('href'):
-      if 'icon' in link.attributes['rel'].value.split(' '):
-        return urljoin(page, link.attributes['href'].value)
-  favicon = urljoin(page, '/favicon.ico')
+      if 'icon' in link.attributes['rel'].value.lower().split(' '):
+        favicon = urljoin(page, link.attributes['href'].value)
   if urlopen(favicon).info()['content-length'] != '0':
     return favicon
 
