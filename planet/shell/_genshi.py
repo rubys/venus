@@ -3,7 +3,9 @@ from xml.sax.saxutils import escape
 
 from genshi.input import HTMLParser, XMLParser
 from genshi.template import Context, MarkupTemplate
+import planet
 
+log = planet.logger
 subscriptions = []
 feed_types = [
     'application/atom+xml',
@@ -28,13 +30,15 @@ def find_config(config, feed):
             if link.has_key('type') and link.type in feed_types:
                 if link.has_key('href') and link.href in subscriptions:
                     return norm(dict(config.parser.items(link.href)))
-
+    
     # match based on name
-    for sub in subscriptions:
-        if config.parser.has_option(sub, 'name') and \
-            norm(config.parser.get(sub, 'name')) == feed.planet_name:
-            return norm(dict(config.parser.items(sub)))
+    if 'planet_name' in feed:
+        for sub in subscriptions:
+            if config.parser.has_option(sub, 'name') and \
+                norm(config.parser.get(sub, 'name')) == feed.planet_name:
+                return norm(dict(config.parser.items(sub)))
 
+    log.warning('Could not match subscription to config: %s', feed.link)
     return {}
 
 class XHTMLParser(object):
