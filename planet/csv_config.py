@@ -11,12 +11,10 @@ def csv2config(input, config=None):
         config = ConfigParser()
 
     reader = csv.DictReader(input)
-    d = {}
     for row in reader:
         section = row[reader.fieldnames[0]]
-        if not d.get(section):
+        if not config.has_section(section):
             config.add_section(section)
-            d[section] = 1
         for name, value in row.items():
             if value and name != reader.fieldnames[0]:
                 config.set(section, name, value) 
