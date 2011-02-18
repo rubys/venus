@@ -1,3 +1,5 @@
 url,name,filters
 feed1,one
+feed1,one
+feed2,two,bar
 feed2,two,bar
