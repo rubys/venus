@@ -1982,6 +1982,7 @@ class _MicroformatsParser:
                 sValue = bNormalize and self.normalize(sValue) or sValue.strip()
             if (not sValue) and (iPropertyType == self.URI):
                 if sNodeName == 'a': sValue = elmResult.get('href')
+                elif sNodeName == 'iframe': sValue = elmResult.get('src')
                 elif sNodeName == 'img': sValue = elmResult.get('src')
                 elif sNodeName == 'object': sValue = elmResult.get('data')
             if sValue:
@@ -2339,7 +2340,7 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
       'datagrid', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'dir',
       'div', 'dl', 'dt', 'em', 'event-source', 'fieldset', 'figure', 'footer',
       'font', 'form', 'header', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i',
-      'img', 'input', 'ins', 'keygen', 'kbd', 'label', 'legend', 'li', 'm', 'map',
+      'iframe', 'img', 'input', 'ins', 'keygen', 'kbd', 'label', 'legend', 'li', 'm', 'map',
       'menu', 'meter', 'multicol', 'nav', 'nextid', 'ol', 'output', 'optgroup',
       'option', 'p', 'pre', 'progress', 'q', 's', 'samp', 'section', 'select',
       'small', 'sound', 'source', 'spacer', 'span', 'strike', 'strong', 'sub',
@@ -2355,7 +2356,7 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
       'colspan', 'compact', 'contenteditable', 'controls', 'coords', 'data',
       'datafld', 'datapagesize', 'datasrc', 'datetime', 'default', 'delay',
       'dir', 'disabled', 'draggable', 'dynsrc', 'enctype', 'end', 'face', 'for',
-      'form', 'frame', 'galleryimg', 'gutter', 'headers', 'height', 'hidefocus',
+      'form', 'frame', 'frameborder', 'galleryimg', 'gutter', 'headers', 'height', 'hidefocus',
       'hidden', 'high', 'href', 'hreflang', 'hspace', 'icon', 'id', 'inputmode',
       'ismap', 'keytype', 'label', 'leftspacing', 'lang', 'list', 'longdesc',
       'loop', 'loopcount', 'loopend', 'loopstart', 'low', 'lowsrc', 'max',
