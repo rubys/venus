@@ -51,8 +51,12 @@
 ### variables, but makes them available to us anyway.
 
 <h3><a href="<TMPL_VAR channel_link ESCAPE="HTML">" title="<TMPL_VAR channel_title_plain ESCAPE="HTML">"><TMPL_VAR channel_name></a></h3>
+<TMPL_IF channel_gravatar>
+<img class="face" src="http://gravatar.com/avatar/<TMPL_VAR channel_gravatar ESCAPE="HTML">" alt="">
+<TMPL_ELSE>
 <TMPL_IF channel_face>
 <img class="face" src="images/<TMPL_VAR channel_face ESCAPE="HTML">" width="<TMPL_VAR channel_facewidth ESCAPE="HTML">" height="<TMPL_VAR channel_faceheight ESCAPE="HTML">" alt="">
+</TMPL_IF>
 </TMPL_IF>
 </TMPL_IF>
 

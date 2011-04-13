@@ -20,6 +20,7 @@ re_url_scheme    = re.compile(r'^\w+:/*(\w+:|www\.)?')
 re_slash         = re.compile(r'[?/:|]+')
 re_initial_cruft = re.compile(r'^[,.]*')
 re_final_cruft   = re.compile(r'[,.]*$')
+re_email = '^.+\\@(\\[?)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,3}|[0-9]{1,3\})(\\]?)$'
 
 index = True
 
@@ -161,7 +162,10 @@ def writeCache(feed_uri, feed_info, data):
             data.feed.links.append(feedparser.FeedParserDict(
                 {'rel':'self', 'type':feedtype, 'href':feed_uri}))
     for name, value in config.feed_options(feed_uri).items():
-        data.feed['planet_'+name] = value
+        if name == "gravatar" and re.match(re_email, value):
+            data.feed['planet_'+name] = md5(value.strip()).hexdigest()
+        else:
+            data.feed['planet_'+name] = value
 
     # perform user configured scrub operations on the data
     scrub.scrub(feed_uri, data)
