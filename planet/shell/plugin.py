@@ -4,6 +4,7 @@ from StringIO import StringIO
 def run(script, doc, output_file=None, options={}):
     """ process an Python script using imp """
     save_sys = (sys.stdin, sys.stdout, sys.stderr, sys.argv)
+    save_main = sys.modules['__main__']
     plugin_stdout = StringIO()
     plugin_stderr = StringIO()
 
@@ -54,6 +55,7 @@ def run(script, doc, output_file=None, options={}):
     finally:
         # restore system state
         sys.stdin, sys.stdout, sys.stderr, sys.argv = save_sys
+        sys.modules['__main__'] = save_main
 
     # log anything sent to stderr
     if plugin_stderr.getvalue():
