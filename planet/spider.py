@@ -226,7 +226,7 @@ def writeCache(feed_uri, feed_info, data):
 
         # apply any filters
         xdoc = reconstitute.reconstitute(data, entry)
-        output = xdoc.toxml().encode('utf-8')
+        output = xdoc.toxml("utf-8")
         xdoc.unlink()
         for filter in config.filters(feed_uri):
             output = shell.run(filter, output, mode="filter")
@@ -287,7 +287,7 @@ def writeCache(feed_uri, feed_info, data):
     xdoc=minidom.parseString('''<feed xmlns:planet="%s"
       xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
     reconstitute.source(xdoc.documentElement,data.feed,data.bozo,data.version)
-    write(xdoc.toxml().encode('utf-8'), filename(sources, feed_uri))
+    write(xdoc.toxml("utf-8"), filename(sources, feed_uri))
     xdoc.unlink()
 
 def httpThread(thread_index, input_queue, output_queue, log):
