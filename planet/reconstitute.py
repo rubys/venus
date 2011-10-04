@@ -75,7 +75,7 @@ def id(xentry, entry):
         entry_id = entry.link
     elif entry.has_key("title") and entry.title:
         entry_id = (entry.title_detail.base + "/" +
-            md5(entry.title).hexdigest())
+            md5(entry.title.encode('utf-8')).hexdigest())
     elif entry.has_key("summary") and entry.summary:
         entry_id = (entry.summary_detail.base + "/" +
             md5(entry.summary).hexdigest())
