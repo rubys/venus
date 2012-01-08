@@ -1,0 +1,116 @@
+# If you don't want items to "move up" on your planet if the source feed 
+# updates them (and changes the update date to something newer then was 
+# originally used) you may be tempted to use the "ignore_in_feed: updated" 
+# option, but there are three important things to realize about doing this:
+#
+#  * When you ignore the "updated" date, it will default to the 
+#    "published" date -- but if there is no "published" date (very common 
+#    in many RSS feeds) it will default to the current date+time.
+#
+#  * If you purge the entire cache (perhaps because you added a filter)
+#    all of the "updated" dates for those items w/o a "published" date will
+#    be re-set to the current date+time
+#
+#  * The "updated" date is what Venus uses to sort the list
+#
+# This may seem all seem obvious, but can be highly annoying when you deal 
+# with some feeds that have no "published" date and have to occasionally 
+# purge your cache.  
+# 
+# One solution would be to only use "ignore_in_feed: updated" on the feeds
+# where you know they feed contains a "published" date for each item, and 
+# don't use it for feeds that only contain an "updated" date for each item 
+# -- but that can be tedious.
+#
+# So use this plugin instead
+#
+# This plugin will replace the "updated" and "published" dates of every item 
+# with whichever of the two values is the lowest, unless the item is already 
+# in the cache, in which case it will use the "updated" date from the item in 
+# the cache -- making it a safe alternative to "ignore_in_feed: updated" for 
+# all feeds regardless of whether the items have a "published" date or not, 
+# and regardless of whether the ones that do have a "published" date try to 
+# modify it or not.
+#
+###########################################################################
+
+import sys, time, os
+from xml.dom import minidom
+from planet import reconstitute
+from planet import config
+from planet.reconstitute import date
+from planet.spider import filename
+
+log = planet.logger
+
+# finds the first descendent element that matches the specified 
+# namespace and tag name, parses it (in canonical date format),
+# returns the parsed value, and removes (all of the) element(s)
+def parseAndPurgeDateElement(element, ns, tagName):
+  result = None
+  # see if we have any date(s?)
+  kids = element.getElementsByTagNameNS(ns, tagName)
+  if kids:
+    # record the first one
+    result = time.strptime(kids[0].childNodes[0].nodeValue, 
+                           '%Y-%m-%dT%H:%M:%SZ')
+    # get rid of all of them
+    for trash in kids:
+      trash.parentNode.removeChild(trash)
+  return result
+
+
+# given the identifier of an entry in the cache, fetches the 
+# formated mtime of that entry (which should match the updated 
+# date if venus has done it's job right
+#
+# returns None if the entry is not in the cache
+def getDateFromCache(entry):
+  if entry is None: 
+    log.error("Attempted to lookup the date of 'None'")
+    return None
+
+  id = entry.getElementsByTagNameNS(atomNS, 'id')[0].childNodes[0].nodeValue
+  if id is None: 
+    log.error("Unable to find id in entry")
+    return None
+
+  cache = os.path.join(config.cache_directory())
+  file = filename(cache, id)
+  if os.path.exists(file):
+    return time.gmtime(os.stat(file).st_mtime)
+  return None
+
+
+atomNS = 'http://www.w3.org/2005/Atom'
+planetNS = 'http://planet.intertwingly.net/'
+
+# parse input stream
+dom = minidom.parse(sys.stdin)
+
+entries = dom.getElementsByTagNameNS(atomNS, 'entry')
+for e in entries:
+
+  # get & remove our dates from the entry
+  updatedDate = parseAndPurgeDateElement(e, atomNS, 'updated')
+  pubDate = parseAndPurgeDateElement(e, atomNS, 'published')
+
+  cacheDate = getDateFromCache(e)
+
+  if cacheDate is not None:
+    mainDate = cacheDate
+  elif not updatedDate:
+    mainDate = pubDate
+  elif not pubDate:
+    mainDate = updatedDate
+  elif pubDate < updatedDate:
+    mainDate = pubDate
+  else: 
+    mainDate = updatedDate
+
+  # add back to the entry
+  reconstitute.date(e, 'published', mainDate)
+  reconstitute.date(e, 'updated', mainDate)
+
+# output the dom
+print dom.toxml('utf-8')
