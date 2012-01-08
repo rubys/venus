@@ -36,6 +36,7 @@
 
 import sys, time, os
 from xml.dom import minidom
+import planet
 from planet import reconstitute
 from planet import config
 from planet.reconstitute import date
