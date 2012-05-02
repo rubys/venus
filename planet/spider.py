@@ -235,6 +235,15 @@ def writeCache(feed_uri, feed_info, data):
           if os.path.exists(cache_file): os.remove(cache_file)
           continue
 
+        # re-set mtime incase filters have modified it
+        try:
+          edoc = feedparser.parse(output)
+          mtime = calendar.timegm(edoc.entries[0].updated_parsed)
+        except:
+          log.warning("Unable to re-set mtime on %s after running filters: ",
+                      entry.id,
+                      sys.exc_info()[0])
+
         # write out and timestamp the results
         write(output, cache_file, mtime) 
     

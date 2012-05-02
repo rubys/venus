@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<channel>
+<title>Fake RSS Blog</title>
+<link>http://fake.url.example.com</link>
+<description>Fake RSS Feed For testing</description>
+<image>
+<url>http://fake.url.example.com/feedlogo.gif</url>
+<title>Test RSS Feed</title>
+<link>http://fake.url.example.com</link>
+</image>
+<language>en-us</language>
+<copyright>Not Copyright 2011 Fake Feed, LLC. The contents of this headlines and excerpts feed are available for unlimited distribution.</copyright>
+<generator>Blogsmith http://www.blogsmith.com/</generator>
+
+<item>
+     <title>Fake Title: RSS Has No Date</title>
+     <link>http://fake.url.example.com/rss-no-date</link>
+     <guid isPermaLink="true">http://fake.url.example.com/rss-no-date</guid>
+     <comments>http://fake.url.example.com/rss-no-date#comments</comments>
+     <description>
+     <![CDATA[<p>Blah Blah Blah something poinient blah blah blah</p>]]>
+     </description>
+     <imageurl>http://fake.url.example.com/rss-no-date.gif</imageurl>
+     <dc:creator>Fake Person</dc:creator>
+</item>
+
+
+<item>
+     <title>Fake Title: RSS Has Changing Date</title>
+     <link>http://fake.url.example.com/rss-changing-date</link>
+     <guid isPermaLink="true">http://fake.url.example.com/rss-changing-date</guid>
+     <comments>http://fake.url.example.com/rss-changing-date#comments</comments>
+     <description>
+     <![CDATA[<p>Blah Blah Blah something poinient blah blah blah</p>]]>
+     </description>
+     <imageurl>http://fake.url.example.com/rss-changing-date.gif</imageurl>
+     <dc:creator>Fake Person</dc:creator>
+     <dc:date>2011-12-01T11:00:00+00:00</dc:date>
+</item>
+
+</channel></rss>

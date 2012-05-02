@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed
+   xmlns="http://www.w3.org/2005/Atom"
+   xmlns:thr="http://purl.org/syndication/thread/1.0"
+   xml:lang="en"
+   xml:base="http://fake.url.example.com/wp-atom.php"
+   >
+  <title type="text">Fake Atom Feed</title>
+  <subtitle type="text">Fake Atom feed for testing stuff</subtitle>
+
+  <updated>2011-12-08T00:00:28Z</updated>
+
+  <link rel="alternate" type="text/html" href="http://fake.url.example.com" />
+  <id>http://fake.url.example.com/feed/atom/</id>
+  <link rel="self" type="application/atom+xml" href="http://fake.url.example.com/feed/atom/" />
+
+  <generator uri="http://wordpress.org/" version="3.2.1">WordPress</generator>
+
+
+
+
+  <entry>
+    <author>
+      <name>Fake Person</name>
+      <uri>http://fake.url.example.com</uri>
+    </author>
+    <title type="html"><![CDATA[Atom Changing Updated Date]]></title>
+    <link rel="alternate" type="text/html" href="http://fake.url.example.com/atom-changing-updated" />
+    <id>http://fake.url.example.com/atom-changing-updated</id>
+    <updated>2011-12-05T10:06:38Z</updated>
+    <published>2011-11-09T00:00:28Z</published>
+    <summary type="html"><![CDATA[Blah Blah Blah [...]]]></summary>
+    <content type="html" xml:base="http://fake.url.example.com/atom-changing-updated"><![CDATA[Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah]]></content>
+    <link rel="replies" type="text/html" href="http://fake.url.example.com/atom-changing-updated#comments" thr:count="0"/>
+    <link rel="replies" type="application/atom+xml" href="http://fake.url.example.com/atom-changing-updated/feed/atom/" thr:count="0"/>
+    <thr:total>0</thr:total>
+  </entry>
+
+
+
+  <entry>
+    <author>
+      <name>Fake Person</name>
+      <uri>http://fake.url.example.com</uri>
+    </author>
+    <title type="html"><![CDATA[Atom Changing Published Date]]></title>
+    <link rel="alternate" type="text/html" href="http://fake.url.example.com/atom-changing-published" />
+    <id>http://fake.url.example.com/atom-changing-published</id>
+    <published>2011-12-08T02:02:28Z</published>
+    <summary type="html"><![CDATA[Blah Blah Blah [...]]]></summary>
+    <content type="html" xml:base="http://fake.url.example.com/atom-changing-published"><![CDATA[Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah]]></content>
+    <link rel="replies" type="text/html" href="http://fake.url.example.com/atom-changing-published#comments" thr:count="0"/>
+    <link rel="replies" type="application/atom+xml" href="http://fake.url.example.com/atom-changing-published/feed/atom/" thr:count="0"/>
+    <thr:total>0</thr:total>
+  </entry>
+
+
+  <entry>
+    <author>
+      <name>Fake Person</name>
+      <uri>http://fake.url.example.com</uri>
+    </author>
+    <title type="html"><![CDATA[Atom No Date]]></title>
+    <link rel="alternate" type="text/html" href="http://fake.url.example.com/atom-no-date" />
+    <id>http://fake.url.example.com/atom-no-date</id>
+    <summary type="html"><![CDATA[Blah Blah Blah [...]]]></summary>
+    <content type="html" xml:base="http://fake.url.example.com/atom-no-date"><![CDATA[Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah]]></content>
+    <link rel="replies" type="text/html" href="http://fake.url.example.com/atom-no-date#comments" thr:count="0"/>
+    <link rel="replies" type="application/atom+xml" href="http://fake.url.example.com/atom-no-date/feed/atom/" thr:count="0"/>
+    <thr:total>0</thr:total>
+  </entry>
+
+  <entry>
+    <author>
+      <name>Fake Person</name>
+      <uri>http://fake.url.example.com</uri>
+    </author>
+    <title type="html"><![CDATA[Atom Update Before Published]]></title>
+    <updated>2011-11-11T11:11:11Z</updated>
+    <published>2011-12-12T12:12:12Z</published>
+    <link rel="alternate" type="text/html" href="http://fake.url.example.com/atom-update-before-pub" />
+    <id>http://fake.url.example.com/atom-update-before-pub</id>
+    <summary type="html"><![CDATA[Blah Blah Blah [...]]]></summary>
+    <content type="html" xml:base="http://fake.url.example.com/atom-update-before-pub"><![CDATA[Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah]]></content>
+    <link rel="replies" type="text/html" href="http://fake.url.example.com/atom-update-before-pub#comments" thr:count="0"/>
+    <link rel="replies" type="application/atom+xml" href="http://fake.url.example.com/atom-update-before-pub/feed/atom/" thr:count="0"/>
+    <thr:total>0</thr:total>
+  </entry>
+
+
+
+</feed>
