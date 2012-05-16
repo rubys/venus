@@ -2361,13 +2361,13 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
       'loop', 'loopcount', 'loopend', 'loopstart', 'low', 'lowsrc', 'max',
       'maxlength', 'media', 'method', 'min', 'multiple', 'name', 'nohref',
       'noshade', 'nowrap', 'open', 'optimum', 'pattern', 'ping', 'point-size',
-      'prompt', 'pqg', 'radiogroup', 'readonly', 'rel', 'repeat-max',
-      'repeat-min', 'replace', 'required', 'rev', 'rightspacing', 'rows',
-      'rowspan', 'rules', 'scope', 'selected', 'shape', 'size', 'span', 'src',
-      'start', 'step', 'summary', 'suppress', 'tabindex', 'target', 'template',
-      'title', 'toppadding', 'type', 'unselectable', 'usemap', 'urn', 'valign',
-      'value', 'variable', 'volume', 'vspace', 'vrml', 'width', 'wrap',
-      'xml:lang']
+      'poster', 'preload', 'prompt', 'pqg', 'radiogroup', 'readonly', 'rel',
+      'repeat-max', 'repeat-min', 'replace', 'required', 'rev', 'rightspacing',
+      'rows', 'rowspan', 'rules', 'scope', 'selected', 'shape', 'size', 'span',
+      'src', 'start', 'step', 'summary', 'suppress', 'tabindex', 'target',
+      'template', 'title', 'toppadding', 'type', 'unselectable', 'usemap',
+      'urn', 'valign', 'value', 'variable', 'volume', 'vspace', 'vrml',
+      'width', 'wrap', 'xml:lang']
 
     unacceptable_elements_with_end_tag = ['script', 'applet', 'style']
 
