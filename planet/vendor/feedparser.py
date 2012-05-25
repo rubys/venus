@@ -2518,6 +2518,8 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
             elif key=='style':
                 clean_value = self.sanitize_style(value)
                 if clean_value: clean_attrs.append((key,clean_value))
+            elif key.startswith('data-'):
+                clean_attrs.append((key, value))
         _BaseHTMLProcessor.unknown_starttag(self, tag, clean_attrs)
         
     def unknown_endtag(self, tag):
