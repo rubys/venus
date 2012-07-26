@@ -608,10 +608,10 @@ class _FeedParserMixin:
             text = '&#%s;' % ref
         else:
             if ref[0] == 'x':
-                c = int(ref[1:], 16)
+                c = ref.split('x', 1)[1]
             else:
-                c = int(ref)
-            text = unichr(c).encode('utf-8')
+                c = hex(int(ref)).split('0x', 1)[1]
+            text = (r'\U' + c.zfill(8)).decode('unicode-escape').encode('utf-8')
         self.elementstack[-1][2].append(text)
 
     def handle_entityref(self, ref):
@@ -2361,7 +2361,7 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
       'loop', 'loopcount', 'loopend', 'loopstart', 'low', 'lowsrc', 'max',
       'maxlength', 'media', 'method', 'min', 'multiple', 'name', 'nohref',
       'noshade', 'nowrap', 'open', 'optimum', 'pattern', 'ping', 'point-size',
-      'prompt', 'pqg', 'radiogroup', 'readonly', 'rel', 'repeat-max',
+      'poster', 'preload', 'prompt', 'pqg', 'radiogroup', 'readonly', 'rel', 'repeat-max',
       'repeat-min', 'replace', 'required', 'rev', 'rightspacing', 'rows',
       'rowspan', 'rules', 'scope', 'selected', 'shape', 'size', 'span', 'src',
       'start', 'step', 'summary', 'suppress', 'tabindex', 'target', 'template',
@@ -2404,10 +2404,10 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
       'columnalign', 'close', 'columnlines', 'columnspacing', 'columnspan', 'depth',
       'display', 'displaystyle', 'encoding', 'equalcolumns', 'equalrows',
       'fence', 'fontstyle', 'fontweight', 'frame', 'height', 'linethickness',
-      'lspace', 'mathbackground', 'mathcolor', 'mathvariant', 'mathvariant',
-      'maxsize', 'minsize', 'open', 'other', 'rowalign', 'rowalign', 'rowalign',
+      'lspace', 'mathbackground', 'mathcolor', 'mathvariant',
+      'maxsize', 'minsize', 'open', 'other', 'rowalign', 
       'rowlines', 'rowspacing', 'rowspan', 'rspace', 'scriptlevel', 'selection',
-      'separator', 'separators', 'stretchy', 'width', 'width', 'xlink:href',
+      'separator', 'separators', 'stretchy', 'width', 'xlink:href',
       'xlink:show', 'xlink:type', 'xmlns', 'xmlns:xlink']
 
     # svgtiny - foreignObject + linearGradient + radialGradient + stop

@@ -12,20 +12,20 @@ class HTMLSanitizerMixin(object):
         'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup',
         'command', 'datagrid', 'datalist', 'dd', 'del', 'details', 'dfn',
         'dialog', 'dir', 'div', 'dl', 'dt', 'em', 'event-source', 'fieldset',
-        'figure', 'footer', 'font', 'form', 'header', 'h1', 'h2', 'h3', 'h4',
-        'h5', 'h6', 'hr', 'i', 'img', 'input', 'ins', 'keygen', 'kbd',
-        'label', 'legend', 'li', 'm', 'map', 'menu', 'meter', 'multicol',
-        'nav', 'nextid', 'ol', 'output', 'optgroup', 'option', 'p', 'pre',
-        'progress', 'q', 's', 'samp', 'section', 'select', 'small', 'sound',
-        'source', 'spacer', 'span', 'strike', 'strong', 'sub', 'sup', 'table',
-        'tbody', 'td', 'textarea', 'time', 'tfoot', 'th', 'thead', 'tr', 'tt',
-        'u', 'ul', 'var', 'video']
+        'figcaption', 'figure', 'footer', 'font', 'form', 'header', 'h1',
+        'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'input', 'ins',
+        'keygen', 'kbd', 'label', 'legend', 'li', 'm', 'map', 'menu', 'meter',
+        'multicol', 'nav', 'nextid', 'ol', 'output', 'optgroup', 'option',
+        'p', 'pre', 'progress', 'q', 's', 'samp', 'section', 'select',
+        'small', 'sound', 'source', 'spacer', 'span', 'strike', 'strong',
+        'sub', 'sup', 'table', 'tbody', 'td', 'textarea', 'time', 'tfoot',
+        'th', 'thead', 'tr', 'tt', 'u', 'ul', 'var', 'video']
       
-    mathml_elements = ['maction', 'math', 'merror', 'mfrac', 'mi',
+    mathml_elements = ['annotation', 'annotation-xml', 'maction', 'math', 'merror', 'mfenced', 'mfrac', 'mi',
         'mmultiscripts', 'mn', 'mo', 'mover', 'mpadded', 'mphantom',
         'mprescripts', 'mroot', 'mrow', 'mspace', 'msqrt', 'mstyle', 'msub',
         'msubsup', 'msup', 'mtable', 'mtd', 'mtext', 'mtr', 'munder',
-        'munderover', 'none']
+        'munderover', 'none', 'semantics']
       
     svg_elements = ['a', 'animate', 'animateColor', 'animateMotion',
         'animateTransform', 'clipPath', 'circle', 'defs', 'desc', 'ellipse',
@@ -49,8 +49,8 @@ class HTMLSanitizerMixin(object):
         'lang', 'list', 'longdesc', 'loop', 'loopcount', 'loopend',
         'loopstart', 'low', 'lowsrc', 'max', 'maxlength', 'media', 'method',
         'min', 'multiple', 'name', 'nohref', 'noshade', 'nowrap', 'open',
-        'optimum', 'pattern', 'ping', 'point-size', 'prompt', 'pqg',
-        'radiogroup', 'readonly', 'rel', 'repeat-max', 'repeat-min',
+        'optimum', 'pattern', 'ping', 'point-size', 'poster', 'pqg', 'preload',
+        'prompt', 'radiogroup', 'readonly', 'rel', 'repeat-max', 'repeat-min',
         'replace', 'required', 'rev', 'rightspacing', 'rows', 'rowspan',
         'rules', 'scope', 'selected', 'shape', 'size', 'span', 'src', 'start',
         'step', 'style', 'summary', 'suppress', 'tabindex', 'target',
@@ -60,12 +60,12 @@ class HTMLSanitizerMixin(object):
 
     mathml_attributes = ['actiontype', 'align', 'columnalign', 'columnalign',
         'columnalign', 'columnlines', 'columnspacing', 'columnspan', 'depth',
-        'display', 'displaystyle', 'equalcolumns', 'equalrows', 'fence',
+        'display', 'displaystyle', 'encoding', 'equalcolumns', 'equalrows', 'fence',
         'fontstyle', 'fontweight', 'frame', 'height', 'linethickness', 'lspace',
-        'mathbackground', 'mathcolor', 'mathvariant', 'mathvariant', 'maxsize',
-        'minsize', 'other', 'rowalign', 'rowalign', 'rowalign', 'rowlines',
-        'rowspacing', 'rowspan', 'rspace', 'scriptlevel', 'selection',
-        'separator', 'stretchy', 'width', 'width', 'xlink:href', 'xlink:show',
+        'mathbackground', 'mathcolor', 'mathvariant', 'maxsize',
+        'minsize', 'other', 'rowalign', 'rowlines', 'rowspacing',
+        'rowspan', 'rspace', 'scriptlevel', 'selection',
+        'separator', 'separators', 'stretchy', 'width', 'xlink:href', 'xlink:show',
         'xlink:type', 'xmlns', 'xmlns:xlink']
   
     svg_attributes = ['accent-height', 'accumulate', 'additive', 'alphabetic',
@@ -97,7 +97,7 @@ class HTMLSanitizerMixin(object):
         'xml:base', 'xml:lang', 'xml:space', 'xmlns', 'xmlns:xlink', 'y',
         'y1', 'y2', 'zoomAndPan']
 
-    attr_val_is_uri = ['href', 'src', 'cite', 'action', 'longdesc',
+    attr_val_is_uri = ['href', 'src', 'cite', 'action', 'longdesc', 'poster',
         'xlink:href', 'xml:base']
 
     svg_attr_val_allows_ref = ['clip-path', 'color-profile', 'cursor', 'fill',
@@ -166,12 +166,12 @@ class HTMLSanitizerMixin(object):
         if token_type in (tokenTypes["StartTag"], tokenTypes["EndTag"], 
                              tokenTypes["EmptyTag"]):
             if token["name"] in self.allowed_elements:
-                if token.has_key("data"):
+                if "data" in token:
                     attrs = dict([(name,val) for name,val in
                                   token["data"][::-1] 
                                   if name in self.allowed_attributes])
                     for attr in self.attr_val_is_uri:
-                        if not attrs.has_key(attr):
+                        if attr not in attrs:
                             continue
                         val_unescaped = re.sub("[`\000-\040\177-\240\s]+", '',
                                                unescape(attrs[attr])).lower()
@@ -190,7 +190,7 @@ class HTMLSanitizerMixin(object):
                         'xlink:href' in attrs and re.search('^\s*[^#\s].*',
                                                             attrs['xlink:href'])):
                         del attrs['xlink:href']
-                    if attrs.has_key('style'):
+                    if 'style' in attrs:
                         attrs['style'] = self.sanitize_css(attrs['style'])
                     token["data"] = [[name,val] for name,val in attrs.items()]
                 return token
@@ -245,11 +245,11 @@ class HTMLSanitizerMixin(object):
 
 class HTMLSanitizer(HTMLTokenizer, HTMLSanitizerMixin):
     def __init__(self, stream, encoding=None, parseMeta=True, useChardet=True,
-                 lowercaseElementName=False, lowercaseAttrName=False):
+                 lowercaseElementName=False, lowercaseAttrName=False, parser=None):
         #Change case matching defaults as we only output lowercase html anyway
         #This solution doesn't seem ideal...
         HTMLTokenizer.__init__(self, stream, encoding, parseMeta, useChardet,
-                               lowercaseElementName, lowercaseAttrName)
+                               lowercaseElementName, lowercaseAttrName, parser=parser)
 
     def __iter__(self):
         for token in HTMLTokenizer.__iter__(self):
