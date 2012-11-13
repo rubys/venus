@@ -32,6 +32,7 @@
 	<TMPL_IF enclosure_href>
         <enclosure url="<TMPL_VAR enclosure_href ESCAPE="HTML">" length="<TMPL_VAR enclosure_length>" type="<TMPL_VAR enclosure_type>"/>
 	</TMPL_IF>
+  <source url="<TMPL_VAR channel_url ESCAPE="HTML">"><TMPL_VAR channel_title ESCAPE="HTML"></source>
 </item>
 </TMPL_LOOP>
 
