@@ -1,11 +1,19 @@
 #!/usr/bin/env python
 
-import unittest, os, sys, glob, new, re, StringIO, time
+import unittest
+import os
+import sys
+import glob
+import new
+import re
+import StringIO
+import time
 from planet import feedparser
 from planet.reconstitute import reconstitute
 from planet.scrub import scrub
 
 testfiles = 'tests/data/reconstitute/%s.xml'
+
 
 class ReconstituteTest(unittest.TestCase):
     desc_re = re.compile("Description:\s*(.*?)\s*Expect:\s*(.*)\s*-->")
@@ -19,12 +27,12 @@ class ReconstituteTest(unittest.TestCase):
             description, expect = self.desc_re.search(data).groups()
             testcase.close()
         except:
-            raise RuntimeError, "can't parse %s" % name
+            raise RuntimeError("can't parse %s" % name)
 
         # parse and reconstitute to a string
         work = StringIO.StringIO()
         results = feedparser.parse(data)
-        scrub(testfiles%name, results)
+        scrub(testfiles % name, results)
         reconstitute(results, results.entries[0]).writexml(work)
 
         # verify the results

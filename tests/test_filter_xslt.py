@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-import unittest, xml.dom.minidom
+import unittest
+import xml.dom.minidom
 from planet import shell, config, logger
+
 
 class XsltFilterTests(unittest.TestCase):
 
@@ -19,10 +21,11 @@ class XsltFilterTests(unittest.TestCase):
         testfile = 'tests/data/filter/index.html'
         filter = 'addsearch.xslt'
         output = shell.run(filter, open(testfile).read(), mode="filter")
-        self.assertTrue(output.find('<h2>Search</h2>')>=0)
-        self.assertTrue(output.find('<form><input name="q"/></form>')>=0)
-        self.assertTrue(output.find(' href="http://planet.intertwingly.net/opensearchdescription.xml"')>=0)
-        self.assertTrue(output.find('</script>')>=0)
+        self.assertTrue(output.find('<h2>Search</h2>') >= 0)
+        self.assertTrue(output.find('<form><input name="q"/></form>') >= 0)
+        self.assertTrue(
+            output.find(' href="http://planet.intertwingly.net/opensearchdescription.xml"') >= 0)
+        self.assertTrue(output.find('</script>') >= 0)
 
 try:
     import libxslt
@@ -35,9 +38,14 @@ except:
                 raise ImportError
         except:
             from subprocess import Popen, PIPE
-            xsltproc=Popen(['xsltproc','--version'],stdout=PIPE,stderr=PIPE)
+            xsltproc = Popen(
+                ['xsltproc',
+                 '--version'],
+                stdout=PIPE,
+                stderr=PIPE)
             xsltproc.communicate()
-            if xsltproc.returncode != 0: raise ImportError
+            if xsltproc.returncode != 0:
+                raise ImportError
     except:
         logger.warn("libxslt is not available => can't test xslt filters")
         del XsltFilterTests.test_xslt_filter

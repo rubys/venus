@@ -3,7 +3,10 @@ Remap all images to take advantage of the Coral Content Distribution
 Network <http://www.coralcdn.org/>.
 """
 
-import re, sys, urlparse, xml.dom.minidom
+import re
+import sys
+import urlparse
+import xml.dom.minidom
 
 entry = xml.dom.minidom.parse(sys.stdin).documentElement
 
