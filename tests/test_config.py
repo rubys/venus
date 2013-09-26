@@ -3,19 +3,20 @@
 import unittest
 from planet import config
 
+
 class ConfigTest(unittest.TestCase):
+
     def setUp(self):
         config.load('tests/data/config/basic.ini')
 
     # administrivia
 
     def test_template(self):
-        self.assertEqual(['index.html.tmpl', 'atom.xml.tmpl'], 
-            config.template_files())
+        self.assertEqual(['index.html.tmpl', 'atom.xml.tmpl'],
+                         config.template_files())
 
     def test_feeds(self):
-        feeds = config.subscriptions()
-        feeds.sort()
+        feeds = sorted(config.subscriptions())
         self.assertEqual(['feed1', 'feed2'], feeds)
 
     def test_feed(self):
@@ -31,7 +32,9 @@ class ConfigTest(unittest.TestCase):
         self.assertEqual('http://example.com/', config.link())
 
     def test_pubsubhubbub_hub(self):
-        self.assertEqual('http://pubsubhubbub.appspot.com', config.pubsubhubbub_hub())
+        self.assertEqual(
+            'http://pubsubhubbub.appspot.com',
+            config.pubsubhubbub_hub())
 
     # per template configuration
 
@@ -55,17 +58,15 @@ class ConfigTest(unittest.TestCase):
 
     def test_template_options(self):
         option = config.template_options('index.html.tmpl')
-        self.assertEqual('7',  option['days_per_page'])
+        self.assertEqual('7', option['days_per_page'])
         self.assertEqual('50', option['items_per_page'])
 
     def test_filters(self):
-        self.assertEqual(['foo','bar'], config.filters('feed2'))
+        self.assertEqual(['foo', 'bar'], config.filters('feed2'))
         self.assertEqual(['foo'], config.filters('feed1'))
 
     # ints
 
     def test_timeout(self):
         self.assertEqual(30,
-            config.feed_timeout())
-
-
+                         config.feed_timeout())
