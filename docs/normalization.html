@@ -10,7 +10,7 @@
 <body>
 <h2>Normalization</h2>
 <p>Venus builds on, and extends, the <a
-href="http://www.feedparser.org/">Universal Feed Parser</a> and <a
+href="http://pythonhosted.org/feedparser/">Universal Feed Parser</a> and <a
 href="http://code.google.com/p/html5lib/">html5lib</a> to
 convert all feeds into Atom 1.0, with well formed XHTML, and encoded as UTF-8,
 meaning that you don't have to worry about funky feeds, tag soup, or character
@@ -40,11 +40,11 @@ recommended.</p>
 <h3>HTML</h3>
 <p>A number of different normalizations of HTML are performed.  For starters,
 the HTML is
-<a href="http://www.feedparser.org/docs/html-sanitization.html">sanitized</a>,
+<a href="http://pythonhosted.org/feedparser/html-sanitization.html">sanitized</a>,
 meaning that HTML tags and attributes that could introduce javascript or
 other security risks are removed.</p>
 <p>Then,
-<a href="http://www.feedparser.org/docs/resolving-relative-links.html">relative
+<a href="http://pythonhosted.org/feedparser/resolving-relative-links.html">relative
 links are resolved</a> within the HTML.  This is also done for links
 in other areas in the feed too.</p>
 <p>Finally, unmatched tags are closed.  This is done with a
@@ -55,20 +55,20 @@ subset of MathML</a>, as well as a
 is also supported.</p>
 <h3>Atom 1.0</h3>
 <p>The Universal Feed Parser also
-<a href="http://www.feedparser.org/docs/content-normalization.html">normalizes the content of feeds</a>.  This involves a
-<a href="http://www.feedparser.org/docs/reference.html">large number of elements</a>; the best place to start is to look at
-<a href="http://www.feedparser.org/docs/annotated-examples.html">annotated examples</a>.  Among other things a wide variety of
-<a href="http://www.feedparser.org/docs/date-parsing.html">date formats</a>
+<a href="http://pythonhosted.org/feedparser/content-normalization.html">normalizes the content of feeds</a>.  This involves a
+<a href="http://pythonhosted.org/feedparser/reference.html">large number of elements</a>; the best place to start is to look at
+<a href="http://pythonhosted.org/feedparser/annotated-examples.html">annotated examples</a>.  Among other things a wide variety of
+<a href="http://pythonhosted.org/feedparser/date-parsing.html">date formats</a>
 are converted into
 <a href="http://www.ietf.org/rfc/rfc3339.txt">RFC 3339</a> formatted dates.</p>
-<p>If no <a href="http://www.feedparser.org/docs/reference-entry-id.html">ids</a> are found in entries, attempts are made to synthesize one using (in order):</p>
+<p>If no <a href="http://pythonhosted.org/feedparser/reference-entry-id.html">ids</a> are found in entries, attempts are made to synthesize one using (in order):</p>
 <ul>
-<li><a href="http://www.feedparser.org/docs/reference-entry-link.html">link</a></li>
-<li><a href="http://www.feedparser.org/docs/reference-entry-title.html">title</a></li>
-<li><a href="http://www.feedparser.org/docs/reference-entry-summary.html">summary</a></li>
-<li><a href="http://www.feedparser.org/docs/reference-entry-content.html">content</a></li>
+<li><a href="http://pythonhosted.org/feedparser/reference-entry-link.html">link</a></li>
+<li><a href="http://pythonhosted.org/feedparser/reference-entry-title.html">title</a></li>
+<li><a href="http://pythonhosted.org/feedparser/reference-entry-summary.html">summary</a></li>
+<li><a href="http://pythonhosted.org/feedparser/reference-entry-content.html">content</a></li>
 </ul>
-<p>If no <a href="http://www.feedparser.org/docs/reference-feed-
+<p>If no <a href="http://pythonhosted.org/feedparser/reference-feed-
 updated.html">updated</a> dates are found in an entry, the updated date from
 the feed is used.  If no updated date is found in either the feed or
 the entry, the current time is substituted.</p>
@@ -84,10 +84,10 @@ case of feeds where the <code>author</code>, <code>id</code>,
 <code>updated</code> or <code>xml:lang</code> values can't be trusted.</li>
 <li><code>title_type</code>, <code>summary_type</code>,
 <code>content_type</code> allow you to override the 
-<a href="http://www.feedparser.org/docs/reference-entry-title_detail.html#reference.entry.title_detail.type"><code>type</code></a>
+<a href="http://pythonhosted.org/feedparser/reference-entry-title_detail.html#reference.entry.title_detail.type"><code>type</code></a>
 attributes on these elements.</li>
 <li><code>name_type</code> does something similar for
-<a href="http://www.feedparser.org/docs/reference-entry-author_detail.html#reference.entry.author_detail.name">author names</a></li>
+<a href="http://pythonhosted.org/feedparser/reference-entry-author_detail.html#reference.entry.author_detail.name">author names</a></li>
 <li><code>future_dates</code> allows you to specify how to deal with dates which are in the future.
 <ul style="margin:0">
 <li><code>ignore_date</code> will cause the date to be ignored (and will therefore default to the time the entry was first seen) until the feed is updated and the time indicated is past, at which point the entry will be updated with the new date.</li>
