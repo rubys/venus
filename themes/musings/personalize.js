@@ -209,12 +209,24 @@ function personalize() {
   moveDateHeaders();
 }
 
+function retrieveTexSource() {
+	var maths = document.getElementsByTagName('math');
+        for (var i = 0; i < maths.length; ++i) maths[i].addEventListener('dblclick', grabTex, false);
+	function grabTex(event){
+		var tex = this.firstElementChild.lastElementChild.textContent;
+		var win= window.open('','TeX','scrollbars,resizable,width=500,location=no,toolbar=no,titlebar=no,menubar=no,personalbar=no');
+		win.document.documentElement.lastElementChild.textContent = tex;
+		win.focus();
+	}
+}
+
 // hook event
 window.onload = personalize;
 if (document.addEventListener) {
     onDOMLoad = function() {
       window.onload = undefined;
       personalize();
+      retrieveTexSource();
     };
     document.addEventListener("DOMContentLoaded", onDOMLoad, false);
 }
