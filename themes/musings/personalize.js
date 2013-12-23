@@ -210,11 +210,19 @@ function personalize() {
 }
 
 function retrieveTexSource() {
-	var maths = document.getElementsByTagName('math');
-        for (var i = 0; i < maths.length; ++i) maths[i].addEventListener('dblclick', grabTex, false);
+	var maths = document.querySelectorAll('img.latex, math');
+	for (var i = 0; i < maths.length; ++i) maths[i].addEventListener('dblclick', grabTex, false);
 	function grabTex(event){
-		var tex = this.firstElementChild.lastElementChild.textContent;
-		var win= window.open('','TeX','scrollbars,resizable,width=500,location=no,toolbar=no,titlebar=no,menubar=no,personalbar=no');
+		var tex = '';
+		switch (this.tagName) {
+			case 'math':
+				tex = this.firstElementChild.lastElementChild.textContent;
+				break;
+			case 'img':
+				tex = this.getAttribute('alt');
+				break;
+		}
+		var win = window.open('','TeX','scrollbars,resizable,width=500,location=no,toolbar=no,titlebar=no,menubar=no,personalbar=no');
 		win.document.documentElement.lastElementChild.textContent = tex;
 		win.focus();
 	}
