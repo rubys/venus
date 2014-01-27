@@ -361,7 +361,8 @@ def reconstitute(feed, entry):
 def entry_updated(feed, entry, default = None):
     chks = ((entry, 'updated_parsed'),
             (entry, 'published_parsed'),
-            (feed,  'updated_parsed'),)
+            (feed,  'updated_parsed'),
+            (feed, 'published_parsed'),)
     for node, field in chks:
         if node.has_key(field) and node[field]:
             return node[field]
