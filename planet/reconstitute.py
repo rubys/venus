@@ -16,8 +16,7 @@ Todo:
 import re, time, sgmllib
 from xml.sax.saxutils import escape
 from xml.dom import minidom, Node
-from html5lib import html5parser
-from html5lib.treebuilders import dom
+from html5lib import html5parser, treebuilders
 import planet, config
 
 try:
@@ -168,7 +167,7 @@ def content(xentry, name, detail, bozo):
             bozo=1
 
     if detail.type.find('xhtml')<0 or bozo:
-        parser = html5parser.HTMLParser(tree=dom.TreeBuilder)
+        parser = html5parser.HTMLParser(tree=treebuilders.getTreeBuilder('dom'))
         html = parser.parse(xdiv % detail.value, encoding="utf-8")
         for body in html.documentElement.childNodes:
             if body.nodeType != Node.ELEMENT_NODE: continue

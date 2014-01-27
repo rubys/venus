@@ -138,14 +138,12 @@ def scrub(feed_uri, data):
                 node['type']='text/html'
 
             if not doc:
-              from html5lib import html5parser, treebuilders
-              p=html5parser.HTMLParser(tree=treebuilders.getTreeBuilder('dom'))
-              doc = p.parseFragment(node['value'], encoding='utf-8')
+                from html5lib import html5parser, treebuilders, sanitizer
+                p=html5parser.HTMLParser(tree=treebuilders.getTreeBuilder('dom'), tokenizer=sanitizer.HTMLSanitizer)
+                doc = p.parseFragment(node['value'], encoding='utf-8')
 
             from html5lib import treewalkers, serializer
-            from html5lib.filters import sanitizer
-            walker = sanitizer.Filter(treewalkers.getTreeWalker('dom')(doc))
-            xhtml = serializer.XHTMLSerializer(inject_meta_charset = False)
+            walker = treewalkers.getTreeWalker('dom')(doc)
+            xhtml = serializer.HTMLSerializer(inject_meta_charset = False)
             tree = xhtml.serialize(walker, encoding='utf-8')
-
             node['value'] = ''.join([str(token) for token in tree])
