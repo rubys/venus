@@ -128,22 +128,23 @@ def scrub(feed_uri, data):
                 node['value'] = feedparser._resolveRelativeURIs(
                     node.value, node.base, 'utf-8', node.type)
 
-            # Run this through HTML5's sanitizer
-            doc = None
-            if 'xhtml' in node['type']:
-              try:
-                from xml.dom import minidom
-                doc = minidom.parseString(node['value'])
-              except:
-                node['type']='text/html'
+            if node['value']:
+                # Run this through HTML5's sanitizer
+                doc = None
+                if 'xhtml' in node['type']:
+                    try:
+                        from xml.dom import minidom
+                        doc = minidom.parseString(node['value'])
+                    except:
+                        node['type']='text/html'
 
-            if not doc:
-                from html5lib import html5parser, treebuilders, sanitizer
-                p=html5parser.HTMLParser(tree=treebuilders.getTreeBuilder('dom'), tokenizer=sanitizer.HTMLSanitizer)
-                doc = p.parseFragment(node['value'], encoding='utf-8')
+                if not doc:
+                    from html5lib import html5parser, treebuilders, sanitizer
+                    p=html5parser.HTMLParser(tree=treebuilders.getTreeBuilder('dom'), tokenizer=sanitizer.HTMLSanitizer)
+                    doc = p.parseFragment(node['value'], encoding='utf-8')
 
-            from html5lib import treewalkers, serializer
-            walker = treewalkers.getTreeWalker('dom')(doc)
-            xhtml = serializer.HTMLSerializer(inject_meta_charset = False)
-            tree = xhtml.serialize(walker, encoding='utf-8')
-            node['value'] = ''.join([str(token) for token in tree])
+                from html5lib import treewalkers, serializer
+                walker = treewalkers.getTreeWalker('dom')(doc)
+                xhtml = serializer.HTMLSerializer(inject_meta_charset = False)
+                tree = xhtml.serialize(walker, encoding='utf-8')
+                node['value'] = ''.join([str(token) for token in tree])
