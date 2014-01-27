@@ -3,13 +3,13 @@ Description:  message
 Expect:       Channels[0]['message'] == 'foo' and Items[0]['channel_message'] == 'foo'
 -->
 
-<feed xmlns="http://www.w3.org/2005/Atom">
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:planet='http://planet.intertwingly.net/'>
   <entry>
     <source>
       <planet:message>foo</planet:message>
     </source>
   </entry>
-  <planet:source xmlns:planet='http://planet.intertwingly.net/'>
+  <planet:source>
     <planet:message>foo</planet:message>
   </planet:source>
 </feed>
