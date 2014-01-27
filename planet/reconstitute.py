@@ -16,8 +16,7 @@ Todo:
 import re, time, sgmllib
 from xml.sax.saxutils import escape
 from xml.dom import minidom, Node
-from html5lib import html5parser
-from html5lib.treebuilders import dom
+from html5lib import html5parser, treebuilders
 import planet, config
 
 try:
@@ -76,9 +75,8 @@ def id(xentry, entry):
     elif entry.has_key("title") and entry.title:
         entry_id = (entry.title_detail.base + "/" +
             md5(entry.title).hexdigest())
-    elif entry.has_key("summary") and entry.summary:
-        entry_id = (entry.summary_detail.base + "/" +
-            md5(entry.summary).hexdigest())
+    elif entry.has_key("summary") and entry.summary and entry.has_key("summary_detail") and entry.summary_detail:
+      entry_id = (entry.summary_detail.base + "/" + md5(entry.summary).hexdigest())
     elif entry.has_key("content") and entry.content:
 
         entry_id = (entry.content[0].base + "/" + 
@@ -168,7 +166,7 @@ def content(xentry, name, detail, bozo):
             bozo=1
 
     if detail.type.find('xhtml')<0 or bozo:
-        parser = html5parser.HTMLParser(tree=dom.TreeBuilder)
+        parser = html5parser.HTMLParser(tree=treebuilders.getTreeBuilder('dom'))
         html = parser.parse(xdiv % detail.value, encoding="utf-8")
         for body in html.documentElement.childNodes:
             if body.nodeType != Node.ELEMENT_NODE: continue
@@ -363,7 +361,8 @@ def reconstitute(feed, entry):
 def entry_updated(feed, entry, default = None):
     chks = ((entry, 'updated_parsed'),
             (entry, 'published_parsed'),
-            (feed,  'updated_parsed'),)
+            (feed,  'updated_parsed'),
+            (feed, 'published_parsed'),)
     for node, field in chks:
         if node.has_key(field) and node[field]:
             return node[field]

@@ -45,9 +45,9 @@ def run(template_file, doc, mode='template'):
     module_name = ext[1:]
     try:
         try:
-            module = __import__("_" + module_name)
+            module = __import__("planet.shell." + "_" + module_name, "", "", [""])
         except:
-            module = __import__(module_name)
+            module = __import__("planet.shell." + module_name, "", "", [""])
     except Exception, inst:
         return log.error("Skipping %s '%s' after failing to load '%s': %s", 
             mode, template_resolved, module_name, inst)

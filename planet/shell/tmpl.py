@@ -2,6 +2,7 @@ from xml.sax.saxutils import escape
 import sgmllib, time, os, sys, new, urlparse, re
 from planet import config, feedparser
 import htmltmpl
+import datetime
 
 voids=feedparser._BaseHTMLProcessor.elements_no_end_tag
 empty=re.compile(r"<((%s)[^>]*)></\2>" % '|'.join(voids))
@@ -253,6 +254,8 @@ def run(script, doc, output_file=None, options={}):
     template = manager.prepare(script)
     tp = htmltmpl.TemplateProcessor(html_escape=0)
     for key,value in template_info(doc).items():
+        if type(value) == datetime.datetime:
+            value = value.isoformat()
         tp.set(key, value)
 
     if output_file:
