@@ -210,7 +210,7 @@ function personalize() {
 }
 
 function retrieveTexSource() {
-	var maths = document.querySelectorAll('img.latex, math');
+	var maths = document.querySelectorAll('img.latex, img.tex, math');
 	for (var i = 0; i < maths.length; ++i) maths[i].addEventListener('dblclick', grabTex, false);
 	function grabTex(event){
 		var tex = '';
