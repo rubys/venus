@@ -178,12 +178,10 @@ class HTMLParser(object):
                     if (len(self.tree.openElements) == 0 or
                         currentNodeNamespace == self.tree.defaultNamespace or
                         (self.isMathMLTextIntegrationPoint(currentNode) and
-                         ((type == StartTagToken and
-                           token["name"] not in frozenset(["mglyph", "malignmark"])) or
+                         ((type == StartTagToken and token["name"] not in frozenset(["mglyph", "malignmark"])) or
                           type in (CharactersToken, SpaceCharactersToken))) or
                         (currentNodeNamespace == namespaces["mathml"] and
-                         currentNodeName == "annotation-xml" and
-                         token["name"] == "svg") or
+                         currentNodeName == "annotation-xml" and "name" in token and token["name"] == "svg") or
                         (self.isHTMLIntegrationPoint(currentNode) and
                          type in (StartTagToken, CharactersToken, SpaceCharactersToken))):
                         phase = self.phase
@@ -2445,6 +2443,8 @@ def getPhases(debug):
         def processEndTag(self, token):
             nodeIndex = len(self.tree.openElements) - 1
             node = self.tree.openElements[-1]
+            if node.namespace == namespaces["svg"]:
+                self.adjustSVGTagNames(token)
             if node.name != token["name"]:
                 self.parser.parseError("unexpected-end-tag", {"name": token["name"]})
 
