@@ -1,6 +1,6 @@
 <!--
 Description:  id
-Expect:       id == 'http://example.com/2'
+Expect:       id == 'http://example.com/1'
 -->
 
 <feed xmlns="http://www.w3.org/2005/Atom">

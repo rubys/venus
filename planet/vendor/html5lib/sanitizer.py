@@ -1,8 +1,11 @@
+from __future__ import absolute_import, division, unicode_literals
+
 import re
 from xml.sax.saxutils import escape, unescape
 
-from tokenizer import HTMLTokenizer
-from constants import tokenTypes
+from .tokenizer import HTMLTokenizer
+from .constants import tokenTypes
+
 
 class HTMLSanitizerMixin(object):
     """ sanitization of XHTML+MathML+SVG and of inline style attributes."""
@@ -28,12 +31,12 @@ class HTMLSanitizerMixin(object):
         'munderover', 'none', 'semantics']
       
     svg_elements = ['a', 'animate', 'animateColor', 'animateMotion',
-        'animateTransform', 'clipPath', 'circle', 'defs', 'desc', 'ellipse',
-        'font-face', 'font-face-name', 'font-face-src', 'g', 'glyph', 'hkern',
-        'linearGradient', 'line', 'marker', 'metadata', 'missing-glyph',
-        'mpath', 'path', 'polygon', 'polyline', 'radialGradient', 'rect',
-        'set', 'stop', 'svg', 'switch', 'text', 'title', 'tspan', 'use']
-        
+                    'animateTransform', 'clipPath', 'circle', 'defs', 'desc', 'ellipse',
+                    'font-face', 'font-face-name', 'font-face-src', 'g', 'glyph', 'hkern',
+                    'linearGradient', 'line', 'marker', 'metadata', 'missing-glyph',
+                    'mpath', 'path', 'polygon', 'polyline', 'radialGradient', 'rect',
+                    'set', 'stop', 'svg', 'switch', 'text', 'title', 'tspan', 'use']
+
     acceptable_attributes = ['abbr', 'accept', 'accept-charset', 'accesskey',
         'action', 'align', 'alt', 'autocomplete', 'autofocus', 'axis',
         'background', 'balance', 'bgcolor', 'bgproperties', 'border',
@@ -101,42 +104,42 @@ class HTMLSanitizerMixin(object):
         'xlink:href', 'xml:base']
 
     svg_attr_val_allows_ref = ['clip-path', 'color-profile', 'cursor', 'fill',
-        'filter', 'marker', 'marker-start', 'marker-mid', 'marker-end',
-        'mask', 'stroke']
+                               'filter', 'marker', 'marker-start', 'marker-mid', 'marker-end',
+                               'mask', 'stroke']
 
     svg_allow_local_href = ['altGlyph', 'animate', 'animateColor',
-        'animateMotion', 'animateTransform', 'cursor', 'feImage', 'filter',
-        'linearGradient', 'pattern', 'radialGradient', 'textpath', 'tref',
-        'set', 'use']
-  
+                            'animateMotion', 'animateTransform', 'cursor', 'feImage', 'filter',
+                            'linearGradient', 'pattern', 'radialGradient', 'textpath', 'tref',
+                            'set', 'use']
+
     acceptable_css_properties = ['azimuth', 'background-color',
-        'border-bottom-color', 'border-collapse', 'border-color',
-        'border-left-color', 'border-right-color', 'border-top-color', 'clear',
-        'color', 'cursor', 'direction', 'display', 'elevation', 'float', 'font',
-        'font-family', 'font-size', 'font-style', 'font-variant', 'font-weight',
-        'height', 'letter-spacing', 'line-height', 'overflow', 'pause',
-        'pause-after', 'pause-before', 'pitch', 'pitch-range', 'richness',
-        'speak', 'speak-header', 'speak-numeral', 'speak-punctuation',
-        'speech-rate', 'stress', 'text-align', 'text-decoration', 'text-indent',
-        'unicode-bidi', 'vertical-align', 'voice-family', 'volume',
-        'white-space', 'width']
-  
+                                 'border-bottom-color', 'border-collapse', 'border-color',
+                                 'border-left-color', 'border-right-color', 'border-top-color', 'clear',
+                                 'color', 'cursor', 'direction', 'display', 'elevation', 'float', 'font',
+                                 'font-family', 'font-size', 'font-style', 'font-variant', 'font-weight',
+                                 'height', 'letter-spacing', 'line-height', 'overflow', 'pause',
+                                 'pause-after', 'pause-before', 'pitch', 'pitch-range', 'richness',
+                                 'speak', 'speak-header', 'speak-numeral', 'speak-punctuation',
+                                 'speech-rate', 'stress', 'text-align', 'text-decoration', 'text-indent',
+                                 'unicode-bidi', 'vertical-align', 'voice-family', 'volume',
+                                 'white-space', 'width']
+
     acceptable_css_keywords = ['auto', 'aqua', 'black', 'block', 'blue',
-        'bold', 'both', 'bottom', 'brown', 'center', 'collapse', 'dashed',
-        'dotted', 'fuchsia', 'gray', 'green', '!important', 'italic', 'left',
-        'lime', 'maroon', 'medium', 'none', 'navy', 'normal', 'nowrap', 'olive',
-        'pointer', 'purple', 'red', 'right', 'solid', 'silver', 'teal', 'top',
-        'transparent', 'underline', 'white', 'yellow']
-  
-    acceptable_svg_properties = [ 'fill', 'fill-opacity', 'fill-rule',
-        'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin',
-        'stroke-opacity']
-  
-    acceptable_protocols = [ 'ed2k', 'ftp', 'http', 'https', 'irc',
-        'mailto', 'news', 'gopher', 'nntp', 'telnet', 'webcal',
-        'xmpp', 'callto', 'feed', 'urn', 'aim', 'rsync', 'tag',
-        'ssh', 'sftp', 'rtsp', 'afs' ]
-  
+                               'bold', 'both', 'bottom', 'brown', 'center', 'collapse', 'dashed',
+                               'dotted', 'fuchsia', 'gray', 'green', '!important', 'italic', 'left',
+                               'lime', 'maroon', 'medium', 'none', 'navy', 'normal', 'nowrap', 'olive',
+                               'pointer', 'purple', 'red', 'right', 'solid', 'silver', 'teal', 'top',
+                               'transparent', 'underline', 'white', 'yellow']
+
+    acceptable_svg_properties = ['fill', 'fill-opacity', 'fill-rule',
+                                 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin',
+                                 'stroke-opacity']
+
+    acceptable_protocols = ['ed2k', 'ftp', 'http', 'https', 'irc',
+                            'mailto', 'news', 'gopher', 'nntp', 'telnet', 'webcal',
+                            'xmpp', 'callto', 'feed', 'urn', 'aim', 'rsync', 'tag',
+                            'ssh', 'sftp', 'rtsp', 'afs']
+
     # subclasses may define their own versions of these constants
     allowed_elements = acceptable_elements + mathml_elements + svg_elements
     allowed_attributes = acceptable_attributes + mathml_attributes + svg_attributes
@@ -160,11 +163,11 @@ class HTMLSanitizerMixin(object):
 
         # accommodate filters which use token_type differently
         token_type = token["type"]
-        if token_type in tokenTypes.keys():
-          token_type = tokenTypes[token_type]
+        if token_type in list(tokenTypes.keys()):
+            token_type = tokenTypes[token_type]
 
-        if token_type in (tokenTypes["StartTag"], tokenTypes["EndTag"], 
-                             tokenTypes["EmptyTag"]):
+        if token_type in (tokenTypes["StartTag"], tokenTypes["EndTag"],
+                          tokenTypes["EmptyTag"]):
             if token["name"] in self.allowed_elements:
                 if "data" in token:
                     attrs = dict([(name,val) for name,val in
@@ -195,59 +198,96 @@ class HTMLSanitizerMixin(object):
                     token["data"] = [[name,val] for name,val in attrs.items()]
                 return token
             else:
-                if token_type == tokenTypes["EndTag"]:
-                    token["data"] = "</%s>" % token["name"]
-                elif token["data"]:
-                    attrs = ''.join([' %s="%s"' % (k,escape(v)) for k,v in token["data"]])
-                    token["data"] = "<%s%s>" % (token["name"],attrs)
-                else:
-                    token["data"] = "<%s>" % token["name"]
-                if token.get("selfClosing"):
-                    token["data"]=token["data"][:-1] + "/>"
-
-                if token["type"] in tokenTypes.keys():
-                    token["type"] = "Characters"
-                else:
-                    token["type"] = tokenTypes["Characters"]
-
-                del token["name"]
-                return token
+                return self.disallowed_token(token, token_type)
         elif token_type == tokenTypes["Comment"]:
             pass
         else:
             return token
 
+    def allowed_token(self, token, token_type):
+        if "data" in token:
+            attrs = dict([(name, val) for name, val in
+                          token["data"][::-1]
+                          if name in self.allowed_attributes])
+            for attr in self.attr_val_is_uri:
+                if attr not in attrs:
+                    continue
+                val_unescaped = re.sub("[`\000-\040\177-\240\s]+", '',
+                                       unescape(attrs[attr])).lower()
+                # remove replacement characters from unescaped characters
+                val_unescaped = val_unescaped.replace("\ufffd", "")
+                if (re.match("^[a-z0-9][-+.a-z0-9]*:", val_unescaped) and
+                    (val_unescaped.split(':')[0] not in
+                     self.allowed_protocols)):
+                    del attrs[attr]
+            for attr in self.svg_attr_val_allows_ref:
+                if attr in attrs:
+                    attrs[attr] = re.sub(r'url\s*\(\s*[^#\s][^)]+?\)',
+                                         ' ',
+                                         unescape(attrs[attr]))
+            if (token["name"] in self.svg_allow_local_href and
+                'xlink:href' in attrs and re.search('^\s*[^#\s].*',
+                                                    attrs['xlink:href'])):
+                del attrs['xlink:href']
+            if 'style' in attrs:
+                attrs['style'] = self.sanitize_css(attrs['style'])
+            token["data"] = [[name, val] for name, val in list(attrs.items())]
+        return token
+
+    def disallowed_token(self, token, token_type):
+        if token_type == tokenTypes["EndTag"]:
+            token["data"] = "</%s>" % token["name"]
+        elif token["data"]:
+            attrs = ''.join([' %s="%s"' % (k, escape(v)) for k, v in token["data"]])
+            token["data"] = "<%s%s>" % (token["name"], attrs)
+        else:
+            token["data"] = "<%s>" % token["name"]
+        if token.get("selfClosing"):
+            token["data"] = token["data"][:-1] + "/>"
+
+        if token["type"] in list(tokenTypes.keys()):
+            token["type"] = "Characters"
+        else:
+            token["type"] = tokenTypes["Characters"]
+
+        del token["name"]
+        return token
+
     def sanitize_css(self, style):
         # disallow urls
-        style=re.compile('url\s*\(\s*[^\s)]+?\s*\)\s*').sub(' ',style)
+        style = re.compile('url\s*\(\s*[^\s)]+?\s*\)\s*').sub(' ', style)
 
         # gauntlet
-        if not re.match("""^([:,;#%.\sa-zA-Z0-9!]|\w-\w|'[\s\w]+'|"[\s\w]+"|\([\d,\s]+\))*$""", style): return ''
-        if not re.match("^\s*([-\w]+\s*:[^:;]*(;\s*|$))*$", style): return ''
+        if not re.match("""^([:,;#%.\sa-zA-Z0-9!]|\w-\w|'[\s\w]+'|"[\s\w]+"|\([\d,\s]+\))*$""", style):
+            return ''
+        if not re.match("^\s*([-\w]+\s*:[^:;]*(;\s*|$))*$", style):
+            return ''
 
         clean = []
-        for prop,value in re.findall("([-\w]+)\s*:\s*([^:;]*)",style):
-          if not value: continue
-          if prop.lower() in self.allowed_css_properties:
-              clean.append(prop + ': ' + value + ';')
-          elif prop.split('-')[0].lower() in ['background','border','margin',
-                                              'padding']:
-              for keyword in value.split():
-                  if not keyword in self.acceptable_css_keywords and \
-                      not re.match("^(#[0-9a-f]+|rgb\(\d+%?,\d*%?,?\d*%?\)?|\d{0,2}\.?\d{0,2}(cm|em|ex|in|mm|pc|pt|px|%|,|\))?)$",keyword):
-                      break
-              else:
-                  clean.append(prop + ': ' + value + ';')
-          elif prop.lower() in self.allowed_svg_properties:
-              clean.append(prop + ': ' + value + ';')
+        for prop, value in re.findall("([-\w]+)\s*:\s*([^:;]*)", style):
+            if not value:
+                continue
+            if prop.lower() in self.allowed_css_properties:
+                clean.append(prop + ': ' + value + ';')
+            elif prop.split('-')[0].lower() in ['background', 'border', 'margin',
+                                                'padding']:
+                for keyword in value.split():
+                    if not keyword in self.acceptable_css_keywords and \
+                            not re.match("^(#[0-9a-f]+|rgb\(\d+%?,\d*%?,?\d*%?\)?|\d{0,2}\.?\d{0,2}(cm|em|ex|in|mm|pc|pt|px|%|,|\))?)$", keyword):
+                        break
+                else:
+                    clean.append(prop + ': ' + value + ';')
+            elif prop.lower() in self.allowed_svg_properties:
+                clean.append(prop + ': ' + value + ';')
 
         return ' '.join(clean)
+
 
 class HTMLSanitizer(HTMLTokenizer, HTMLSanitizerMixin):
     def __init__(self, stream, encoding=None, parseMeta=True, useChardet=True,
                  lowercaseElementName=False, lowercaseAttrName=False, parser=None):
-        #Change case matching defaults as we only output lowercase html anyway
-        #This solution doesn't seem ideal...
+        # Change case matching defaults as we only output lowercase html anyway
+        # This solution doesn't seem ideal...
         HTMLTokenizer.__init__(self, stream, encoding, parseMeta, useChardet,
                                lowercaseElementName, lowercaseAttrName, parser=parser)
 
