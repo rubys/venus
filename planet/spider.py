@@ -45,10 +45,10 @@ def filename(directory, filename):
     filename = re_final_cruft.sub("", filename)
 
     # limit length of filename
-    if len(filename)>250:
+    if len(filename)>230:
         parts=filename.split(',')
         for i in range(len(parts),0,-1):
-            if len(','.join(parts[:i])) < 220:
+            if len(','.join(parts[:i])) < 200:
                 filename = ','.join(parts[:i]) + ',' + \
                     md5(','.join(parts[i:])).hexdigest()
                 break

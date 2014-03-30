@@ -61,8 +61,8 @@ class HTMLSanitizerMixin(object):
         'urn', 'valign', 'value', 'variable', 'volume', 'vspace', 'vrml',
         'width', 'wrap', 'xml:lang']
 
-    mathml_attributes = ['actiontype', 'align', 'columnalign', 'columnalign',
-        'columnalign', 'columnlines', 'columnspacing', 'columnspan', 'depth',
+    mathml_attributes = ['actiontype', 'align', 'columnalign',
+        'columnlines', 'columnspacing', 'columnspan', 'depth',
         'display', 'displaystyle', 'encoding', 'equalcolumns', 'equalrows', 'fence',
         'fontstyle', 'fontweight', 'frame', 'height', 'linethickness', 'lspace',
         'mathbackground', 'mathcolor', 'mathvariant', 'maxsize',
