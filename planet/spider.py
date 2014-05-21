@@ -322,6 +322,9 @@ def httpThread(thread_index, input_queue, output_queue, log):
                 headers['If-Modified-Since'] = \
                     feed_info.feed['planet_http_last_modified']
 
+            # add a user agent
+            headers['User-Agent'] = feedparser.USER_AGENT
+            
             # issue request
             (resp, content) = h.request(idna, 'GET', headers=headers)
 
