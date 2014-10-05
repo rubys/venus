@@ -11,10 +11,10 @@ if __name__ == '__main__':
     config.load(sys.argv[1])
 
     if len(sys.argv) == 2:
-        # spider all feeds 
+        # spider all feeds
         spider.spiderPlanet()
     elif len(sys.argv) > 2:
-        # spider selected feeds 
+        # spider selected feeds
         for feed in sys.argv[2:]:
             spider.spiderFeed(feed)
     else:

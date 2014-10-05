@@ -13,28 +13,33 @@ well formed XHTML.
 Todo:
   * extension elements
 """
-import re, time, sgmllib
+import re
+import time
+import sgmllib
 from xml.sax.saxutils import escape
 from xml.dom import minidom, Node
 from html5lib import html5parser
 from html5lib.treebuilders import dom
-import planet, config
+import planet
+import config
 
 try:
-  from hashlib import md5
+    from hashlib import md5
 except:
-  from md5 import new as md5
+    from md5 import new as md5
 
 illegal_xml_chars = re.compile("[\x01-\x08\x0B\x0C\x0E-\x1F]", re.UNICODE)
 
+
 def createTextElement(parent, name, value):
     """ utility function to create a child element with the specified text"""
-    if not value: return
-    if isinstance(value,str):
+    if not value:
+        return
+    if isinstance(value, str):
         try:
-            value=value.decode('utf-8')
+            value = value.decode('utf-8')
         except:
-            value=value.decode('iso-8859-1')
+            value = value.decode('iso-8859-1')
     value = illegal_xml_chars.sub(invalidate, value)
     xdoc = parent.ownerDocument
     xelement = xdoc.createElement(name)
@@ -42,95 +47,110 @@ def createTextElement(parent, name, value):
     parent.appendChild(xelement)
     return xelement
 
-def invalidate(c): 
+
+def invalidate(c):
     """ replace invalid characters """
     return u'<abbr title="U+%s">\ufffd</abbr>' % \
         ('000' + hex(ord(c.group(0)))[2:])[-4:]
 
+
 def ncr2c(value):
     """ convert numeric character references to characters """
-    value=value.group(1)
+    value = value.group(1)
     if value.startswith('x'):
-        value=unichr(int(value[1:],16))
+        value = unichr(int(value[1:], 16))
     else:
-        value=unichr(int(value))
+        value = unichr(int(value))
     return value
 
-nonalpha=re.compile('\W+',re.UNICODE)
+nonalpha = re.compile('\W+', re.UNICODE)
+
+
 def cssid(name):
     """ generate a css id from a name """
     try:
-        name = nonalpha.sub('-',name.decode('utf-8')).lower().encode('utf-8')
+        name = nonalpha.sub('-', name.decode('utf-8')).lower().encode('utf-8')
     except:
-        name = nonalpha.sub('-',name).lower()
+        name = nonalpha.sub('-', name).lower()
     return name.strip('-')
+
 
 def id(xentry, entry):
     """ copy or compute an id for the entry """
 
-    if entry.has_key("id") and entry.id:
+    if "id" in entry and entry.id:
         entry_id = entry.id
-        if hasattr(entry_id, 'values'): entry_id = entry_id.values()[0]
-    elif entry.has_key("link") and entry.link:
+        if hasattr(entry_id, 'values'):
+            entry_id = entry_id.values()[0]
+    elif "link" in entry and entry.link:
         entry_id = entry.link
-    elif entry.has_key("title") and entry.title:
+    elif "title" in entry and entry.title:
         entry_id = (entry.title_detail.base + "/" +
-            md5(entry.title).hexdigest())
-    elif entry.has_key("summary") and entry.summary:
+                    md5(entry.title).hexdigest())
+    elif "summary" in entry and entry.summary:
         entry_id = (entry.summary_detail.base + "/" +
-            md5(entry.summary).hexdigest())
-    elif entry.has_key("content") and entry.content:
+                    md5(entry.summary).hexdigest())
+    elif "content" in entry and entry.content:
 
-        entry_id = (entry.content[0].base + "/" + 
-            md5(entry.content[0].value).hexdigest())
+        entry_id = (entry.content[0].base + "/" +
+                    md5(entry.content[0].value).hexdigest())
     else:
         return
 
-    if xentry: createTextElement(xentry, 'id', entry_id)
+    if xentry:
+        createTextElement(xentry, 'id', entry_id)
     return entry_id
+
 
 def links(xentry, entry):
     """ copy links to the entry """
-    if not entry.has_key('links'):
-       entry['links'] = []
-       if entry.has_key('link'):
-         entry['links'].append({'rel':'alternate', 'href':entry.link}) 
+    if 'links' not in entry:
+        entry['links'] = []
+        if 'link' in entry:
+            entry['links'].append({'rel': 'alternate', 'href': entry.link})
     xdoc = xentry.ownerDocument
     for link in entry['links']:
-        if not 'href' in link.keys(): continue
+        if not 'href' in link.keys():
+            continue
         xlink = xdoc.createElement('link')
         xlink.setAttribute('href', link.get('href'))
-        if link.has_key('type'):
+        if 'type' in link:
             xlink.setAttribute('type', link.get('type'))
-        if link.has_key('rel'):
-            xlink.setAttribute('rel', link.get('rel',None))
-        if link.has_key('title'):
+        if 'rel' in link:
+            xlink.setAttribute('rel', link.get('rel', None))
+        if 'title' in link:
             xlink.setAttribute('title', link.get('title'))
-        if link.has_key('length'):
+        if 'length' in link:
             xlink.setAttribute('length', link.get('length'))
         xentry.appendChild(xlink)
 
+
 def date(xentry, name, parsed):
     """ insert a date-formated element into the entry """
-    if not parsed: return
+    if not parsed:
+        return
     formatted = time.strftime("%Y-%m-%dT%H:%M:%SZ", parsed)
     xdate = createTextElement(xentry, name, formatted)
     formatted = time.strftime(config.date_format(), parsed)
     xdate.setAttribute('planet:format', formatted.decode('utf-8'))
 
+
 def category(xentry, tag):
     xtag = xentry.ownerDocument.createElement('category')
-    if not tag.has_key('term') or not tag.term: return
+    if 'term' not in tag or not tag.term:
+        return
     xtag.setAttribute('term', tag.get('term'))
-    if tag.has_key('scheme') and tag.scheme:
+    if 'scheme' in tag and tag.scheme:
         xtag.setAttribute('scheme', tag.get('scheme'))
-    if tag.has_key('label') and tag.label:
+    if 'label' in tag and tag.label:
         xtag.setAttribute('label', tag.get('label'))
     xentry.appendChild(xtag)
 
+
 def author(xentry, name, detail):
     """ insert an author-like element into the entry """
-    if not detail: return
+    if not detail:
+        return
     xdoc = xentry.ownerDocument
     xauthor = xdoc.createElement(name)
 
@@ -141,45 +161,51 @@ def author(xentry, name, detail):
 
     createTextElement(xauthor, 'email', detail.get('email', None))
     createTextElement(xauthor, 'uri', detail.get('href', None))
-        
+
     xentry.appendChild(xauthor)
+
 
 def content(xentry, name, detail, bozo):
     """ insert a content-like element into the entry """
-    if not detail or not detail.value: return
+    if not detail or not detail.value:
+        return
 
     data = None
     xdiv = '<div xmlns="http://www.w3.org/1999/xhtml">%s</div>'
     xdoc = xentry.ownerDocument
     xcontent = xdoc.createElement(name)
 
-    if isinstance(detail.value,unicode):
-        detail.value=detail.value.encode('utf-8')
+    if isinstance(detail.value, unicode):
+        detail.value = detail.value.encode('utf-8')
 
-    if not detail.has_key('type') or detail.type.lower().find('html')<0:
+    if 'type' not in detail or detail.type.lower().find('html') < 0:
         detail['value'] = escape(detail.value)
         detail['type'] = 'text/html'
 
-    if detail.type.find('xhtml')>=0 and not bozo:
+    if detail.type.find('xhtml') >= 0 and not bozo:
         try:
             data = minidom.parseString(xdiv % detail.value).documentElement
             xcontent.setAttribute('type', 'xhtml')
         except:
-            bozo=1
+            bozo = 1
 
-    if detail.type.find('xhtml')<0 or bozo:
+    if detail.type.find('xhtml') < 0 or bozo:
         parser = html5parser.HTMLParser(tree=dom.TreeBuilder)
         html = parser.parse(xdiv % detail.value, encoding="utf-8")
         for body in html.documentElement.childNodes:
-            if body.nodeType != Node.ELEMENT_NODE: continue
-            if body.nodeName != 'body': continue
+            if body.nodeType != Node.ELEMENT_NODE:
+                continue
+            if body.nodeName != 'body':
+                continue
             for div in body.childNodes:
-                if div.nodeType != Node.ELEMENT_NODE: continue
-                if div.nodeName != 'div': continue
+                if div.nodeType != Node.ELEMENT_NODE:
+                    continue
+                if div.nodeName != 'div':
+                    continue
                 try:
                     div.normalize()
                     if len(div.childNodes) == 1 and \
-                        div.firstChild.nodeType == Node.TEXT_NODE:
+                            div.firstChild.nodeType == Node.TEXT_NODE:
                         data = div.firstChild
                         if illegal_xml_chars.search(data.data):
                             data = xdoc.createTextNode(
@@ -195,163 +221,190 @@ def content(xentry, name, detail, bozo):
                     xcontent.setAttribute('type', 'html')
                     data = xdoc.createTextNode(detail.value.decode('utf-8'))
 
-    if data: xcontent.appendChild(data)
+    if data:
+        xcontent.appendChild(data)
 
     if detail.get("language"):
         xcontent.setAttribute('xml:lang', detail.language)
 
     xentry.appendChild(xcontent)
 
+
 def location(xentry, long, lat):
     """ insert geo location into the entry """
-    if not lat or not long: return
+    if not lat or not long:
+        return
 
-    xlat = createTextElement(xentry, '%s:%s' % ('geo','lat'), '%f' % lat)
-    xlat.setAttribute('xmlns:%s' % 'geo', 'http://www.w3.org/2003/01/geo/wgs84_pos#')
-    xlong = createTextElement(xentry, '%s:%s' % ('geo','long'), '%f' % long)
-    xlong.setAttribute('xmlns:%s' % 'geo', 'http://www.w3.org/2003/01/geo/wgs84_pos#')
+    xlat = createTextElement(xentry, '%s:%s' % ('geo', 'lat'), '%f' % lat)
+    xlat.setAttribute(
+        'xmlns:%s' %
+        'geo',
+        'http://www.w3.org/2003/01/geo/wgs84_pos#')
+    xlong = createTextElement(xentry, '%s:%s' % ('geo', 'long'), '%f' % long)
+    xlong.setAttribute(
+        'xmlns:%s' %
+        'geo',
+        'http://www.w3.org/2003/01/geo/wgs84_pos#')
 
     xentry.appendChild(xlat)
     xentry.appendChild(xlong)
+
 
 def source(xsource, source, bozo, format):
     """ copy source information to the entry """
     xdoc = xsource.ownerDocument
 
-    createTextElement(xsource, 'id', source.get('id', source.get('link',None)))
+    createTextElement(
+        xsource, 'id', source.get('id', source.get('link', None)))
     createTextElement(xsource, 'icon', source.get('icon', None))
     createTextElement(xsource, 'logo', source.get('logo', None))
 
-    if not source.has_key('logo') and source.has_key('image'):
-        createTextElement(xsource, 'logo', source.image.get('href',None))
+    if 'logo' not in source and 'image' in source:
+        createTextElement(xsource, 'logo', source.image.get('href', None))
 
-    for tag in source.get('tags',[]):
+    for tag in source.get('tags', []):
         category(xsource, tag)
 
-    author(xsource, 'author', source.get('author_detail',{}))
-    for contributor in source.get('contributors',[]):
+    author(xsource, 'author', source.get('author_detail', {}))
+    for contributor in source.get('contributors', []):
         author(xsource, 'contributor', contributor)
 
-    if not source.has_key('links') and source.has_key('href'): #rss
-        source['links'] = [{ 'href': source.get('href') }]
-        if source.has_key('title'): 
+    if 'links' not in source and 'href' in source:  # rss
+        source['links'] = [{'href': source.get('href')}]
+        if 'title' in source:
             source['links'][0]['title'] = source.get('title')
     links(xsource, source)
 
-    content(xsource, 'rights', source.get('rights_detail',None), bozo)
-    content(xsource, 'subtitle', source.get('subtitle_detail',None), bozo)
-    content(xsource, 'title', source.get('title_detail',None), bozo)
+    content(xsource, 'rights', source.get('rights_detail', None), bozo)
+    content(xsource, 'subtitle', source.get('subtitle_detail', None), bozo)
+    content(xsource, 'title', source.get('title_detail', None), bozo)
 
-    date(xsource, 'updated', source.get('updated_parsed',time.gmtime()))
+    date(xsource, 'updated', source.get('updated_parsed', time.gmtime()))
 
-    if format: source['planet_format'] = format
-    if not bozo == None: source['planet_bozo'] = bozo and 'true' or 'false'
+    if format:
+        source['planet_format'] = format
+    if not bozo is None:
+        source['planet_bozo'] = bozo and 'true' or 'false'
 
     # propagate planet inserted information
-    if source.has_key('planet_name') and not source.has_key('planet_css-id'):
+    if 'planet_name' in source and 'planet_css-id' not in source:
         source['planet_css-id'] = cssid(source['planet_name'])
     for key, value in source.items():
         if key.startswith('planet_'):
-            createTextElement(xsource, key.replace('_',':',1), value)
+            createTextElement(xsource, key.replace('_', ':', 1), value)
+
 
 def reconstitute(feed, entry):
     """ create an entry document from a parsed feed """
-    xdoc=minidom.parseString('<entry xmlns="http://www.w3.org/2005/Atom"/>\n')
-    xentry=xdoc.documentElement
-    xentry.setAttribute('xmlns:planet',planet.xmlns)
+    xdoc = minidom.parseString(
+        '<entry xmlns="http://www.w3.org/2005/Atom"/>\n')
+    xentry = xdoc.documentElement
+    xentry.setAttribute('xmlns:planet', planet.xmlns)
 
-    if entry.has_key('language'):
+    if 'language' in entry:
         xentry.setAttribute('xml:lang', entry.language)
-    elif feed.feed.has_key('language'):
+    elif 'language' in feed.feed:
         xentry.setAttribute('xml:lang', feed.feed.language)
 
     id(xentry, entry)
     links(xentry, entry)
 
     bozo = feed.bozo
-    if not entry.has_key('title') or not entry.title:
+    if 'title' not in entry or not entry.title:
         xentry.appendChild(xdoc.createElement('title'))
 
-    content(xentry, 'title', entry.get('title_detail',None), bozo)
-    content(xentry, 'summary', entry.get('summary_detail',None), bozo)
-    content(xentry, 'content', entry.get('content',[None])[0], bozo)
-    content(xentry, 'rights', entry.get('rights_detail',None), bozo)
+    content(xentry, 'title', entry.get('title_detail', None), bozo)
+    content(xentry, 'summary', entry.get('summary_detail', None), bozo)
+    content(xentry, 'content', entry.get('content', [None])[0], bozo)
+    content(xentry, 'rights', entry.get('rights_detail', None), bozo)
 
     date(xentry, 'updated', entry_updated(feed.feed, entry, time.gmtime()))
-    date(xentry, 'published', entry.get('published_parsed',None))
+    date(xentry, 'published', entry.get('published_parsed', None))
 
-    if entry.has_key('dc_date.taken'):
-        date_Taken = createTextElement(xentry, '%s:%s' % ('dc','date_Taken'), '%s' % entry.get('dc_date.taken', None))
-        date_Taken.setAttribute('xmlns:%s' % 'dc', 'http://purl.org/dc/elements/1.1/')
+    if 'dc_date.taken' in entry:
+        date_Taken = createTextElement(
+            xentry, '%s:%s' %
+            ('dc', 'date_Taken'), '%s' %
+            entry.get('dc_date.taken', None))
+        date_Taken.setAttribute(
+            'xmlns:%s' %
+            'dc',
+            'http://purl.org/dc/elements/1.1/')
         xentry.appendChild(date_Taken)
 
-    for tag in entry.get('tags',[]):
+    for tag in entry.get('tags', []):
         category(xentry, tag)
 
     # known, simple text extensions
-    for ns,name in [('feedburner','origLink')]:
-        if entry.has_key('%s_%s' % (ns,name.lower())) and \
-            feed.namespaces.has_key(ns):
-            xoriglink = createTextElement(xentry, '%s:%s' % (ns,name),
-                entry['%s_%s' % (ns,name.lower())])
+    for ns, name in [('feedburner', 'origLink')]:
+        if '%s_%s' % (ns, name.lower()) in entry and \
+                ns in feed.namespaces:
+            xoriglink = createTextElement(xentry, '%s:%s' % (ns, name),
+                                          entry['%s_%s' % (ns, name.lower())])
             xoriglink.setAttribute('xmlns:%s' % ns, feed.namespaces[ns])
 
     # geo location
-    if entry.has_key('where') and \
-        entry.get('where',[]).has_key('type') and \
-        entry.get('where',[]).has_key('coordinates'):
-        where = entry.get('where',[])
-        type = where.get('type',None)
-        coordinates = where.get('coordinates',None)
+    if 'where' in entry and \
+        'type' in entry.get('where', []) and \
+            'coordinates' in entry.get('where', []):
+        where = entry.get('where', [])
+        type = where.get('type', None)
+        coordinates = where.get('coordinates', None)
         if type == 'Point':
             location(xentry, coordinates[0], coordinates[1])
         elif type == 'Box' or type == 'LineString' or type == 'Polygon':
             location(xentry, coordinates[0][0], coordinates[0][1])
-    if entry.has_key('geo_lat') and \
-        entry.has_key('geo_long'):
-        location(xentry, (float)(entry.get('geo_long',None)), (float)(entry.get('geo_lat',None)))
-    if entry.has_key('georss_point'):
+    if 'geo_lat' in entry and \
+            'geo_long' in entry:
+        location(xentry, (float)(entry.get('geo_long', None)),
+                 (float)(entry.get('geo_lat', None)))
+    if 'georss_point' in entry:
         coordinates = re.split('[,\s]', entry.get('georss_point'))
         location(xentry, (float)(coordinates[1]), (float)(coordinates[0]))
-    elif entry.has_key('georss_line'):
+    elif 'georss_line' in entry:
         coordinates = re.split('[,\s]', entry.get('georss_line'))
         location(xentry, (float)(coordinates[1]), (float)(coordinates[0]))
-    elif entry.has_key('georss_circle'):
+    elif 'georss_circle' in entry:
         coordinates = re.split('[,\s]', entry.get('georss_circle'))
         location(xentry, (float)(coordinates[1]), (float)(coordinates[0]))
-    elif entry.has_key('georss_box'):
+    elif 'georss_box' in entry:
         coordinates = re.split('[,\s]', entry.get('georss_box'))
-        location(xentry, ((float)(coordinates[1])+(float)(coordinates[3]))/2, ((float)(coordinates[0])+(float)(coordinates[2]))/2)
-    elif entry.has_key('georss_polygon'):
+        location(
+            xentry,
+            ((float)(coordinates[1]) + (float)(coordinates[3])) / 2,
+            ((float)(coordinates[0]) + (float)(coordinates[2])) / 2)
+    elif 'georss_polygon' in entry:
         coordinates = re.split('[,\s]', entry.get('georss_polygon'))
         location(xentry, (float)(coordinates[1]), (float)(coordinates[0]))
 
     # author / contributor
-    author_detail = entry.get('author_detail',{})
-    if author_detail and not author_detail.has_key('name') and \
-        feed.feed.has_key('planet_name'):
+    author_detail = entry.get('author_detail', {})
+    if author_detail and 'name' not in author_detail and \
+            'planet_name' in feed.feed:
         author_detail['name'] = feed.feed['planet_name']
     author(xentry, 'author', author_detail)
-    for contributor in entry.get('contributors',[]):
+    for contributor in entry.get('contributors', []):
         author(xentry, 'contributor', contributor)
 
     # merge in planet:* from feed (or simply use the feed if no source)
     src = entry.get('source')
     if src:
-        for name,value in feed.feed.items():
-            if name.startswith('planet_'): src[name]=value
-        if feed.feed.has_key('id'):
+        for name, value in feed.feed.items():
+            if name.startswith('planet_'):
+                src[name] = value
+        if 'id' in feed.feed:
             src['planet_id'] = feed.feed.id
     else:
         src = feed.feed
 
     # source:author
-    src_author = src.get('author_detail',{})
-    if (not author_detail or not author_detail.has_key('name')) and \
-       not src_author.has_key('name') and  feed.feed.has_key('planet_name'):
-       if src_author: src_author = src_author.__class__(src_author.copy())
-       src['author_detail'] = src_author
-       src_author['name'] = feed.feed['planet_name']
+    src_author = src.get('author_detail', {})
+    if (not author_detail or 'name' not in author_detail) and \
+       'name' not in src_author and 'planet_name' in feed.feed:
+        if src_author:
+            src_author = src_author.__class__(src_author.copy())
+        src['author_detail'] = src_author
+        src_author['name'] = feed.feed['planet_name']
 
     # source
     xsource = xdoc.createElement('source')
@@ -360,11 +413,12 @@ def reconstitute(feed, entry):
 
     return xdoc
 
-def entry_updated(feed, entry, default = None):
+
+def entry_updated(feed, entry, default=None):
     chks = ((entry, 'updated_parsed'),
             (entry, 'published_parsed'),
-            (feed,  'updated_parsed'),)
+            (feed, 'updated_parsed'),)
     for node, field in chks:
-        if node.has_key(field) and node[field]:
+        if field in node and node[field]:
             return node[field]
     return default

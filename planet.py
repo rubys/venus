@@ -9,12 +9,13 @@ the latest version.
 Requires Python 2.1, recommends 2.3.
 """
 
-__authors__ = [ "Scott James Remnant <scott@netsplit.com>",
-                "Jeff Waugh <jdub@perkypants.org>" ]
+__authors__ = ["Scott James Remnant <scott@netsplit.com>",
+               "Jeff Waugh <jdub@perkypants.org>"]
 __license__ = "Python"
 
 
-import os, sys
+import os
+import sys
 
 if __name__ == "__main__":
     config_file = []
@@ -61,13 +62,13 @@ if __name__ == "__main__":
 
     if verbose:
         import planet
-        planet.getLogger('DEBUG',config.log_format())
+        planet.getLogger('DEBUG', config.log_format())
 
     if not offline:
         from planet import spider
         try:
             spider.spiderPlanet(only_if_new=only_if_new)
-        except Exception, e:
+        except Exception as e:
             print e
 
     from planet import splice
@@ -76,7 +77,7 @@ if __name__ == "__main__":
     if debug_splice:
         from planet import logger
         logger.info('writing debug.atom')
-        debug=open('debug.atom','w')
+        debug = open('debug.atom', 'w')
         try:
             from lxml import etree
             from StringIO import StringIO

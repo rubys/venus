@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-import unittest, xml.dom.minidom
+import unittest
+import xml.dom.minidom
 from planet import shell, config, logger
+
 
 class FilterTests(unittest.TestCase):
 
@@ -11,11 +13,20 @@ class FilterTests(unittest.TestCase):
 
         output = shell.run(filter, open(testfile).read(), mode="filter")
         dom = xml.dom.minidom.parseString(output)
-        imgsrcs = [img.getAttribute('src') for img in dom.getElementsByTagName('img')]
-        self.assertEqual('http://example.com.nyud.net:8080/foo.png', imgsrcs[0])
-        self.assertEqual('http://example.com.1234.nyud.net:8080/foo.png', imgsrcs[1])
-        self.assertEqual('http://u:p@example.com.nyud.net:8080/foo.png', imgsrcs[2])
-        self.assertEqual('http://u:p@example.com.1234.nyud.net:8080/foo.png', imgsrcs[3])
+        imgsrcs = [img.getAttribute('src')
+                   for img in dom.getElementsByTagName('img')]
+        self.assertEqual(
+            'http://example.com.nyud.net:8080/foo.png',
+            imgsrcs[0])
+        self.assertEqual(
+            'http://example.com.1234.nyud.net:8080/foo.png',
+            imgsrcs[1])
+        self.assertEqual(
+            'http://u:p@example.com.nyud.net:8080/foo.png',
+            imgsrcs[2])
+        self.assertEqual(
+            'http://u:p@example.com.1234.nyud.net:8080/foo.png',
+            imgsrcs[3])
 
     def test_excerpt_images1(self):
         config.load('tests/data/filter/excerpt-images.ini')
@@ -37,8 +48,8 @@ class FilterTests(unittest.TestCase):
         hrefs = [a.getAttribute('href') for a in anchors]
         texts = [a.lastChild.nodeValue for a in anchors]
 
-        self.assertEqual(['inner','outer1','outer2'], hrefs)
-        self.assertEqual(['bar','bar','<img>'], texts)
+        self.assertEqual(['inner', 'outer1', 'outer2'], hrefs)
+        self.assertEqual(['bar', 'bar', '<img>'], texts)
 
     def test_excerpt_lorem_ipsum(self):
         testfile = 'tests/data/filter/excerpt-lorem-ipsum.xml'
@@ -51,8 +62,8 @@ class FilterTests(unittest.TestCase):
         dom = xml.dom.minidom.parseString(output)
         excerpt = dom.getElementsByTagName('planet:excerpt')[0]
         self.assertEqual(u'Lorem ipsum dolor sit amet, consectetuer ' +
-            u'adipiscing elit. Nullam velit. Vivamus tincidunt, erat ' +
-            u'in \u2026', excerpt.firstChild.firstChild.nodeValue)
+                         u'adipiscing elit. Nullam velit. Vivamus tincidunt, erat ' +
+                         u'in \u2026', excerpt.firstChild.firstChild.nodeValue)
 
     def test_excerpt_lorem_ipsum_summary(self):
         testfile = 'tests/data/filter/excerpt-lorem-ipsum.xml'
@@ -66,8 +77,8 @@ class FilterTests(unittest.TestCase):
         dom = xml.dom.minidom.parseString(output)
         excerpt = dom.getElementsByTagName('summary')[0]
         self.assertEqual(u'Lorem ipsum dolor sit amet, consectetuer ' +
-            u'adipiscing elit. Nullam velit. Vivamus tincidunt, erat ' +
-            u'in \u2026', excerpt.firstChild.firstChild.nodeValue)
+                         u'adipiscing elit. Nullam velit. Vivamus tincidunt, erat ' +
+                         u'in \u2026', excerpt.firstChild.firstChild.nodeValue)
 
     def test_stripAd_yahoo(self):
         testfile = 'tests/data/filter/stripAd-yahoo.xml'
@@ -80,7 +91,7 @@ class FilterTests(unittest.TestCase):
         dom = xml.dom.minidom.parseString(output)
         excerpt = dom.getElementsByTagName('content')[0]
         self.assertEqual(u'before--after',
-            excerpt.firstChild.firstChild.nodeValue)
+                         excerpt.firstChild.firstChild.nodeValue)
 
     def test_xpath_filter1(self):
         config.load('tests/data/filter/xpath-sifter.ini')
@@ -149,8 +160,8 @@ class FilterTests(unittest.TestCase):
         testfile = 'tests/data/filter/index.html'
         filter = 'xhtml2html.plugin?quote_attr_values=True'
         output = shell.run(filter, open(testfile).read(), mode="filter")
-        self.assertTrue(output.find('/>')<0)
-        self.assertTrue(output.find('</script>')>=0)
+        self.assertTrue(output.find('/>') < 0)
+        self.assertTrue(output.find('</script>') >= 0)
 
 try:
     from subprocess import Popen, PIPE
@@ -160,21 +171,23 @@ try:
         try:
             # Python 2.5 bug 1704790 workaround (alas, Unix only)
             import commands
-            if commands.getstatusoutput('sed --version')[0]==0: _no_sed = False 
+            if commands.getstatusoutput('sed --version')[0] == 0:
+                _no_sed = False
         except:
             pass
 
     if _no_sed:
         try:
-            sed = Popen(['sed','--version'],stdout=PIPE,stderr=PIPE)
+            sed = Popen(['sed', '--version'], stdout=PIPE, stderr=PIPE)
             sed.communicate()
-            if sed.returncode == 0: _no_sed = False
+            if sed.returncode == 0:
+                _no_sed = False
         except WindowsError:
             pass
 
     if _no_sed:
         logger.warn("sed is not available => can't test stripAd_yahoo")
-        del FilterTests.test_stripAd_yahoo      
+        del FilterTests.test_stripAd_yahoo
 
     try:
         import libxml2
@@ -186,4 +199,5 @@ try:
 except ImportError:
     logger.warn("Popen is not available => can't test standard filters")
     for method in dir(FilterTests):
-        if method.startswith('test_'):  delattr(FilterTests,method)
+        if method.startswith('test_'):
+            delattr(FilterTests, method)

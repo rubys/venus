@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
-import os, shutil, unittest
+import os
+import shutil
+import unittest
 from planet import config
 
 workdir = os.path.join('tests', 'work', 'config', 'cache')
 
+
 class ConfigCsvTest(unittest.TestCase):
+
     def setUp(self):
         config.load('tests/data/config/rlist-csv.ini')
 
@@ -16,10 +20,9 @@ class ConfigCsvTest(unittest.TestCase):
     # administrivia
 
     def test_feeds(self):
-        feeds = config.subscriptions()
-        feeds.sort()
+        feeds = sorted(config.subscriptions())
         self.assertEqual(['feed1', 'feed2'], feeds)
 
     def test_filters(self):
-        self.assertEqual(['foo','bar'], config.filters('feed2'))
+        self.assertEqual(['foo', 'bar'], config.filters('feed2'))
         self.assertEqual(['foo'], config.filters('feed1'))
