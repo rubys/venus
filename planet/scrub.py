@@ -85,7 +85,7 @@ def scrub(feed_uri, data):
             del entry['updated_parsed']
             del entry['updated']
     elif future_dates == 'ignore_entry':
-      now = time.time()
+      now = time.gmtime()
       if data.feed.has_key('updated_parsed') and data.feed['updated_parsed']:
         if data.feed['updated_parsed'] > now: del data.feed['updated_parsed']
       data.entries = [entry for entry in data.entries if 
