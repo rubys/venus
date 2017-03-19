@@ -1,7 +1,10 @@
 #!/usr/bin/env python
+# coding=utf-8
 """
 Main program to run just the spider portion of planet
 """
+from __future__ import print_function
+
 
 import sys
 from planet import spider, config
@@ -18,5 +21,5 @@ if __name__ == '__main__':
         for feed in sys.argv[2:]:
             spider.spiderFeed(feed)
     else:
-        print "Usage:"
-        print "  python %s config.ini [URI URI ...]" % sys.argv[0]
+        print("Usage:")
+        print("  python %s config.ini [URI URI ...]" % sys.argv[0])

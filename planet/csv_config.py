@@ -1,9 +1,12 @@
-from ConfigParser import ConfigParser
+# coding=utf-8
 import csv
+import sys
+import urllib
+from ConfigParser import ConfigParser
+
 
 # input = csv, output = ConfigParser
 def csv2config(input, config=None):
-
     if not hasattr(input, 'read'):
         input = csv.StringIO(input)
 
@@ -17,13 +20,13 @@ def csv2config(input, config=None):
             config.add_section(section)
         for name, value in row.items():
             if value and name != reader.fieldnames[0]:
-                config.set(section, name, value) 
+                config.set(section, name, value)
 
     return config
 
+
 if __name__ == "__main__":
     # small main program which converts CSV into config.ini format
-    import sys, urllib
     config = ConfigParser()
     for input in sys.argv[1:]:
         csv2config(urllib.urlopen(input), config)

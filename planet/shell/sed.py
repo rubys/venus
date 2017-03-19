@@ -1,4 +1,6 @@
-from subprocess import Popen, PIPE
+# coding=utf-8
+from subprocess import PIPE, Popen
+
 
 def run(script, doc, output_file=None, options={}):
     """ process an Python script """
@@ -9,7 +11,7 @@ def run(script, doc, output_file=None, options={}):
         out = PIPE
 
     proc = Popen(['sed', '-f', script],
-        stdin=PIPE, stdout=out, stderr=PIPE)
+                 stdin=PIPE, stdout=out, stderr=PIPE)
 
     stdout, stderr = proc.communicate(doc)
     if stderr:

@@ -1,14 +1,15 @@
-from xml.sax import ContentHandler, make_parser, SAXParseException
-from xml.sax.xmlreader import InputSource
-from sgmllib import SGMLParser
-from cStringIO import StringIO
-from ConfigParser import ConfigParser
-from htmlentitydefs import entitydefs
+# coding=utf-8
 import re
+from ConfigParser import ConfigParser
+from cStringIO import StringIO
+from htmlentitydefs import entitydefs
+from sgmllib import SGMLParser
+from xml.sax import ContentHandler, SAXParseException, make_parser
+from xml.sax.xmlreader import InputSource
+
 
 # input = opml, output = ConfigParser
 def opml2config(opml, config=None):
-
     if hasattr(opml, 'read'):
         opml = opml.read()
 
@@ -30,8 +31,9 @@ def opml2config(opml, config=None):
 
     return config
 
+
 # Parse OPML via either SAX or SGML
-class OpmlParser(ContentHandler,SGMLParser):
+class OpmlParser(ContentHandler, SGMLParser):
     entities = re.compile('&(#?\w+);')
 
     def __init__(self, config):
@@ -52,7 +54,7 @@ class OpmlParser(ContentHandler,SGMLParser):
                 # Auto-correct WordPress link manager OPML files
                 attrs = dict(attrs.items())
                 attrs['type'] = 'rss'
-            if attrs['type'].lower() not in['rss','atom']: return
+            if attrs['type'].lower() not in ['rss', 'atom']: return
 
         # The feed itself is supposed to be in an attribute named 'xmlUrl'
         # (note the camel casing), but this has proven to be problematic,
@@ -84,25 +86,26 @@ class OpmlParser(ContentHandler,SGMLParser):
     def unescape(self, text):
         parsed = self.entities.split(text)
 
-        for i in range(1,len(parsed),2):
+        for i in range(1, len(parsed), 2):
 
             if parsed[i] in entitydefs.keys():
                 # named entities
-                codepoint=entitydefs[parsed[i]]
-                match=self.entities.match(codepoint)
+                codepoint = entitydefs[parsed[i]]
+                match = self.entities.match(codepoint)
                 if match:
-                    parsed[i]=match.group(1)
+                    parsed[i] = match.group(1)
                 else:
-                    parsed[i]=unichr(ord(codepoint))
+                    parsed[i] = unichr(ord(codepoint))
 
                 # numeric entities
                 if parsed[i].startswith('#'):
                     if parsed[i].startswith('#x'):
-                        parsed[i]=unichr(int(parsed[i][2:],16))
+                        parsed[i] = unichr(int(parsed[i][2:], 16))
                     else:
-                        parsed[i]=unichr(int(parsed[i][1:]))
+                        parsed[i] = unichr(int(parsed[i][1:]))
 
         return u''.join(parsed).encode('utf-8')
+
     # SGML => SAX
     def unknown_starttag(self, name, attrs):
         attrs = dict(attrs)
@@ -115,39 +118,41 @@ class OpmlParser(ContentHandler,SGMLParser):
                 attrs[attribute] = work
         self.startElement(name, attrs)
 
+
 # http://www.intertwingly.net/stories/2004/04/14/i18n.html#CleaningWindows
 cp1252 = {
-  unichr(128): unichr(8364), # euro sign
-  unichr(130): unichr(8218), # single low-9 quotation mark
-  unichr(131): unichr( 402), # latin small letter f with hook
-  unichr(132): unichr(8222), # double low-9 quotation mark
-  unichr(133): unichr(8230), # horizontal ellipsis
-  unichr(134): unichr(8224), # dagger
-  unichr(135): unichr(8225), # double dagger
-  unichr(136): unichr( 710), # modifier letter circumflex accent
-  unichr(137): unichr(8240), # per mille sign
-  unichr(138): unichr( 352), # latin capital letter s with caron
-  unichr(139): unichr(8249), # single left-pointing angle quotation mark
-  unichr(140): unichr( 338), # latin capital ligature oe
-  unichr(142): unichr( 381), # latin capital letter z with caron
-  unichr(145): unichr(8216), # left single quotation mark
-  unichr(146): unichr(8217), # right single quotation mark
-  unichr(147): unichr(8220), # left double quotation mark
-  unichr(148): unichr(8221), # right double quotation mark
-  unichr(149): unichr(8226), # bullet
-  unichr(150): unichr(8211), # en dash
-  unichr(151): unichr(8212), # em dash
-  unichr(152): unichr( 732), # small tilde
-  unichr(153): unichr(8482), # trade mark sign
-  unichr(154): unichr( 353), # latin small letter s with caron
-  unichr(155): unichr(8250), # single right-pointing angle quotation mark
-  unichr(156): unichr( 339), # latin small ligature oe
-  unichr(158): unichr( 382), # latin small letter z with caron
-  unichr(159): unichr( 376)} # latin capital letter y with diaeresis
+    unichr(128): unichr(8364),  # euro sign
+    unichr(130): unichr(8218),  # single low-9 quotation mark
+    unichr(131): unichr(402),  # latin small letter f with hook
+    unichr(132): unichr(8222),  # double low-9 quotation mark
+    unichr(133): unichr(8230),  # horizontal ellipsis
+    unichr(134): unichr(8224),  # dagger
+    unichr(135): unichr(8225),  # double dagger
+    unichr(136): unichr(710),  # modifier letter circumflex accent
+    unichr(137): unichr(8240),  # per mille sign
+    unichr(138): unichr(352),  # latin capital letter s with caron
+    unichr(139): unichr(8249),  # single left-pointing angle quotation mark
+    unichr(140): unichr(338),  # latin capital ligature oe
+    unichr(142): unichr(381),  # latin capital letter z with caron
+    unichr(145): unichr(8216),  # left single quotation mark
+    unichr(146): unichr(8217),  # right single quotation mark
+    unichr(147): unichr(8220),  # left double quotation mark
+    unichr(148): unichr(8221),  # right double quotation mark
+    unichr(149): unichr(8226),  # bullet
+    unichr(150): unichr(8211),  # en dash
+    unichr(151): unichr(8212),  # em dash
+    unichr(152): unichr(732),  # small tilde
+    unichr(153): unichr(8482),  # trade mark sign
+    unichr(154): unichr(353),  # latin small letter s with caron
+    unichr(155): unichr(8250),  # single right-pointing angle quotation mark
+    unichr(156): unichr(339),  # latin small ligature oe
+    unichr(158): unichr(382),  # latin small letter z with caron
+    unichr(159): unichr(376)}  # latin capital letter y with diaeresis
 
 if __name__ == "__main__":
     # small main program which converts OPML into config.ini format
     import sys, urllib
+
     config = ConfigParser()
     for opml in sys.argv[1:]:
         opml2config(urllib.urlopen(opml), config)

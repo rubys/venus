@@ -1,5 +1,9 @@
-import os, sys, imp
+# coding=utf-8
+import imp
+import os
+import sys
 from StringIO import StringIO
+
 
 def run(script, doc, output_file=None, options={}):
     """ process an Python script using imp """
@@ -28,7 +32,7 @@ def run(script, doc, output_file=None, options={}):
             plugin_file = script
 
         # set sys.argv
-        options = sum([['--'+key, value] for key,value in options.items()], [])
+        options = sum([['--' + key, value] for key, value in options.items()], [])
         sys.argv = [plugin_file] + options
 
         # import script
@@ -37,16 +41,16 @@ def run(script, doc, output_file=None, options={}):
         try:
             try:
                 try:
-                    description=('.plugin', 'rb', imp.PY_SOURCE)
-                    imp.load_module('__main__',handle,plugin_file,description)
-                except SystemExit,e:
-                    if e.code: log.error('%s exit rc=%d',(plugin_file,e.code))
-            except Exception, e:
+                    description = ('.plugin', 'rb', imp.PY_SOURCE)
+                    imp.load_module('__main__', handle, plugin_file, description)
+                except SystemExit as e:
+                    if e.code: log.error('%s exit rc=%d', (plugin_file, e.code))
+            except Exception as e:
                 import traceback
                 type, value, tb = sys.exc_info()
                 plugin_stderr.write(''.join(
-                   traceback.format_exception_only(type,value) +
-                   traceback.format_tb(tb)))
+                    traceback.format_exception_only(type, value) +
+                    traceback.format_tb(tb)))
         finally:
             handle.close()
             if cwd != os.getcwd(): os.chdir(cwd)
