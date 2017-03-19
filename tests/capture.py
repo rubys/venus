@@ -14,6 +14,8 @@ import os
 import shutil
 import sys
 
+import pytest
+
 # move up a directory
 sys.path.insert(0, os.path.split(sys.path[0])[0])
 os.chdir(sys.path[0])
@@ -30,16 +32,13 @@ if os.path.exists('tests/data/splice/cache'):
     shutil.rmtree('tests/data/splice/cache')
 shutil.move('tests/work/spider/cache', 'tests/data/splice/cache')
 
-
 with open('tests/data/spider/config.ini') as source, \
         open('tests/data/splice/config.ini', 'w') as dest1:
     dest1.write(source.read().replace('/work/spider/', '/data/splice/'))
 
 with open('tests/data/spider/config.ini') as source, \
         open('tests/work/apply_config.ini', 'w') as dest2:
-    dest2.write(source.read().replace('[Planet]', '''[Planet]
-    output_theme = asf
-    output_dir = tests/work/apply'''))
+    dest2.write(source.read().replace('[Planet]', '''[Planet]\noutput_theme = asf\noutput_dir = tests/work/apply'''))
 
 # copy splice output to apply input
 from planet import splice
@@ -52,8 +51,8 @@ with open('tests/data/apply/feed.xml', 'w') as fp:
 # copy apply output to config/reading-list input
 config.load('tests/work/apply_config.ini')
 splice.apply(data)
-shutil.move('tests/work/apply/opml.xml', 'tests/data/config')
+shutil.copy('tests/work/apply/opml.xml', 'tests/data/config')
 
 shutil.rmtree('tests/work')
 
-import runtests
+pytest.main()
