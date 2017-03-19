@@ -4,9 +4,27 @@
 import unittest
 import xml.dom.minidom
 
-from planet import config, logger, shell
+import pytest
+
+from planet import config, shell
+
+libxlst_available = True
+
+try:
+    import libxslt
+except ImportError:
+    try:
+        from subprocess import Popen, PIPE
+
+        xsltproc = Popen(['xsltproc', '--version'], stdout=PIPE, stderr=PIPE)
+        xsltproc.communicate()
+        if xsltproc.returncode != 0:
+            raise ImportError
+    except ImportError:
+        libxlst_available = False
 
 
+@pytest.mark.skipif(not libxlst_available, reason="libxslt is not available => can't test xslt filters")
 class XsltFilterTests(unittest.TestCase):
     def test_xslt_filter(self):
         config.load('tests/data/filter/translate.ini')
@@ -28,19 +46,3 @@ class XsltFilterTests(unittest.TestCase):
         self.assertTrue(output.find('<form><input name="q"/></form>') >= 0)
         self.assertTrue(output.find(' href="http://planet.intertwingly.net/opensearchdescription.xml"') >= 0)
         self.assertTrue(output.find('</script>') >= 0)
-
-
-try:
-    import libxslt
-except ImportError:
-    try:
-        from subprocess import Popen, PIPE
-
-        xsltproc = Popen(['xsltproc', '--version'], stdout=PIPE, stderr=PIPE)
-        xsltproc.communicate()
-        if xsltproc.returncode != 0:
-            raise ImportError
-    except ImportError:
-        logger.warn("libxslt is not available => can't test xslt filters")
-        del XsltFilterTests.test_xslt_filter
-        del XsltFilterTests.test_addsearch_filter

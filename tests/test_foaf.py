@@ -6,7 +6,9 @@ import shutil
 import unittest
 from ConfigParser import ConfigParser
 
-from planet import config, logger
+import pytest
+
+from planet import config
 from planet.foaf import foaf2config
 
 workdir = 'tests/work/config/cache'
@@ -43,7 +45,14 @@ test_foaf_document = '''
 </rdf:RDF> 
 '''.strip()
 
+try:
+    import RDF
+    RDF_available = True
+except ImportError:
+    RDF_available = False
 
+
+@pytest.mark.skipif(not RDF_available, reason="RDF module is not installed ")
 class FoafTest(unittest.TestCase):
     """
     Test the foaf2config function
@@ -120,15 +129,3 @@ class FoafTest(unittest.TestCase):
                           'http://thefigtrees.net/lee/life/atom.xml',
                           'http://torrez.us/feed/rdf'], feeds)
 
-
-# these tests only make sense if libRDF is installed
-try:
-    import RDF
-except ImportError:
-    logger.warn("Redland RDF is not available => can't test FOAF reading lists")
-    for key in FoafTest.__dict__.keys():
-        if key.startswith('test_'):
-            delattr(FoafTest, key)
-
-if __name__ == '__main__':
-    unittest.main()

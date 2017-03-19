@@ -1,14 +1,23 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import planet
-import unittest
 import os
 import shutil
+import unittest
+import pytest
 
+import planet
 from planet import config, idindex
 
+try:
+    import dbhash
 
+    dbhash_available = True
+except ImportError:
+    dbhash_available = False
+
+
+@pytest.mark.skipif(not dbhash_available, reason="dbhash is not available => can't test id index")
 class idIndexTest(unittest.TestCase):
     def setUp(self):
         # silence errors
@@ -70,11 +79,3 @@ class idIndexTest(unittest.TestCase):
         self.assertEqual(8, len(doc.getElementsByTagName('entry')))
         self.assertEqual(4, len(doc.getElementsByTagName('planet:source')))
         self.assertEqual(12, len(doc.getElementsByTagName('planet:name')))
-
-try:
-    import dbhash
-except ImportError:
-    planet.logger.warn("dbhash is not available => can't test id index")
-    for method in dir(idIndexTest):
-        if method.startswith('test_'):
-            delattr(idIndexTest, method)

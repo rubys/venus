@@ -175,7 +175,3 @@ class OpmlTest(unittest.TestCase):
                                 text="Se&amp;ntilde;or Frog&amp;rsquo;s"/>''', self.config)
         self.assertEqual('Se\xc3\xb1or Frog\xe2\x80\x99s',
                          self.config.get("http://example.com/feed.xml", 'name'))
-
-
-if __name__ == '__main__':
-    unittest.main()

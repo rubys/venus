@@ -5,10 +5,20 @@ import datetime
 import os.path
 import unittest
 
-from planet import config, logger
+import pytest
+
+from planet import config
 from planet.shell import dj
 
+try:
+    from django.conf import settings
 
+    django_available = True
+except ImportError:
+    django_available = False
+
+
+@pytest.mark.skipif(not django_available, reason="Django is not available => can't test django filters")
 class DjangoFilterTests(unittest.TestCase):
     def test_django_filter(self):
         config.load('tests/data/filter/django/test.ini')
@@ -45,12 +55,3 @@ class DjangoFilterTests(unittest.TestCase):
         results = dj.run(
             os.path.realpath('tests/data/filter/django/config.html.dj'), input_)
         self.assertEqual(results, "Django on Venus\n")
-
-
-try:
-    from django.conf import settings
-except ImportError:
-    logger.warn("Django is not available => can't test django filters")
-    for method in dir(DjangoFilterTests):
-        if method.startswith('test_'):
-            delattr(DjangoFilterTests, method)

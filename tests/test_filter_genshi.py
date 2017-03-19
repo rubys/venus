@@ -3,9 +3,20 @@
 
 import unittest
 
-from planet import logger, shell
+import pytest
+
+from planet import shell
+
+try:
+    import genshi
+
+    genshi_available = True
+
+except ImportError:
+    genshi_available = False
 
 
+@pytest.mark.skipif(not genshi_available, reason="Genshi is not available => can't test genshi filters")
 class GenshiFilterTests(unittest.TestCase):
     def test_addsearch_filter(self):
         testfile = 'tests/data/filter/index.html'
@@ -16,12 +27,3 @@ class GenshiFilterTests(unittest.TestCase):
         self.assertTrue(output.find('<form><input name="q"/></form>') >= 0)
         self.assertTrue(output.find(' href="http://planet.intertwingly.net/opensearchdescription.xml"') >= 0)
         self.assertTrue(output.find('</script>') >= 0)
-
-
-try:
-    import genshi
-except ImportError:
-    logger.warn("Genshi is not available => can't test genshi filters")
-    for method in dir(GenshiFilterTests):
-        if method.startswith('test_'):
-            delattr(GenshiFilterTests, method)

@@ -1,10 +1,20 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import sys
 import unittest
 import xml.dom.minidom
 
-from planet import config, logger, shell
+import pytest
+
+from planet import config, shell
+
+try:
+    import libxml2
+
+    libxml2_available = True
+except ImportError:
+    libxml2_available = False
 
 
 class FilterTests(unittest.TestCase):
@@ -75,6 +85,7 @@ class FilterTests(unittest.TestCase):
                          u'adipiscing elit. Nullam velit. Vivamus tincidunt, erat ' +
                          u'in \u2026', excerpt.firstChild.firstChild.nodeValue)
 
+    @pytest.mark.skipif(sys.platform == 'win32', reason="sed is not available on windows")
     def test_stripAd_yahoo(self):
         testfile = 'tests/data/filter/stripAd-yahoo.xml'
         config.load('tests/data/filter/stripAd-yahoo.ini')
@@ -89,10 +100,12 @@ class FilterTests(unittest.TestCase):
         self.assertEqual(u'before--after',
                          excerpt.firstChild.firstChild.nodeValue)
 
+    @pytest.mark.skipif(not libxml2_available, reason="libxml2 is not installed")
     def test_xpath_filter1(self):
         config.load('tests/data/filter/xpath-sifter.ini')
         self.verify_xpath()
 
+    @pytest.mark.skipif(not libxml2_available, reason="libxml2 is not installed")
     def test_xpath_filter2(self):
         config.load('tests/data/filter/xpath-sifter2.ini')
         self.verify_xpath()
@@ -165,35 +178,3 @@ class FilterTests(unittest.TestCase):
             output = shell.run(the_filter, fp.read(), mode="filter")
         self.assertTrue(output.find('/>') < 0)
         self.assertTrue(output.find('</script>') >= 0)
-
-
-try:
-    from subprocess import Popen, PIPE
-
-    _no_sed = True
-
-    if _no_sed:
-        try:
-            sed = Popen(['sed', '--version'], stdout=PIPE, stderr=PIPE)
-            sed.communicate()
-            if sed.returncode == 0:
-                _no_sed = False
-        except WindowsError:
-            pass
-
-    if _no_sed:
-        logger.warn("sed is not available => can't test stripAd_yahoo")
-        del FilterTests.test_stripAd_yahoo
-
-    try:
-        import libxml2
-    except ImportError:
-        logger.warn("libxml2 is not available => can't test xpath_sifter")
-        del FilterTests.test_xpath_filter1
-        del FilterTests.test_xpath_filter2
-
-except ImportError:
-    logger.warn("Popen is not available => can't test standard filters")
-    for method in dir(FilterTests):
-        if method.startswith('test_'):
-            delattr(FilterTests, method)

@@ -6,14 +6,46 @@ import shutil
 import unittest
 from xml.dom import minidom
 
-import test_filter_genshi
-from planet import config, logger, splice
+import pytest
+
+from planet import config, splice
 
 workdir = 'tests/work/apply'
 configfile = 'tests/data/apply/config-%s.ini'
 testfeed = 'tests/data/apply/feed.xml'
 
+try:
+    import genshi
 
+    genshi_available = True
+
+except ImportError:
+    genshi_available = False
+
+try:
+    import libxml2
+
+    libxml2_available = True
+except ImportError:
+    libxml2_available = False
+
+libxlst_available = True
+
+try:
+    import libxslt
+except ImportError:
+    try:
+        from subprocess import Popen, PIPE
+
+        xsltproc = Popen(['xsltproc', '--version'], stdout=PIPE, stderr=PIPE)
+        xsltproc.communicate()
+        if xsltproc.returncode != 0:
+            raise ImportError
+    except ImportError:
+        libxlst_available = False
+
+
+@pytest.mark.skipif(not libxlst_available, reason="libxslt is not available => can't test xslt filters")
 class ApplyTest(unittest.TestCase):
     def setUp(self):
         with open(testfeed) as testfile:
@@ -57,6 +89,7 @@ class ApplyTest(unittest.TestCase):
         config.load(configfile % 'fancy')
         self.apply_fancy()
 
+    @pytest.mark.skipif(not genshi_available, reason="Genshi is not available => can't test genshi filters")
     def test_apply_genshi_fancy(self):
         config.load(configfile % 'genshi')
         self.apply_fancy()
@@ -71,6 +104,7 @@ class ApplyTest(unittest.TestCase):
         with open(os.path.join(workdir, 'index.html4')) as html:
             self.assertTrue(html.read().find('/>') < 0)
 
+    @pytest.mark.skipif(not libxml2_available, reason="libxml2 is not installed")
     def test_apply_filter_mememe(self):
         config.load(configfile % 'mememe')
         self.apply_fancy()
@@ -108,38 +142,3 @@ class ApplyTest(unittest.TestCase):
         with open(os.path.join(workdir, 'index.html')) as fp:
             html = fp.read()
             self.assertTrue(html.find(' href="http://example.com/default.css"') >= 0)
-
-
-for method in dir(test_filter_genshi.GenshiFilterTests):
-    if method.startswith('test_'):
-        break
-else:
-    delattr(ApplyTest, 'test_apply_genshi_fancy')
-
-try:
-    import libxml2
-except ImportError:
-
-    delattr(ApplyTest, 'test_apply_filter_mememe')
-
-    try:
-        import win32pipe
-
-        (stdin, stdout) = win32pipe.popen4('xsltproc -V', 't')
-        stdin.close()
-        stdout.read()
-        try:
-            exitcode = stdout.close()
-        except IOError:
-            exitcode = -1
-    except ImportError:
-        import commands
-
-        (exitstatus, output) = commands.getstatusoutput('xsltproc -V')
-        exitcode = ((exitstatus >> 8) & 0xFF)
-
-    if exitcode:
-        logger.warn("xsltproc is not available => can't test XSLT templates")
-        for method in dir(ApplyTest):
-            if method.startswith('test_'):
-                delattr(ApplyTest, method)
