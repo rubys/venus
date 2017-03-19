@@ -44,7 +44,7 @@ and <code>~/venus</code> are good
 choices, but so's anywhere else you prefer.</p></li>
 <li><p>This is very important: from within that directory, type the following
 command:</p>
-<blockquote><code>python runtests.py</code></blockquote>
+<blockquote><code>py.test tests/</code></blockquote>
 <p>This should take anywhere from a one to ten seconds to execute.  No network
 connection is required, and the script cleans up after itself.  If the
 script completes with an "OK", you are good to go.  Otherwise stopping here
@@ -94,7 +94,7 @@ not yet ported to the newer python so Venus will be less featureful.
         libxml2-py24</code></p></li>
  <li><p><a href="../index.html">Download</a> and extract the Venus files into a
         folder somewhere</p></li>
- <li><p>Run the tests: <code>python2.4 runtests.py</code><br /> This
+ <li><p>Run the tests: <code>py.test tests/</code><br /> This
         will warn you that the RDF library is missing, but that's
         OK.</p></li>
  <li><p>Continue with the general steps above, starting with Step 3.  You
