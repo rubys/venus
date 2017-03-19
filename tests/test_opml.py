@@ -1,8 +1,11 @@
 #!/usr/bin/env python
+# coding=utf-8
 
 import unittest
-from planet.opml import opml2config
 from ConfigParser import ConfigParser
+
+from planet.opml import opml2config
+
 
 class OpmlTest(unittest.TestCase):
     """
@@ -21,7 +24,7 @@ class OpmlTest(unittest.TestCase):
                                 xmlUrl="http://example.com/feed.xml"
                                 text="sample feed"/>''', self.config)
         self.assertEqual('sample feed',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
 
     def test_wrong_element(self):
         opml2config('''<feed    type="rss"
@@ -35,7 +38,7 @@ class OpmlTest(unittest.TestCase):
                                 xmlUrl="http://example.com/feed.xml"
                                 text="sample feed"/>''', self.config)
         self.assertEqual('sample feed',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
 
     def test_illformed_xml_after(self):
         opml2config('''<outline type="rss"
@@ -43,7 +46,7 @@ class OpmlTest(unittest.TestCase):
                                 text="sample feed"/>
                        <bad stuff after>''', self.config)
         self.assertEqual('sample feed',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
 
     #
     # Type
@@ -54,21 +57,21 @@ class OpmlTest(unittest.TestCase):
                                 xmlUrl="http://example.com/feed.xml"
                                 text="sample feed"/>''', self.config)
         self.assertEqual('sample feed',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
 
     def test_type_uppercase(self):
         opml2config('''<outline type="RSS"
                                 xmlUrl="http://example.com/feed.xml"
                                 text="sample feed"/>''', self.config)
         self.assertEqual('sample feed',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
 
     def test_type_atom(self):
         opml2config('''<outline type="atom"
                                 xmlUrl="http://example.com/feed.xml"
                                 text="sample feed"/>''', self.config)
         self.assertEqual('sample feed',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
 
     def test_wrong_type(self):
         opml2config('''<outline type="other"
@@ -82,7 +85,7 @@ class OpmlTest(unittest.TestCase):
                                 xmlUrl="http://example.com/feed.xml"
                                 text="sample feed"/>''', self.config)
         self.assertEqual('sample feed',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
 
     #
     # xmlUrl
@@ -93,7 +96,7 @@ class OpmlTest(unittest.TestCase):
                                 xmlurl="http://example.com/feed.xml"
                                 text="sample feed"/>''', self.config)
         self.assertEqual('sample feed',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
 
     def test_missing_xmlUrl(self):
         opml2config('''<outline type="rss"
@@ -115,7 +118,7 @@ class OpmlTest(unittest.TestCase):
                                 xmlUrl="http://example.com/feed.xml"
                                 title="sample feed"/>''', self.config)
         self.assertEqual('sample feed',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
 
     def test_missing_text(self):
         opml2config('''<outline type="rss"
@@ -135,7 +138,7 @@ class OpmlTest(unittest.TestCase):
                                 text=""
                                 title="sample feed"/>''', self.config)
         self.assertEqual('sample feed',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
 
     def test_blank_text_blank_title(self):
         opml2config('''<outline type="rss"
@@ -150,28 +153,29 @@ class OpmlTest(unittest.TestCase):
                                 text="Se\xc3\xb1or Frog\xe2\x80\x99s"/>''',
                     self.config)
         self.assertEqual('Se\xc3\xb1or Frog\xe2\x80\x99s',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
 
     def test_text_win_1252(self):
         opml2config('''<outline type="rss"
                                 xmlUrl="http://example.com/feed.xml"
                                 text="Se\xf1or Frog\x92s"/>''', self.config)
         self.assertEqual('Se\xc3\xb1or Frog\xe2\x80\x99s',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
 
     def test_text_entity(self):
         opml2config('''<outline type="rss"
                                 xmlUrl="http://example.com/feed.xml"
                                 text="Se&ntilde;or Frog&rsquo;s"/>''', self.config)
         self.assertEqual('Se\xc3\xb1or Frog\xe2\x80\x99s',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
 
     def test_text_double_escaped(self):
         opml2config('''<outline type="rss"
                                 xmlUrl="http://example.com/feed.xml"
                                 text="Se&amp;ntilde;or Frog&amp;rsquo;s"/>''', self.config)
         self.assertEqual('Se\xc3\xb1or Frog\xe2\x80\x99s',
-           self.config.get("http://example.com/feed.xml", 'name'))
+                         self.config.get("http://example.com/feed.xml", 'name'))
+
 
 if __name__ == '__main__':
     unittest.main()
