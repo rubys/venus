@@ -29,10 +29,10 @@ try:
 except ImportError:
     libxml2_available = False
 
-libxlst_available = True
-
 try:
     import libxslt
+
+    libxlst_available = True
 except ImportError:
     try:
         from subprocess import Popen, PIPE
@@ -41,6 +41,8 @@ except ImportError:
         xsltproc.communicate()
         if xsltproc.returncode != 0:
             raise ImportError
+        libxlst_available = True
+
     except ImportError:
         libxlst_available = False
 
