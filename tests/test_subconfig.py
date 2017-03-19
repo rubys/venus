@@ -1,7 +1,9 @@
 #!/usr/bin/env python
+# coding=utf-8
 
-from test_config_csv import ConfigCsvTest
 from planet import config
+from test_config_csv import ConfigCsvTest
+
 
 class SubConfigTest(ConfigCsvTest):
     def setUp(self):

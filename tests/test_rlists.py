@@ -1,12 +1,17 @@
 #!/usr/bin/env python
+# coding=utf-8
 
-import unittest, os, shutil
-from planet import config, opml
-from os.path import split
-from glob import glob
+import os
+import shutil
+import unittest
 from ConfigParser import ConfigParser
+from glob import glob
+from os.path import split
+
+from planet import config
 
 workdir = os.path.join('tests', 'work', 'config', 'cache')
+
 
 class ReadingListTest(unittest.TestCase):
     def setUp(self):
@@ -22,12 +27,12 @@ class ReadingListTest(unittest.TestCase):
         feeds = [split(feed)[1] for feed in config.subscriptions()]
         feeds.sort()
         self.assertEqual(['testfeed0.atom', 'testfeed1a.atom',
-            'testfeed2.atom', 'testfeed3.rss'], feeds)
+                          'testfeed2.atom', 'testfeed3.rss'], feeds)
 
     # dictionaries
 
     def test_feed_options(self):
-        feeds = dict([(split(feed)[1],feed) for feed in config.subscriptions()])
+        feeds = dict([(split(feed)[1], feed) for feed in config.subscriptions()])
         feed1 = feeds['testfeed1a.atom']
         self.assertEqual('one', config.feed_options(feed1)['name'])
 
@@ -37,8 +42,8 @@ class ReadingListTest(unittest.TestCase):
     # dictionaries
 
     def test_cache(self):
-        cache = glob(os.path.join(workdir,'lists','*'))
-        self.assertEqual(1,len(cache))
+        cache = glob(os.path.join(workdir, 'lists', '*'))
+        self.assertEqual(1, len(cache))
 
         parser = ConfigParser()
         parser.read(cache[0])
@@ -46,4 +51,4 @@ class ReadingListTest(unittest.TestCase):
         feeds = [split(feed)[1] for feed in parser.sections()]
         feeds.sort()
         self.assertEqual(['opml.xml', 'testfeed0.atom', 'testfeed1a.atom',
-            'testfeed2.atom', 'testfeed3.rss'], feeds)
+                          'testfeed2.atom', 'testfeed3.rss'], feeds)

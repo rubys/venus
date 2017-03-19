@@ -1,11 +1,19 @@
 #!/usr/bin/env python
+# coding=utf-8
 
-import unittest, os, sys, glob, new, re, StringIO, time
+import StringIO
+import glob
+import new
+import os
+import re
+import unittest
+
 from planet import feedparser
 from planet.reconstitute import reconstitute
 from planet.scrub import scrub
 
 testfiles = 'tests/data/reconstitute/%s.xml'
+
 
 class ReconstituteTest(unittest.TestCase):
     desc_re = re.compile("Description:\s*(.*?)\s*Expect:\s*(.*)\s*-->")
@@ -14,17 +22,16 @@ class ReconstituteTest(unittest.TestCase):
     def eval(self, name):
         # read the test case
         try:
-            testcase = open(testfiles % name)
-            data = testcase.read()
-            description, expect = self.desc_re.search(data).groups()
-            testcase.close()
+            with open(testfiles % name) as testcasefile:
+                data = testcasefile.read()
+                description, expect = self.desc_re.search(data).groups()
         except:
-            raise RuntimeError, "can't parse %s" % name
+            raise RuntimeError("can't parse %s" % name)
 
         # parse and reconstitute to a string
         work = StringIO.StringIO()
         results = feedparser.parse(data)
-        scrub(testfiles%name, results)
+        scrub(testfiles % name, results)
         reconstitute(results, results.entries[0]).writexml(work)
 
         # verify the results
@@ -36,6 +43,7 @@ class ReconstituteTest(unittest.TestCase):
         else:
             lhs, rhs = self.simple_re.match(expect).groups()
             self.assertEqual(eval(rhs), eval(lhs, results.entries[0]))
+
 
 # build a test method for each test file
 for testcase in glob.glob(testfiles % '*'):
