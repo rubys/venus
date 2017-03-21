@@ -2,36 +2,37 @@
 
 
 import logging
-
+import os
+import sys
 
 import config
 import publish
 
-import sys
-sys.path.insert(1, os.path.join(os.path.dirname(__file__),'vendor'))
+sys.path.insert(1, os.path.join(os.path.dirname(__file__), 'vendor'))
 import feedparser
-
 
 xmlns = 'http://planet.intertwingly.net/'
 
-logger = None
+logging.getLogger(__name__).addHandler(logging.NullHandler())
+
+logger = logging.getLogger(__name__)
 loggerParms = None
 
 config.__init__()
 
 
-def getLogger(level, format):
+def getLogger(level, log_format):
     """ get a logger with the specified log level """
     global logger, loggerParms
-    if logger and loggerParms == (level, format):
+    if logger and loggerParms == (level, log_format):
         return logger
 
-    logging.basicConfig(format=format)
+    logging.basicConfig(format=log_format)
 
     logger = logging.getLogger("planet.runner")
     logger.setLevel(logging.getLevelName(level))
 
-    loggerParms = (level, format)
+    loggerParms = (level, log_format)
     return logger
 
 
