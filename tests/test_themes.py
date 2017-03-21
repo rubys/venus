@@ -1,8 +1,11 @@
 #!/usr/bin/env python
+# coding=utf-8
 
 import unittest
-from planet import config
 from os.path import split
+
+from planet import config
+
 
 class ThemesTest(unittest.TestCase):
     def setUp(self):
@@ -12,13 +15,13 @@ class ThemesTest(unittest.TestCase):
 
     def test_template_directories(self):
         self.assertEqual(['foo', 'bar', 'asf', 'config', 'common'],
-            [split(dir)[1] for dir in config.template_directories()])
+                         [split(each_dir)[1] for each_dir in config.template_directories()])
 
     # administrivia
 
     def test_template(self):
-        self.assertEqual(1, len([1 for file in config.template_files()
-            if file == 'index.html.xslt']))
+        self.assertEqual(1, len([1 for each_file in config.template_files()
+                                 if each_file == 'index.html.xslt']))
 
     def test_feeds(self):
         feeds = config.subscriptions()
@@ -55,5 +58,5 @@ class ThemesTest(unittest.TestCase):
 
     def test_template_options(self):
         option = config.template_options('index.html.xslt')
-        self.assertEqual('7',  option['days_per_page'])
+        self.assertEqual('7', option['days_per_page'])
         self.assertEqual('50', option['items_per_page'])

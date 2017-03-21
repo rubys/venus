@@ -1,9 +1,15 @@
 #!/usr/bin/env python
+# coding=utf-8
 
-import unittest, os, shutil
-from planet.foaf import foaf2config
+import os
+import shutil
+import unittest
 from ConfigParser import ConfigParser
-from planet import config, logger
+
+import pytest
+
+from planet import config
+from planet.foaf import foaf2config
 
 workdir = 'tests/work/config/cache'
 
@@ -39,6 +45,14 @@ test_foaf_document = '''
 </rdf:RDF> 
 '''.strip()
 
+try:
+    import RDF
+    RDF_available = True
+except ImportError:
+    RDF_available = False
+
+
+@pytest.mark.skipif(not RDF_available, reason="RDF module is not installed ")
 class FoafTest(unittest.TestCase):
     """
     Test the foaf2config function
@@ -62,13 +76,13 @@ class FoafTest(unittest.TestCase):
         self.assertEqual('Danny Ayers', self.config.get(testfeed, 'name'))
 
     def test_no_foaf_name(self):
-        test = test_foaf_document.replace('foaf:name','foaf:title')
+        test = test_foaf_document.replace('foaf:name', 'foaf:title')
         foaf2config(test, self.config)
         self.assertEqual('Raw Blog by Danny Ayers',
-           self.config.get(testfeed, 'name'))
+                         self.config.get(testfeed, 'name'))
 
     def test_no_weblog(self):
-        test = test_foaf_document.replace('rdfs:seeAlso','rdfs:seealso')
+        test = test_foaf_document.replace('rdfs:seeAlso', 'rdfs:seealso')
         foaf2config(test, self.config)
         self.assertFalse(self.config.has_section(testfeed))
 
@@ -87,41 +101,31 @@ class FoafTest(unittest.TestCase):
         feeds = config.subscriptions()
         feeds.sort()
         self.assertEqual(['http://api.flickr.com/services/feeds/' +
-            'photos_public.gne?id=77366516@N00',
-            'http://del.icio.us/rss/eliast',
-            'http://torrez.us/feed/rdf'], feeds)
+                          'photos_public.gne?id=77366516@N00',
+                          'http://del.icio.us/rss/eliast',
+                          'http://torrez.us/feed/rdf'], feeds)
 
     def test_multiple_subscriptions(self):
         config.load('tests/data/config/foaf-multiple.ini')
-        self.assertEqual(2,len(config.reading_lists()))
+        self.assertEqual(2, len(config.reading_lists()))
         feeds = config.subscriptions()
         feeds.sort()
-        self.assertEqual(5,len(feeds))
+        self.assertEqual(5, len(feeds))
         self.assertEqual(['http://api.flickr.com/services/feeds/' +
-            'photos_public.gne?id=77366516@N00',
-            'http://api.flickr.com/services/feeds/' +
-            'photos_public.gne?id=SOMEID',
-            'http://del.icio.us/rss/SOMEID',
-            'http://del.icio.us/rss/eliast',
-            'http://torrez.us/feed/rdf'], feeds)
+                          'photos_public.gne?id=77366516@N00',
+                          'http://api.flickr.com/services/feeds/' +
+                          'photos_public.gne?id=SOMEID',
+                          'http://del.icio.us/rss/SOMEID',
+                          'http://del.icio.us/rss/eliast',
+                          'http://torrez.us/feed/rdf'], feeds)
 
     def test_recursive(self):
         config.load('tests/data/config/foaf-deep.ini')
         feeds = config.subscriptions()
         feeds.sort()
         self.assertEqual(['http://api.flickr.com/services/feeds/photos_public.gne?id=77366516@N00',
-        'http://del.icio.us/rss/eliast', 'http://del.icio.us/rss/leef',
-        'http://del.icio.us/rss/rubys', 'http://intertwingly.net/blog/atom.xml',
-        'http://thefigtrees.net/lee/life/atom.xml',
-        'http://torrez.us/feed/rdf'], feeds)
+                          'http://del.icio.us/rss/eliast', 'http://del.icio.us/rss/leef',
+                          'http://del.icio.us/rss/rubys', 'http://intertwingly.net/blog/atom.xml',
+                          'http://thefigtrees.net/lee/life/atom.xml',
+                          'http://torrez.us/feed/rdf'], feeds)
 
-# these tests only make sense if libRDF is installed
-try:
-    import RDF
-except:
-    logger.warn("Redland RDF is not available => can't test FOAF reading lists")
-    for key in FoafTest.__dict__.keys():
-        if key.startswith('test_'): delattr(FoafTest, key)
-
-if __name__ == '__main__':
-    unittest.main()
