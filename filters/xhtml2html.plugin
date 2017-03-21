@@ -1,3 +1,4 @@
+# coding=utf-8
 # Example usages:
 #
 # filters:
@@ -10,21 +11,27 @@
 # quote_char="'"
 
 import sys
+
+from html5lib import serializer, treewalkers
+
 opts = {}
-for name,value in zip(sys.argv[1::2],sys.argv[2::2]):
-  name = name.lstrip('-')
-  try:    opts[name] = eval(value)
-  except: opts[name] = value
+for name, value in zip(sys.argv[1::2], sys.argv[2::2]):
+    name = name.lstrip('-')
+    try:
+        opts[name] = eval(value)
+    except:
+        opts[name] = value
 
 try:
-  from xml.dom import minidom
-  doc = minidom.parse(sys.stdin)
-except:
-  from html5lib import liberalxmlparser, treebuilders
-  parser = liberalxmlparser.XHTMLParser(tree=treebuilders.getTreeBuilder('dom'))
-  doc = parser.parse(sys.stdin, encoding='utf-8')
+    from xml.dom import minidom
 
-from html5lib import treewalkers, serializer
+    doc = minidom.parse(sys.stdin)
+except:
+    from html5lib import liberalxmlparser, treebuilders
+
+    parser = liberalxmlparser.XHTMLParser(tree=treebuilders.getTreeBuilder('dom'))
+    doc = parser.parse(sys.stdin, encoding='utf-8')
+
 tokens = treewalkers.getTreeWalker('dom')(doc)
 serializer = serializer.HTMLSerializer(**dict(opts))
 for text in serializer.serialize(tokens, encoding='utf-8'):

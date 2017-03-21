@@ -3,33 +3,32 @@
 import glob
 import os
 import shutil
+import sys
 import time
+import traceback
 from xml.dom import minidom
 
-import config
 import feedparser
+
+import config
 import planet
 import reconstitute
 import shell
-from planet import idindex
+from planet import idindex, logger
 from reconstitute import createTextElement, date
 from spider import filename
 
 
 def splice():
     """ Splice together a planet from a cache of entries """
-    import planet
-    log = planet.logger
 
-    log.info("Loading cached data")
+    logger.info("Loading cached data")
     cache = config.cache_directory()
-    dir = [(os.stat(file).st_mtime, file) for file in glob.glob(cache + "/*")
-           if not os.path.isdir(file)]
-    dir.sort()
-    dir.reverse()
+    dir_ = [(os.stat(filepath).st_mtime, filepath) for filepath in glob.glob(cache + "/*") if not os.path.isdir(filepath)]
+    dir_.sort()
+    dir_.reverse()
 
-    max_items = max([config.items_per_page(templ)
-                     for templ in config.template_files() or ['Planet']])
+    max_items = max([config.items_per_page(templ) for templ in config.template_files() or ['Planet']])
 
     doc = minidom.parseString('<feed xmlns="http://www.w3.org/2005/Atom"/>')
     feed = doc.documentElement
@@ -72,22 +71,27 @@ def splice():
     sources = config.cache_sources_directory()
     for sub in config.subscriptions():
         data = feedparser.parse(filename(sources, sub))
-        if data.feed.has_key('id'): sub_ids.append(data.feed.id)
-        if not data.feed: continue
+        if 'id' in data.feed.keys():
+            sub_ids.append(data.feed.id)
+        if not data.feed:
+            continue
 
         # warn on missing links
-        if not data.feed.has_key('planet_message'):
-            if not data.feed.has_key('links'): data.feed['links'] = []
+        if 'planet_message' not in data.feed.keys():
+            if 'links' not in data.feed.keys():
+                data.feed['links'] = []
 
             for link in data.feed.links:
-                if link.rel == 'self': break
+                if link.rel == 'self':
+                    break
             else:
-                log.debug('missing self link for ' + sub)
+                logger.debug('missing self link for ' + sub)
 
             for link in data.feed.links:
-                if link.rel == 'alternate' and 'html' in link.type: break
+                if link.rel == 'alternate' and 'html' in link.type:
+                    break
             else:
-                log.debug('missing html link for ' + sub)
+                logger.debug('missing html link for ' + sub)
 
         xdoc = minidom.parseString('''<planet:source xmlns:planet="%s"
              xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
@@ -101,13 +105,14 @@ def splice():
     count = {}
     atomNS = 'http://www.w3.org/2005/Atom'
     new_feed_items = config.new_feed_items()
-    for mtime, file in dir:
-        if index is not  None:
-            base = os.path.basename(file)
-            if index.has_key(base) and index[base] not in sub_ids: continue
+    for mtime, filepath in dir_:
+        if index is not None:
+            base = os.path.basename(filepath)
+            if base in index.keys() and index[base] not in sub_ids:
+                continue
 
         try:
-            entry = minidom.parse(file)
+            entry = minidom.parse(filepath)
 
             # verify that this entry is currently subscribed to and that the
             # number of entries contributed by this feed does not exceed
@@ -117,34 +122,42 @@ def splice():
             if sources:
                 ids = sources[0].getElementsByTagName('id')
                 if ids:
-                    id = ids[0].childNodes[0].nodeValue
-                    count[id] = count.get(id, 0) + 1
-                    if new_feed_items and count[id] > new_feed_items: continue
+                    id_ = ids[0].childNodes[0].nodeValue
+                    count[id_] = count.get(id_, 0) + 1
+                    if new_feed_items and count[id_] > new_feed_items:
+                        continue
 
-                    if id not in sub_ids:
+                    if id_ not in sub_ids:
                         ids = sources[0].getElementsByTagName('planet:id')
-                        if not ids: continue
-                        id = ids[0].childNodes[0].nodeValue
-                        if id not in sub_ids:
-                            log.warn('Skipping: ' + id)
-                        if id not in sub_ids: continue
+                        if not ids:
+                            continue
+                        id_ = ids[0].childNodes[0].nodeValue
+                        if id_ not in sub_ids:
+                            logger.warn('Skipping: ' + id_)
+                        if id_ not in sub_ids:
+                            continue
 
             # add entry to feed
             feed.appendChild(entry.documentElement)
             items = items + 1
-            if items >= max_items: break
-        except:
-            log.error("Error parsing %s", file)
+            if items >= max_items:
+                break
+        except Exception as e:
+            print("WARNING: Broad exception caught. FIXME")
+            print(e)
+            print(traceback.print_exception(*sys.exc_info()))
+            logger.error("Error parsing %s", filepath)
 
-    if index: index.close()
+    if index:
+        index.close()
 
     return doc
 
 
 def apply(doc):
     output_dir = config.output_dir()
-    if not os.path.exists(output_dir): os.makedirs(output_dir)
-    log = planet.logger
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     planet_filters = config.filters('Planet')
 
@@ -154,49 +167,52 @@ def apply(doc):
 
         # run any template specific filters
         if config.filters(template_file) != planet_filters:
-            output = open(output_file).read()
-            for filter in config.filters(template_file):
-                if filter in planet_filters: continue
-                if filter.find('>') > 0:
+            with open(output_file) as fp:
+                output = fp.read()
+            for filter_ in config.filters(template_file):
+                if filter_ in planet_filters:
+                    continue
+                if filter_.find('>') > 0:
                     # tee'd output
-                    filter, dest = filter.split('>', 1)
-                    tee = shell.run(filter.strip(), output, mode="filter")
+                    filter_, dest = filter_.split('>', 1)
+                    tee = shell.run(filter_.strip(), output, mode="filter")
                     if tee:
                         output_dir = planet.config.output_dir()
                         dest_file = os.path.join(output_dir, dest.strip())
-                        dest_file = open(dest_file, 'w')
-                        dest_file.write(tee)
-                        dest_file.close()
+                        with open(dest_file, 'w') as outputfile:
+                            outputfile.write(tee)
                 else:
                     # pipe'd output
-                    output = shell.run(filter, output, mode="filter")
+                    output = shell.run(filter_, output, mode="filter")
                     if not output:
                         os.unlink(output_file)
                         break
             else:
-                handle = open(output_file, 'w')
-                handle.write(output)
-                handle.close()
+                with open(output_file, 'w') as handle:
+                    handle.write(output)
 
     # Process bill of materials
     for copy_file in config.bill_of_materials():
         dest = os.path.join(output_dir, copy_file)
         for template_dir in config.template_directories():
             source = os.path.join(template_dir, copy_file)
-            if os.path.exists(source): break
+            if os.path.exists(source):
+                break
         else:
-            log.error('Unable to locate %s', copy_file)
-            log.info("Template search path:")
+            logger.error('Unable to locate %s', copy_file)
+            logger.info("Template search path:")
             for template_dir in config.template_directories():
-                log.info("    %s", os.path.realpath(template_dir))
+                logger.info("    %s", os.path.realpath(template_dir))
             continue
 
         mtime = os.stat(source).st_mtime
         if not os.path.exists(dest) or os.stat(dest).st_mtime < mtime:
             dest_dir = os.path.split(dest)[0]
-            if not os.path.exists(dest_dir): os.makedirs(dest_dir)
+            if not os.path.exists(dest_dir):
+                os.makedirs(dest_dir)
 
-            log.info("Copying %s to %s", source, dest)
-            if os.path.exists(dest): os.chmod(dest, 0644)
+            logger.info("Copying %s to %s", source, dest)
+            if os.path.exists(dest):
+                os.chmod(dest, 0o644)
             shutil.copyfile(source, dest)
             shutil.copystat(source, dest)

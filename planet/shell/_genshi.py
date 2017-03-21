@@ -30,9 +30,9 @@ def norm(value):
 def find_config(config, feed):
     # match based on self link
     for link in feed.links:
-        if link.has_key('rel') and link.rel == 'self':
-            if link.has_key('type') and link.type in feed_types:
-                if link.has_key('href') and link.href in subscriptions:
+        if 'rel' in link.keys() and link.rel == 'self':
+            if 'type' in link.keys() and link.type in feed_types:
+                if 'href' in link.keys() and link.href in subscriptions:
                     return norm(dict(config.parser.items(link.href)))
 
     # match based on name
@@ -58,14 +58,14 @@ class XHTMLParser(object):
         return self
 
     def next(self):
-        object = self.iter.next()
-        if object[0] == 'END':
+        obj = self.iter.next()
+        if obj[0] == 'END':
             self.depth = self.depth - 1
         predepth = self.depth
-        if object[0] == 'START':
+        if obj[0] == 'START':
             self.depth = self.depth + 1
         if predepth:
-            return object
+            return obj
         return self.next()
 
 
@@ -79,9 +79,11 @@ def streamify(text, bozo):
         text.stream = XHTMLParser(text.value)
 
 
-def run(script, doc, output_file=None, options={}):
+def run(script, doc, output_file=None, options=None):
     """ process an Genshi template """
 
+    if options is None:
+        options = {}
     context = Context(**options)
 
     tmpl_fileobj = open(script)
@@ -104,26 +106,26 @@ def run(script, doc, output_file=None, options={}):
         for sub in config.subscriptions():
             data = feedparser.parse(filename(sources, sub))
             data.feed.config = norm(dict(config.parser.items(sub)))
-            if data.feed.has_key('link'):
+            if 'link' in data.feed.keys():
                 feeds.append((data.feed.config.get('name', ''), data.feed))
             subscriptions.append(norm(sub))
         feeds.sort()
 
         # annotate each entry
         new_date_format = config.new_date_format()
-        vars = feedparser.parse(StringIO(doc))
-        vars.feeds = [value for name, value in feeds]
+        some_vars = feedparser.parse(StringIO(doc))
+        some_vars.feeds = [value for name, value in feeds]
         last_feed = None
         last_date = None
-        for entry in vars.entries:
+        for entry in some_vars.entries:
             entry.source.config = find_config(config, entry.source)
 
             # add new_feed and new_date fields
             entry.new_feed = entry.source.id
             entry.new_date = date = None
-            if entry.has_key('published_parsed'):
+            if 'published_parsed' in entry.keys():
                 date = entry.published_parsed
-            if entry.has_key('updated_parsed'):
+            if 'updated_parsed' in entry.keys():
                 date = entry.updated_parsed
             if date:
                 entry.new_date = time.strftime(new_date_format, date)
@@ -141,16 +143,15 @@ def run(script, doc, output_file=None, options={}):
 
             # add streams for all text constructs
             for key in entry.keys():
-                if key.endswith("_detail") and entry[key].has_key('type') and \
-                        entry[key].has_key('value'):
+                if key.endswith("_detail") and 'type' in entry[key].keys() and 'value' in entry[key].keys():
                     streamify(entry[key], entry.source.planet_bozo)
             if entry.has_key('content'):
                 for content in entry.content:
                     streamify(content, entry.source.planet_bozo)
 
         # add cumulative feed information to the Genshi context
-        vars.feed.config = dict(config.parser.items('Planet', True))
-        context.push(vars)
+        some_vars.feed.config = dict(config.parser.items('Planet', True))
+        context.push(some_vars)
 
     # apply template
     output = tmpl.generate(context).render('xml')

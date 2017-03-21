@@ -4,9 +4,17 @@ import os
 import sys
 from StringIO import StringIO
 
+import planet
+import traceback
 
-def run(script, doc, output_file=None, options={}):
+log = planet.logger
+
+
+def run(script, doc, output_file=None, options=None):
     """ process an Python script using imp """
+    if options is None:
+        options = {}
+
     save_sys = (sys.stdin, sys.stdout, sys.stderr, sys.argv)
     plugin_stdout = StringIO()
     plugin_stderr = StringIO()
@@ -25,7 +33,7 @@ def run(script, doc, output_file=None, options={}):
         sys.stderr = plugin_stderr
 
         # determine __file__ value
-        if options.has_key("__file__"):
+        if "__file__" in options.keys():
             plugin_file = options["__file__"]
             del options["__file__"]
         else:
@@ -44,16 +52,17 @@ def run(script, doc, output_file=None, options={}):
                     description = ('.plugin', 'rb', imp.PY_SOURCE)
                     imp.load_module('__main__', handle, plugin_file, description)
                 except SystemExit as e:
-                    if e.code: log.error('%s exit rc=%d', (plugin_file, e.code))
+                    if e.code:
+                        log.error('%s exit rc=%d', (plugin_file, e.code))
             except Exception as e:
-                import traceback
-                type, value, tb = sys.exc_info()
+                type_, value, tb = sys.exc_info()
                 plugin_stderr.write(''.join(
-                    traceback.format_exception_only(type, value) +
+                    traceback.format_exception_only(type_, value) +
                     traceback.format_tb(tb)))
         finally:
             handle.close()
-            if cwd != os.getcwd(): os.chdir(cwd)
+            if cwd != os.getcwd():
+                os.chdir(cwd)
 
     finally:
         # restore system state
@@ -61,7 +70,6 @@ def run(script, doc, output_file=None, options={}):
 
     # log anything sent to stderr
     if plugin_stderr.getvalue():
-        import planet
         planet.logger.error(plugin_stderr.getvalue())
 
     # return stdout

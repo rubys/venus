@@ -1,9 +1,14 @@
 # coding=utf-8
 from subprocess import PIPE, Popen
 
+import planet
 
-def run(script, doc, output_file=None, options={}):
+
+def run(script, doc, output_file=None, options=None):
     """ process an Python script """
+
+    if options is None:
+        options = {}
 
     if output_file:
         out = open(output_file, 'w')
@@ -15,7 +20,6 @@ def run(script, doc, output_file=None, options={}):
 
     stdout, stderr = proc.communicate(doc)
     if stderr:
-        import planet
         planet.logger.error(stderr)
 
     return stdout

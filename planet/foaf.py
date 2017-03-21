@@ -1,5 +1,6 @@
 # coding=utf-8
 from ConfigParser import ConfigParser
+import sys, urllib
 
 inheritable_options = ['online_accounts']
 
@@ -189,7 +190,6 @@ def friend2config(friend_model, friend, seeAlso, subconfig, data):
 
 
 if __name__ == "__main__":
-    import sys, urllib
 
     config = ConfigParser()
 

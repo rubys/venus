@@ -6,14 +6,14 @@ from ConfigParser import ConfigParser
 
 
 # input = csv, output = ConfigParser
-def csv2config(input, config=None):
-    if not hasattr(input, 'read'):
-        input = csv.StringIO(input)
+def csv2config(input_, config=None):
+    if not hasattr(input_, 'read'):
+        input_ = csv.StringIO(input_)
 
-    if not config:
+    if config is None:
         config = ConfigParser()
 
-    reader = csv.DictReader(input)
+    reader = csv.DictReader(input_)
     for row in reader:
         section = row[reader.fieldnames[0]]
         if not config.has_section(section):
@@ -28,6 +28,6 @@ def csv2config(input, config=None):
 if __name__ == "__main__":
     # small main program which converts CSV into config.ini format
     config = ConfigParser()
-    for input in sys.argv[1:]:
-        csv2config(urllib.urlopen(input), config)
+    for addr in sys.argv[1:]:
+        csv2config(urllib.urlopen(addr), config)
     config.write(sys.stdout)

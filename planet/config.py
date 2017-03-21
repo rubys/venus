@@ -34,6 +34,8 @@ import sys
 import urllib
 from ConfigParser import ConfigParser
 from urlparse import urljoin
+import StringIO
+import urllib2, StringIO
 
 parser = ConfigParser()
 
@@ -217,7 +219,6 @@ def load(config_files):
                 cached_config.readfp(data)
             else:
                 from planet import shell
-                import StringIO
                 cached_config.readfp(StringIO.StringIO(shell.run(
                     content_type(list), data.getvalue(), mode="filter")))
 
@@ -233,7 +234,6 @@ def downloadReadingList(list, orig_config, callback, use_cache=True, re_read=Tru
     import config
     try:
 
-        import urllib2, StringIO
         from planet.spider import filename
 
         # list cache file name

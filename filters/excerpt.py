@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Generate an excerpt from either the summary or a content of an entry.
 
@@ -13,8 +15,10 @@ Notes:
    of the img tag is already an <a> tag, no additional hypertext links are
    added.
 """
+from __future__ import print_function
 
-import sys, xml.dom.minidom, textwrap
+import sys
+import textwrap
 from xml.dom import Node, minidom
 
 atomNS = 'http://www.w3.org/2005/Atom'
@@ -22,11 +26,12 @@ planetNS = 'http://planet.intertwingly.net/'
 
 args = dict(zip([name.lstrip('-') for name in sys.argv[1::2]], sys.argv[2::2]))
 
-wrapper = textwrap.TextWrapper(width=int(args.get('width','500')))
+wrapper = textwrap.TextWrapper(width=int(args.get('width', '500')))
 omit = args.get('omit', '').split()
 target = args.get('target', 'planet:excerpt')
 
-class copy:
+
+class copy(object):
     """ recursively copy a source to a target, up to a given width """
 
     def __init__(self, dom, source, target):
@@ -40,10 +45,11 @@ class copy:
         """ copy child nodes of a source to the target """
         for child in source.childNodes:
             if child.nodeType == Node.ELEMENT_NODE:
-                 self.copyElement(child, target)
+                self.copyElement(child, target)
             elif child.nodeType == Node.TEXT_NODE:
-                 self.copyText(child.data, target)
-            if self.full: break
+                self.copyText(child.data, target)
+            if self.full:
+                break
 
     def copyElement(self, source, target):
         """ copy source element to the target """
@@ -51,7 +57,7 @@ class copy:
         # check the omit list
         if source.nodeName in omit:
             if source.nodeName == 'img':
-               return self.elideImage(source, target)
+                return self.elideImage(source, target)
             return self.copyChildren(source, target)
 
         # copy element, attributes, and children
@@ -84,9 +90,10 @@ class copy:
             target.appendChild(self.dom.createTextNode(source))
             self.textlen = len(lines[0])
         elif lines:
-            excerpt = source[:len(lines[0])-self.textlen] + u' \u2026'
+            excerpt = source[:len(lines[0]) - self.textlen] + u' \u2026'
             target.appendChild(dom.createTextNode(excerpt))
             self.full = True
+
 
 # select summary or content element
 dom = minidom.parse(sys.stdin)
@@ -98,7 +105,8 @@ if not source:
 if source:
     if target.startswith('planet:'):
         dom.documentElement.setAttribute('xmlns:planet', planetNS)
-    if target.startswith('atom:'): target = target.split(':',1)[1]
+    if target.startswith('atom:'):
+        target = target.split(':', 1)[1]
     excerpt = dom.createElementNS(planetNS, target)
     source[0].parentNode.appendChild(excerpt)
     copy(dom, source[0], excerpt)
@@ -106,4 +114,4 @@ if source:
         source[0].parentNode.removeChild(source[0])
 
 # print out results
-print dom.toxml('utf-8')
+print(dom.toxml('utf-8'))

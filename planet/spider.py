@@ -8,24 +8,27 @@ and write each as a set of entries in a cache directory.
 import calendar
 import os
 import re
+import socket
+import sys
 import time
+import traceback
 import urlparse
+from Queue import Queue
 from StringIO import StringIO
+from hashlib import md5
+from httplib import BadStatusLine
+from threading import Thread
 from xml.dom import minidom
+
+import feedparser
+import httplib2
 
 # Planet modules
 import config
-import feedparser
 import planet
 import reconstitute
 import scrub
 import shell
-import socket
-
-try:
-    from hashlib import md5
-except:
-    from md5 import new as md5
 
 # Regular expressions to sanitise cache filenames
 re_url_scheme = re.compile(r'^\w+:/*(\w+:|www\.)?')
@@ -36,45 +39,48 @@ re_final_cruft = re.compile(r'[,.]*$')
 index = True
 
 
-def filename(directory, filename):
+def filename(directory, fname):
     """Return a filename suitable for the cache.
 
     Strips dangerous and common characters to create a filename we
     can use to store the cache in.
     """
     try:
-        if re_url_scheme.match(filename):
-            if isinstance(filename, str):
-                filename = filename.decode('utf-8').encode('idna')
+        if re_url_scheme.match(fname):
+            if isinstance(fname, str):
+                fname = fname.decode('utf-8').encode('idna')
             else:
-                filename = filename.encode('idna')
-    except:
-        pass
-    if isinstance(filename, unicode):
-        filename = filename.encode('utf-8')
-    filename = re_url_scheme.sub("", filename)
-    filename = re_slash.sub(",", filename)
-    filename = re_initial_cruft.sub("", filename)
-    filename = re_final_cruft.sub("", filename)
+                fname = fname.encode('idna')
+    except Exception as e:
+        print("WARNING: Broad exception caught. FIXME")
+        print(e)
+        print(traceback.print_exception(*sys.exc_info()))
+
+    if isinstance(fname, unicode):
+        fname = fname.encode('utf-8')
+    fname = re_url_scheme.sub("", fname)
+    fname = re_slash.sub(",", fname)
+    fname = re_initial_cruft.sub("", fname)
+    fname = re_final_cruft.sub("", fname)
 
     # limit length of filename
-    if len(filename) > 250:
-        parts = filename.split(',')
+    if len(fname) > 250:
+        parts = fname.split(',')
         for i in range(len(parts), 0, -1):
             if len(','.join(parts[:i])) < 220:
-                filename = ','.join(parts[:i]) + ',' + \
-                           md5(','.join(parts[i:])).hexdigest()
+                fname = ','.join(parts[:i]) + ',' + \
+                        md5(','.join(parts[i:])).hexdigest()
                 break
 
-    return os.path.join(directory, filename)
+    return os.path.join(directory, fname)
 
 
 def write(xdoc, out, mtime=None):
     """ write the document out to disk """
-    file = open(out, 'w')
-    file.write(xdoc)
-    file.close()
-    if mtime: os.utime(out, (mtime, mtime))
+    with open(out, 'w') as output:
+        output.write(xdoc)
+    if mtime:
+        os.utime(out, (mtime, mtime))
 
 
 def _is_http_uri(uri):
@@ -88,11 +94,10 @@ def writeCache(feed_uri, feed_info, data):
     blacklist = config.cache_blacklist_directory()
 
     # capture http status
-    if not data.has_key("status"):
-        if data.has_key("entries") and len(data.entries) > 0:
+    if 'status' not in data.keys():
+        if 'entries' not in data.keys() and len(data.entries) > 0:
             data.status = 200
-        elif data.bozo and \
-                        data.bozo_exception.__class__.__name__.lower() == 'timeout':
+        elif data.bozo and data.bozo_exception.__class__.__name__.lower() == 'timeout':
             data.status = 408
         else:
             data.status = 500
@@ -101,27 +106,27 @@ def writeCache(feed_uri, feed_info, data):
         time.gmtime(time.time() - 86400 * config.activity_threshold(feed_uri))
 
     # process based on the HTTP status code
-    if data.status == 200 and data.has_key("url"):
+    if data.status == 200 and 'url' in data.keys():
         feed_info.feed['planet_http_location'] = data.url
-        if data.has_key("entries") and len(data.entries) == 0:
+        if 'entries' in data.keys() and len(data.entries) == 0:
             log.warning("No data %s", feed_uri)
             feed_info.feed['planet_message'] = 'no data'
         elif feed_uri == data.url:
             log.info("Updating feed %s", feed_uri)
         else:
             log.info("Updating feed %s @ %s", feed_uri, data.url)
-    elif data.status == 301 and data.has_key("entries") and len(data.entries) > 0:
+    elif data.status == 301 and 'entries' in data.keys() and len(data.entries) > 0:
         log.warning("Feed has moved from <%s> to <%s>", feed_uri, data.url)
         data.feed['planet_http_location'] = data.url
-    elif data.status == 304 and data.has_key("url"):
+    elif data.status == 304 and 'url' in data.keys():
         feed_info.feed['planet_http_location'] = data.url
         if feed_uri == data.url:
             log.info("Feed %s unchanged", feed_uri)
         else:
             log.info("Feed %s unchanged @ %s", feed_uri, data.url)
 
-        if not feed_info.feed.has_key('planet_message'):
-            if feed_info.feed.has_key('planet_updated'):
+        if 'planet_message' not in feed_info.feed.keys():
+            if 'planet_updated' in feed_info.feed.keys():
                 updated = feed_info.feed.planet_updated
                 if feedparser._parse_date_iso8601(updated) >= activity_horizon:
                     return
@@ -149,33 +154,35 @@ def writeCache(feed_uri, feed_info, data):
     data.feed['planet_http_status'] = str(data.status)
 
     # capture etag and last-modified information
-    if data.has_key('headers'):
-        if data.has_key('etag') and data.etag:
+    if 'headers' in data.keys():
+        if 'etag' in data.keys() and data.etag:
             data.feed['planet_http_etag'] = data.etag
-        elif data.headers.has_key('etag') and data.headers['etag']:
+        elif 'etag' in data.headers.keys() and data.headers['etag']:
             data.feed['planet_http_etag'] = data.headers['etag']
 
-        if data.headers.has_key('last-modified'):
+        if 'last-modified' in data.headers.keys():
             data.feed['planet_http_last_modified'] = data.headers['last-modified']
-        elif data.has_key('modified') and data.modified:
+        elif 'modified' in data.keys() and data.modified:
             data.feed['planet_http_last_modified'] = time.asctime(data.modified)
 
-        if data.headers.has_key('-content-hash'):
+        if '-content-hash' in data.headers.keys():
             data.feed['planet_content_hash'] = data.headers['-content-hash']
 
     # capture feed and data from the planet configuration file
     if data.get('version'):
-        if not data.feed.has_key('links'): data.feed['links'] = list()
+        if 'links' not in data.keys():
+            data.feed['links'] = list()
         feedtype = 'application/atom+xml'
-        if data.version.startswith('rss'): feedtype = 'application/rss+xml'
-        if data.version in ['rss090', 'rss10']: feedtype = 'application/rdf+xml'
+        if data.version.startswith('rss'):
+            feedtype = 'application/rss+xml'
+        if data.version in ['rss090', 'rss10']:
+            feedtype = 'application/rdf+xml'
         for link in data.feed.links:
             if link.rel == 'self':
                 link['type'] = feedtype
                 break
         else:
-            data.feed.links.append(feedparser.FeedParserDict(
-                {'rel': 'self', 'type': feedtype, 'href': feed_uri}))
+            data.feed.links.append(feedparser.FeedParserDict({'rel': 'self', 'type': feedtype, 'href': feed_uri}))
     for name, value in config.feed_options(feed_uri).items():
         data.feed['planet_' + name] = value
 
@@ -184,22 +191,26 @@ def writeCache(feed_uri, feed_info, data):
 
     from planet import idindex
     global index
-    if index != None: index = idindex.open()
+    if index is not None:
+        index = idindex.open()
 
     # select latest entry for each unique id
     ids = {}
     for entry in data.entries:
         # generate an id, if none is present
-        if not entry.has_key('id') or not entry.id:
+        if 'id' not in entry.keys() or not entry.id:
             entry['id'] = reconstitute.id(None, entry)
         elif hasattr(entry['id'], 'values'):
             entry['id'] = entry['id'].values()[0]
-        if not entry['id']: continue
+        if not entry['id']:
+            continue
 
         # determine updated date for purposes of selection
         updated = ''
-        if entry.has_key('published'): updated = entry.published
-        if entry.has_key('updated'):   updated = entry.updated
+        if 'published' in entry.keys():
+            updated = entry.published
+        if 'updated' in entry.keys():
+            updated = entry.updated
 
         # if not seen or newer than last seen, select it
         if updated >= ids.get(entry.id, ('',))[0]:
@@ -221,58 +232,68 @@ def writeCache(feed_uri, feed_info, data):
 
         # get updated-date either from the entry or the cache (default to now)
         mtime = None
-        if not entry.has_key('updated_parsed') or not entry['updated_parsed']:
+        if 'updated_parsed' not in entry.keys() or not entry['updated_parsed']:
             entry['updated_parsed'] = entry.get('published_parsed', None)
-        if entry.has_key('updated_parsed'):
+        if 'updated_parsed' in entry.keys():
             try:
                 mtime = calendar.timegm(entry.updated_parsed)
-            except:
-                pass
+            except Exception as e:
+                print("WARNING: Broad exception caught. FIXME")
+                print(e)
+                print(traceback.print_exception(*sys.exc_info()))
         if not mtime:
             try:
                 mtime = os.stat(cache_file).st_mtime
-            except:
-                if data.feed.has_key('updated_parsed'):
+            except Exception as e:
+                print(e)
+                if 'updated_parsed' in data.feed.keys():
                     try:
                         mtime = calendar.timegm(data.feed.updated_parsed)
-                    except:
-                        pass
-        if not mtime: mtime = time.time()
+                    except Exception as e:
+                        print("WARNING: Broad exception caught. FIXME")
+                        print(e)
+                        print(traceback.print_exception(*sys.exc_info()))
+        if not mtime:
+            mtime = time.time()
         entry['updated_parsed'] = time.gmtime(mtime)
 
         # apply any filters
         xdoc = reconstitute.reconstitute(data, entry)
         output = xdoc.toxml().encode('utf-8')
         xdoc.unlink()
-        for filter in config.filters(feed_uri):
-            output = shell.run(filter, output, mode="filter")
-            if not output: break
+        for filter_ in config.filters(feed_uri):
+            output = shell.run(filter_, output, mode="filter")
+            if not output:
+                break
         if not output:
-            if os.path.exists(cache_file): os.remove(cache_file)
+            if os.path.exists(cache_file):
+                os.remove(cache_file)
             continue
 
         # write out and timestamp the results
         write(output, cache_file, mtime)
 
         # optionally index
-        if index != None:
+        if index is not None:
             feedid = data.feed.get('id', data.feed.get('link', None))
             if feedid:
-                if type(feedid) == unicode: feedid = feedid.encode('utf-8')
+                if type(feedid) == unicode:
+                    feedid = feedid.encode('utf-8')
                 index[filename('', entry.id)] = feedid
 
-    if index: index.close()
+    if index:
+        index.close()
 
     # identify inactive feeds
     if config.activity_threshold(feed_uri):
         updated = [entry.updated_parsed for entry in data.entries
-                   if entry.has_key('updated_parsed')]
+                   if 'updated_parsed' in entry.keys()]
         updated.sort()
 
         if updated:
             data.feed['planet_updated'] = \
                 time.strftime("%Y-%m-%dT%H:%M:%SZ", updated[-1])
-        elif data.feed.has_key('planet_updated'):
+        elif 'planet_updated' in data.feed.keys():
             updated = [feedparser._parse_date_iso8601(data.feed.planet_updated)]
 
         if not updated or updated[-1] < activity_horizon:
@@ -282,8 +303,9 @@ def writeCache(feed_uri, feed_info, data):
 
     # report channel level errors
     if data.status == 226:
-        if data.feed.has_key('planet_message'): del data.feed['planet_message']
-        if feed_info.feed.has_key('planet_updated'):
+        if 'planet_message' in data.feed.keys():
+            del data.feed['planet_message']
+        if 'planet_updated' in feed_info.feed.keys():
             data.feed['planet_updated'] = feed_info.feed['planet_updated']
     elif data.status == 403:
         data.feed['planet_message'] = "403: forbidden"
@@ -299,7 +321,8 @@ def writeCache(feed_uri, feed_info, data):
         data.feed['planet_message'] = "http status %s" % data.status
 
     # write the feed info to the cache
-    if not os.path.exists(sources): os.makedirs(sources)
+    if not os.path.exists(sources):
+        os.makedirs(sources)
     xdoc = minidom.parseString('''<feed xmlns:planet="%s"
       xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
     reconstitute.source(xdoc.documentElement, data.feed, data.bozo, data.version)
@@ -308,9 +331,6 @@ def writeCache(feed_uri, feed_info, data):
 
 
 def httpThread(thread_index, input_queue, output_queue, log):
-    import httplib2
-    from httplib import BadStatusLine
-
     h = httplib2.Http(config.http_cache_directory())
     uri, feed_info = input_queue.get(block=True)
     while uri:
@@ -326,16 +346,20 @@ def httpThread(thread_index, input_queue, output_queue, log):
                     idna = uri.encode('idna')
                 else:
                     idna = uri.decode('utf-8').encode('idna')
-                if idna != uri: log.info("IRI %s mapped to %s", uri, idna)
-            except:
+                if idna != uri:
+                    log.info("IRI %s mapped to %s", uri, idna)
+            except Exception as e:
+                print("WARNING: Broad exception caught. FIXME")
+                print(e)
+                print(traceback.print_exception(*sys.exc_info()))
                 log.info("unable to map %s to a URI", uri)
                 idna = uri
 
             # cache control headers
             headers = {}
-            if feed_info.feed.has_key('planet_http_etag'):
+            if 'planet_http_etag' in feed_info.feed.keys():
                 headers['If-None-Match'] = feed_info.feed['planet_http_etag']
-            if feed_info.feed.has_key('planet_http_last_modified'):
+            if 'planet_http_last_modified' in feed_info.feed.keys():
                 headers['If-Modified-Since'] = \
                     feed_info.feed['planet_http_last_modified']
 
@@ -347,15 +371,14 @@ def httpThread(thread_index, input_queue, output_queue, log):
             if resp.status == 200:
                 if resp.fromcache:
                     resp.status = 304
-                elif feed_info.feed.has_key('planet_content_hash') and \
-                                feed_info.feed['planet_content_hash'] == \
-                                resp['-content-hash']:
+                elif 'planet_content_hash' in feed_info.feed.keys() and \
+                                feed_info.feed['planet_content_hash'] == resp['-content-hash']:
                     resp.status = 304
 
             # build a file-like object
             feed = StringIO(content)
             setattr(feed, 'url', resp.get('content-location', uri))
-            if resp.has_key('content-encoding'):
+            if 'content-encoding' in resp.keys():
                 del resp['content-encoding']
             setattr(feed, 'headers', resp)
         except BadStatusLine:
@@ -370,11 +393,12 @@ def httpThread(thread_index, input_queue, output_queue, log):
             else:
                 log.error("HTTP Error: %s in thread-%d", str(e), thread_index)
         except Exception as e:
-            import sys, traceback
-            type, value, tb = sys.exc_info()
+            print("WARNING: Broad exception caught. FIXME")
+            print(e)
+            print(traceback.print_exception(*sys.exc_info()))
+            type_, value, tb = sys.exc_info()
             log.error('Error processing %s', uri)
-            for line in (traceback.format_exception_only(type, value) +
-                             traceback.format_tb(tb)):
+            for line in (traceback.format_exception_only(type_, value) + traceback.format_tb(tb)):
                 log.error(line.rstrip())
 
         output_queue.put(block=True, item=(uri, feed_info, feed))
@@ -389,19 +413,8 @@ def spiderPlanet(only_if_new=False):
     index = True
 
     timeout = config.feed_timeout()
-    try:
-        socket.setdefaulttimeout(float(timeout))
-        log.info("Socket timeout set to %d seconds", timeout)
-    except:
-        try:
-            import timeoutsocket
-            timeoutsocket.setDefaultSocketTimeout(float(timeout))
-            log.info("Socket timeout set to %d seconds", timeout)
-        except:
-            log.warning("Timeout set to invalid value '%s', skipping", timeout)
-
-    from Queue import Queue
-    from threading import Thread
+    socket.setdefaulttimeout(float(timeout))
+    log.info("Socket timeout set to %d seconds", timeout)
 
     fetch_queue = Queue()
     parse_queue = Queue()
@@ -457,11 +470,12 @@ def spiderPlanet(only_if_new=False):
                         options['etag'] = \
                             feed_info.feed.get('planet_http_etag', None)
                         try:
-                            modified = time.strptime(
-                                feed_info.feed.get('planet_http_last_modified',
-                                                   None))
-                        except:
-                            pass
+                            # TODO This just silently fails everytime since strptime is not provided a format
+                            modified = time.strptime(feed_info.feed.get('planet_http_last_modified', None))
+                        except Exception as e:
+                            print("WARNING: Broad exception caught. FIXME")
+                            print(e)
+                            print(traceback.print_exception(*sys.exc_info()))
 
                     data = feedparser.parse(feed, **options)
                 else:
@@ -471,37 +485,41 @@ def spiderPlanet(only_if_new=False):
                                                       'status': int(feed.headers.status)})
 
                 # duplicate feed?
-                id = data.feed.get('id', None)
-                if not id: id = feed_info.feed.get('id', None)
+                id_ = data.feed.get('id', None)
+                if not id_:
+                    id_ = feed_info.feed.get('id', None)
 
                 href = uri
-                if data.has_key('href'): href = data.href
+                if 'href' in data.keys():
+                    href = data.href
 
                 duplicate = None
-                if id and id in feeds_seen:
-                    duplicate = id
+                if id_ and id_ in feeds_seen:
+                    duplicate = id_
                 elif href and href in feeds_seen:
                     duplicate = href
 
                 if duplicate:
-                    feed_info.feed['planet_message'] = \
-                        'duplicate subscription: ' + feeds_seen[duplicate]
-                    log.warn('Duplicate subscription: %s and %s' %
-                             (uri, feeds_seen[duplicate]))
-                    if href: feed_info.feed['planet_http_location'] = href
+                    feed_info.feed['planet_message'] = 'duplicate subscription: ' + feeds_seen[duplicate]
+                    log.warn('Duplicate subscription: %s and %s' % (uri, feeds_seen[duplicate]))
+                    if href:
+                        feed_info.feed['planet_http_location'] = href
 
-                if id: feeds_seen[id] = uri
-                if href: feeds_seen[href] = uri
+                if id_:
+                    feeds_seen[id_] = uri
+                if href:
+                    feeds_seen[href] = uri
 
                 # complete processing for the feed
                 writeCache(uri, feed_info, data)
 
             except Exception as e:
-                import sys, traceback
-                type, value, tb = sys.exc_info()
+                print("WARNING: Broad exception caught. FIXME")
+                print(e)
+                print(traceback.print_exception(*sys.exc_info()))
+                type_, value, tb = sys.exc_info()
                 log.error('Error processing %s', uri)
-                for line in (traceback.format_exception_only(type, value) +
-                                 traceback.format_tb(tb)):
+                for line in (traceback.format_exception_only(type_, value) + traceback.format_tb(tb)):
                     log.error(line.rstrip())
 
         time.sleep(0.1)

@@ -1,9 +1,14 @@
+# coding=utf-8
 """
 Remap all images to take advantage of the Coral Content Distribution
 Network <http://www.coralcdn.org/>.
 """
+from __future__ import print_function
 
-import re, sys, urlparse, xml.dom.minidom
+import re
+import sys
+import urlparse
+import xml.dom.minidom
 
 entry = xml.dom.minidom.parse(sys.stdin).documentElement
 
@@ -15,4 +20,4 @@ for node in entry.getElementsByTagName('img'):
             component[1] += '.nyud.net:8080'
             node.setAttribute('src', urlparse.urlunparse(component))
 
-print entry.toxml('utf-8')
+print(entry.toxml('utf-8'))

@@ -1,5 +1,7 @@
 # coding=utf-8
 import os
+import warnings
+from subprocess import PIPE, Popen
 
 
 def quote(string, apos):
@@ -48,7 +50,6 @@ def run(script, doc, output_file=None, options=None):
         style.freeStylesheet()
         output.freeDoc()
     elif output_file:
-        import warnings
         if hasattr(warnings, 'simplefilter'):
             warnings.simplefilter('ignore', RuntimeWarning)
         docfile = os.tmpnam()
@@ -66,7 +67,6 @@ def run(script, doc, output_file=None, options=None):
                   (' '.join(cmdopts), script, docfile, output_file))
         os.unlink(docfile)
     else:
-        from subprocess import Popen, PIPE
 
         options = sum([['--stringparam', key, value]
                        for key, value in options.items()], [])

@@ -1,6 +1,9 @@
+# coding=utf-8
 import sys
+
 import html5lib
-tree=html5lib.treebuilders.getTreeBuilder('dom')
+
+tree = html5lib.treebuilders.getTreeBuilder('dom')
 parser = html5lib.html5parser.HTMLParser(tree=tree)
 document = parser.parse(sys.stdin)
 sys.stdout.write(document.toxml("utf-8"))

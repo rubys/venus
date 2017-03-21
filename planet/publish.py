@@ -2,7 +2,7 @@
 import os
 import urlparse
 
-import pubsubhubbub_publish as PuSH
+import pubsubhubbub_publish
 
 import planet
 
@@ -23,8 +23,8 @@ def publish(config):
     # publish feeds
     if feeds:
         try:
-            PuSH.publish(hub, feeds)
+            pubsubhubbub_publish.publish(hub, feeds)
             for feed in feeds:
                 log.info("Published %s to %s\n" % (feed, hub))
-        except PuSH.PublishError as e:
+        except pubsubhubbub_publish.PublishError as e:
             log.error("PubSubHubbub publishing error: %s\n" % e)
