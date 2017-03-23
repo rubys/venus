@@ -1,16 +1,35 @@
+import datetime
+import htmlentitydefs
+import new
+import os
+import re
+import sgmllib
+import sys
+import time
+import urlparse
+from pprint import pprint
 from xml.sax.saxutils import escape
-import sgmllib, time, os, sys, new, urlparse, re
-from planet import config, feedparser
+
 import htmltmpl
 
-voids=feedparser._BaseHTMLProcessor.elements_no_end_tag
-empty=re.compile(r"<((%s)[^>]*)></\2>" % '|'.join(voids))
+from planet import config, feedparser
+
+try:
+    unichr
+    chr = unichr  # Python2
+except NameError:
+    pass  # Python3
+
+voids = feedparser._BaseHTMLProcessor.elements_no_end_tag
+empty = re.compile(r"<((%s)[^>]*)></\2>" % '|'.join(voids))
+
 
 class stripHtml(sgmllib.SGMLParser):
     "remove all tags from the data"
+
     def __init__(self, data):
         sgmllib.SGMLParser.__init__(self)
-        self.result=''
+        self.result = ''
         if isinstance(data, str):
             try:
                 self.feed(data.decode('utf-8'))
@@ -19,32 +38,36 @@ class stripHtml(sgmllib.SGMLParser):
         else:
             self.feed(data)
         self.close()
+
     def __str__(self):
         if isinstance(self.result, unicode):
             return self.result.encode('utf-8')
         return self.result
+
     def handle_entityref(self, ref):
-        import htmlentitydefs
         if ref in htmlentitydefs.entitydefs:
-            ref=htmlentitydefs.entitydefs[ref]
-            if len(ref)==1:
-                self.result+=unichr(ord(ref))
+            ref = htmlentitydefs.entitydefs[ref]
+            if len(ref) == 1:
+                self.result += chr(ord(ref))
             elif ref.startswith('&#') and ref.endswith(';'):
                 self.handle_charref(ref[2:-1])
             else:
-                self.result+='&%s;' % ref
+                self.result += '&%s;' % ref
         else:
-            self.result+='&%s;' % ref
+            self.result += '&%s;' % ref
+
     def handle_charref(self, ref):
         try:
             if ref.startswith('x'):
-                self.result+=unichr(int(ref[1:],16))
+                self.result += chr(int(ref[1:], 16))
             else:
-                self.result+=unichr(int(ref))
+                self.result += chr(int(ref))
         except:
-            self.result+='&#%s;' % ref
+            self.result += '&#%s;' % ref
+
     def handle_data(self, data):
-        if data: self.result+=data
+        if data: self.result += data
+
 
 # Data format mappers
 
@@ -52,20 +75,26 @@ def String(value):
     if isinstance(value, unicode): return value.encode('utf-8')
     return value
 
+
 def Plain(value):
     return str(stripHtml(value))
+
 
 def PlanetDate(value):
     return time.strftime(config.date_format(), value)
 
+
 def NewDate(value):
     return time.strftime(config.new_date_format(), value)
+
 
 def Rfc822(value):
     return time.strftime("%a, %d %b %Y %H:%M:%S +0000", value)
 
+
 def Rfc3399(value):
     return time.strftime("%Y-%m-%dT%H:%M:%S+00:00", value)
+
 
 # Map from FeedParser path to Planet tmpl names
 Base = [
@@ -83,7 +112,7 @@ Base = [
     ['subtitle', String, 'subtitle_detail', 'value'],
     ['title', String, 'title_detail', 'value'],
     ['title_plain', Plain, 'title_detail', 'value'],
-    ['url', String, 'links', {'rel':'self'}, 'href'],
+    ['url', String, 'links', {'rel': 'self'}, 'href'],
     ['url', String, 'planet_http_location'],
 ]
 
@@ -124,7 +153,8 @@ Items = [
 
 # Add additional rules for source information
 for rule in Base:
-    Items.append(['channel_'+rule[0], rule[1], 'source'] + rule[2:])
+    Items.append(['channel_' + rule[0], rule[1], 'source'] + rule[2:])
+
 
 def tmpl_mapper(source, rules):
     "Apply specified rules to the source, and return a template dictionary"
@@ -135,10 +165,10 @@ def tmpl_mapper(source, rules):
         for path in rule[2:]:
             if isinstance(path, str) and path in node:
                 if path == 'value':
-                    if node.get('type','')=='text/plain':
+                    if node.get('type', '') == 'text/plain':
                         node['value'] = escape(node['value'])
                         node['type'] = 'text/html'
-                    elif node.get('type','')=='application/xhtml+xml':
+                    elif node.get('type', '') == 'application/xhtml+xml':
                         node['value'] = empty.sub(r"<\1 />", node['value'])
                 node = node[path]
             elif isinstance(path, int):
@@ -146,7 +176,7 @@ def tmpl_mapper(source, rules):
             elif isinstance(path, dict):
                 for test in node:
                     for key, value in path.items():
-                        if test.get(key,None) != value: break
+                        if test.get(key, None) != value: break
                     else:
                         node = test
                         break
@@ -156,9 +186,9 @@ def tmpl_mapper(source, rules):
                 break
         else:
             if node: output[rule[0]] = rule[1](node)
-        
+
     # copy over all planet namespaced elements from parent source
-    for name,value in source.items():
+    for name, value in source.items():
         if name.startswith('planet_'):
             output[name[7:]] = String(value)
         if not output.get('name') and source.has_key('title_detail'):
@@ -166,14 +196,15 @@ def tmpl_mapper(source, rules):
 
     # copy over all planet namespaced elements from child source element
     if 'source' in source:
-        for name,value in source.source.items():
+        for name, value in source.source.items():
             if name.startswith('planet_'):
                 output['channel_' + name[7:]] = String(value)
             if not output.get('channel_name') and \
-                source.source.has_key('title_detail'):
+                    source.source.has_key('title_detail'):
                 output['channel_name'] = Plain(source.source.title_detail.value)
 
     return output
+
 
 def _end_planet_source(self):
     self._end_source()
@@ -182,15 +213,16 @@ def _end_planet_source(self):
     context.sources.append(context.source)
     del context['source']
 
+
 def template_info(source):
     """ get template information from a feedparser output """
 
     # wire in support for planet:source, call feedparser, unplug planet:source
-    mixin=feedparser._FeedParserMixin
+    mixin = feedparser._FeedParserMixin
     mixin._start_planet_source = mixin._start_source
     mixin._end_planet_source = \
         new.instancemethod(_end_planet_source, None, mixin)
-    data=feedparser.parse(source)
+    data = feedparser.parse(source)
     del mixin._start_planet_source
     del mixin._end_planet_source
 
@@ -198,20 +230,20 @@ def template_info(source):
     output = {'Channels': [], 'Items': []}
     output.update(tmpl_mapper(data.feed, Base))
     sources = []
-    for feed in data.feed.get('sources',[]):
+    for feed in data.feed.get('sources', []):
         source = tmpl_mapper(feed, Base)
         sources.append([source.get('name'), source])
     sources.sort()
-    output['Channels'] = [source for name,source in sources]
+    output['Channels'] = [source for name, source in sources]
     for entry in data.entries:
         output['Items'].append(tmpl_mapper(entry, Items))
 
     # synthesize isPermaLink attribute
     for item in output['Items']:
         if item.get('id') == item.get('link'):
-            item['guid_isPermaLink']='true'
+            item['guid_isPermaLink'] = 'true'
         else:
-            item['guid_isPermaLink']='false'
+            item['guid_isPermaLink'] = 'false'
 
     # feed level information
     output['generator'] = config.generator_uri()
@@ -222,7 +254,7 @@ def template_info(source):
     output['pubsubhubbub_hub'] = config.pubsubhubbub_hub()
     if config.feed():
         output['feed'] = config.feed()
-        output['feedtype'] = config.feed().find('rss')>=0 and 'rss' or 'atom'
+        output['feedtype'] = config.feed().find('rss') >= 0 and 'rss' or 'atom'
 
     # date/time information
     date = time.gmtime()
@@ -247,19 +279,22 @@ def template_info(source):
 
     return output
 
+
 def run(script, doc, output_file=None, options={}):
     """ process an HTMLTMPL file """
     manager = htmltmpl.TemplateManager()
     template = manager.prepare(script)
     tp = htmltmpl.TemplateProcessor(html_escape=0)
-    for key,value in template_info(doc).items():
+    for key, value in template_info(doc).items():
+        if type(value) == datetime.datetime:
+            value = value.isoformat()
         tp.set(key, value)
 
     if output_file:
         basename = os.path.basename(output_file)
         reluri = os.path.splitext(os.path.basename(output_file))[0]
-        tp.set('url', urlparse.urljoin(config.link(),reluri))
-        tp.set('fullurl', urlparse.urljoin(config.link(),basename))
+        tp.set('url', urlparse.urljoin(config.link(), reluri))
+        tp.set('fullurl', urlparse.urljoin(config.link(), basename))
 
         output = open(output_file, "w")
         output.write(tp.process(template))
@@ -267,10 +302,10 @@ def run(script, doc, output_file=None, options={}):
     else:
         return tp.process(template)
 
+
 if __name__ == '__main__':
     sys.path.insert(0, os.path.split(sys.path[0])[0])
 
     for test in sys.argv[1:]:
-        from pprint import pprint
-        pprint(template_info('/home/rubys/bzr/venus/tests/data/filter/tmpl/'+test))
 
+        pprint(template_info('/home/rubys/bzr/venus/tests/data/filter/tmpl/' + test))

@@ -1,8 +1,20 @@
-import os, sys, imp
+# coding=utf-8
+import imp
+import os
+import sys
 from StringIO import StringIO
 
-def run(script, doc, output_file=None, options={}):
+import planet
+import traceback
+
+log = planet.logger
+
+
+def run(script, doc, output_file=None, options=None):
     """ process an Python script using imp """
+    if options is None:
+        options = {}
+
     save_sys = (sys.stdin, sys.stdout, sys.stderr, sys.argv)
     plugin_stdout = StringIO()
     plugin_stderr = StringIO()
@@ -21,14 +33,14 @@ def run(script, doc, output_file=None, options={}):
         sys.stderr = plugin_stderr
 
         # determine __file__ value
-        if options.has_key("__file__"):
+        if "__file__" in options.keys():
             plugin_file = options["__file__"]
             del options["__file__"]
         else:
             plugin_file = script
 
         # set sys.argv
-        options = sum([['--'+key, value] for key,value in options.items()], [])
+        options = sum([['--' + key, value] for key, value in options.items()], [])
         sys.argv = [plugin_file] + options
 
         # import script
@@ -37,19 +49,20 @@ def run(script, doc, output_file=None, options={}):
         try:
             try:
                 try:
-                    description=('.plugin', 'rb', imp.PY_SOURCE)
-                    imp.load_module('__main__',handle,plugin_file,description)
-                except SystemExit,e:
-                    if e.code: log.error('%s exit rc=%d',(plugin_file,e.code))
-            except Exception, e:
-                import traceback
-                type, value, tb = sys.exc_info()
+                    description = ('.plugin', 'rb', imp.PY_SOURCE)
+                    imp.load_module('__main__', handle, plugin_file, description)
+                except SystemExit as e:
+                    if e.code:
+                        log.error('%s exit rc=%d', (plugin_file, e.code))
+            except Exception as e:
+                type_, value, tb = sys.exc_info()
                 plugin_stderr.write(''.join(
-                   traceback.format_exception_only(type,value) +
-                   traceback.format_tb(tb)))
+                    traceback.format_exception_only(type_, value) +
+                    traceback.format_tb(tb)))
         finally:
             handle.close()
-            if cwd != os.getcwd(): os.chdir(cwd)
+            if cwd != os.getcwd():
+                os.chdir(cwd)
 
     finally:
         # restore system state
@@ -57,7 +70,6 @@ def run(script, doc, output_file=None, options={}):
 
     # log anything sent to stderr
     if plugin_stderr.getvalue():
-        import planet
         planet.logger.error(plugin_stderr.getvalue())
 
     # return stdout

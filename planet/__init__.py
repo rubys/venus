@@ -1,42 +1,41 @@
+# coding=utf-8
+
+
+import logging
+import os
+import sys
+
+import config
+import publish
+
+sys.path.insert(1, os.path.join(os.path.dirname(__file__), 'vendor'))
+import feedparser
+
 xmlns = 'http://planet.intertwingly.net/'
 
-logger = None
+logging.getLogger(__name__).addHandler(logging.NullHandler())
+
+logger = logging.getLogger(__name__)
 loggerParms = None
 
-import os, sys, re
-import config
 config.__init__()
 
-from ConfigParser import ConfigParser
-from urlparse import urljoin
 
-def getLogger(level, format):
+def getLogger(level, log_format):
     """ get a logger with the specified log level """
     global logger, loggerParms
-    if logger and loggerParms == (level,format): return logger
+    if logger and loggerParms == (level, log_format):
+        return logger
 
-    try:
-        import logging
-        logging.basicConfig(format=format)
-    except:
-        import compat_logging as logging
-        logging.basicConfig(format=format)
+    logging.basicConfig(format=log_format)
 
     logger = logging.getLogger("planet.runner")
     logger.setLevel(logging.getLevelName(level))
-    try:
-        logger.warning
-    except:
-        logger.warning = logger.warn
 
-    loggerParms = (level,format)
+    loggerParms = (level, log_format)
     return logger
 
-sys.path.insert(1, os.path.join(os.path.dirname(__file__),'vendor'))
 
 # Configure feed parser
-import feedparser
-feedparser.SANITIZE_HTML=1
-feedparser.RESOLVE_RELATIVE_URIS=0
-
-import publish
+feedparser.SANITIZE_HTML = 1
+feedparser.RESOLVE_RELATIVE_URIS = 0
