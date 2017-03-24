@@ -1,4 +1,6 @@
+bsddb3==6.2.4
+feedparser==5.1.3
+html5lib==0.9999999
 httplib2==0.10.3
 pubsubhubbub-publisher==1.0
-html5lib==0.9999999
-feedparser==5.1.3
+six==1.10.0               # via html5lib
