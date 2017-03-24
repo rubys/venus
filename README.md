@@ -1,5 +1,7 @@
 [![Codeship Status](https://codeship.com/projects/62601460-efd9-0134-080a-3eb3ee5cdf25/status?branch=pytest)](https://www.codeship.io/projects/208939)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c83c4d94bc644fdcb49223ae17bbac59)](https://www.codacy.com/app/cabalist/venus_2?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rubys/venus&amp;utm_campaign=Badge_Grade)
 
+###### This is the development branch of Planet Venus.  It should be considered EXPERIMENTAL until this notification is removed.
 
 Planet
 ------
