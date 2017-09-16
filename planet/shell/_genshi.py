@@ -137,7 +137,11 @@ def run(script, doc, output_file=None, options={}):
         context.push(vars)
 
     # apply template
-    output=tmpl.generate(context).render('xml')
+    if output_file.endswith('.xml'):
+        method = 'xml'
+    else:
+        method = 'xhtml'
+    output = tmpl.generate(context).render(method)
 
     if output_file:
         out_file = open(output_file,'w')
