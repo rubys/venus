@@ -110,6 +110,16 @@ def links(xentry, entry):
             xlink.setAttribute('length', link.get('length'))
         xentry.appendChild(xlink)
 
+def add_link(xentry, href, rel, title, type = 'text/html'):
+    """ add a link to the links """
+    xdoc = xentry.ownerDocument
+    xlink = xdoc.createElement('link')
+    xlink.setAttribute('href', href)
+    xlink.setAttribute('type', type)
+    xlink.setAttribute('rel', rel)
+    xlink.setAttribute('title', title)
+    xentry.appendChild(xlink)
+
 def date(xentry, name, parsed):
     """ insert a date-formated element into the entry """
     if not parsed: return
@@ -279,6 +289,9 @@ def reconstitute(feed, entry):
 
     date(xentry, 'updated', entry_updated(feed.feed, entry, time.gmtime()))
     date(xentry, 'published', entry.get('published_parsed',None))
+
+    if entry.has_key('comments'):
+      add_link(xentry, entry.get('comments', None), 'replies', 'Comments')
 
     if entry.has_key('dc_date.taken'):
         date_Taken = createTextElement(xentry, '%s:%s' % ('dc','date_Taken'), '%s' % entry.get('dc_date.taken', None))
