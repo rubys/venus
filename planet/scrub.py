@@ -122,7 +122,7 @@ def scrub(feed_uri, data):
                         if entry.has_key('link'):
                             node['base'] = entry.link
                     else:
-                        node['base'] = feedparser._urljoin(
+                        node['base'] = feedparser.urls._urljoin(
                             node['base'], scrub_xmlbase)
 
                 node['value'] = feedparser.urls._resolveRelativeURIs(

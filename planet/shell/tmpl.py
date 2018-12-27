@@ -4,7 +4,8 @@ from planet import config, feedparser
 import htmltmpl
 import datetime
 
-voids=feedparser._BaseHTMLProcessor.elements_no_end_tag
+# voids=feedparser._BaseHTMLProcessor.elements_no_end_tag
+voids=[]
 empty=re.compile(r"<((%s)[^>]*)></\2>" % '|'.join(voids))
 
 class stripHtml(sgmllib.SGMLParser):
@@ -187,7 +188,7 @@ def template_info(source):
     """ get template information from a feedparser output """
 
     # wire in support for planet:source, call feedparser, unplug planet:source
-    mixin=feedparser._FeedParserMixin
+    mixin=feedparser.mixin._FeedParserMixin
     mixin._start_planet_source = mixin._start_source
     mixin._end_planet_source = \
         new.instancemethod(_end_planet_source, None, mixin)

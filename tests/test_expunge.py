@@ -41,7 +41,7 @@ class ExpungeTest(unittest.TestCase):
             eid = e.getElementsByTagName('id')
             efile = filename(workdir, eid[0].childNodes[0].nodeValue)
             eupdated = e.getElementsByTagName('updated')[0].childNodes[0].nodeValue
-            emtime = time.mktime(feedparser._parse_date_w3dtf(eupdated))
+            emtime = time.mktime(feedparser.datetimes.w3dtf._parse_date_w3dtf(eupdated))
             if not eid or not eupdated: continue
             shutil.copyfile(entry, efile)
             os.utime(efile, (emtime, emtime))
