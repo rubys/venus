@@ -207,7 +207,7 @@ def location(xentry, long, lat):
 
     xlat = createTextElement(xentry, '%s:%s' % ('geo','lat'), '%f' % lat)
     xlat.setAttribute('xmlns:%s' % 'geo', 'http://www.w3.org/2003/01/geo/wgs84_pos#')
-    xlong = createTextElement(xentry, '%s:%s' % ('geo','long'), '%f' % long)
+    xlong = createTextElement(xentry, '%s:%s' % ('geo','long'), '%.6f' % long)
     xlong.setAttribute('xmlns:%s' % 'geo', 'http://www.w3.org/2003/01/geo/wgs84_pos#')
 
     xentry.appendChild(xlat)

@@ -16,6 +16,7 @@
         <link rel="stylesheet" href="default.css" type="text/css" />
         <title><xsl:value-of select="atom:title"/></title>
 	<meta name="robots" content="noindex,nofollow" />
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <meta name="generator" content="{atom:generator}" />
         <xsl:if test="atom:link[@rel='self']">
           <link rel="alternate" href="{atom:link[@rel='self']/@href}"
@@ -97,7 +98,7 @@
             </dd>
             <dt>Powered by:</dt>
             <dd>
-              <a href="http://intertwingly.net/code/venus/" title="Sam Ruby’s Venus">
+              <a href="http://github.com/rubys/venus/tree/master" title="Sam Ruby’s Venus">
                 <img src="images/venus.png" width="80" height="15"
                   alt="Planet" />
               </a>

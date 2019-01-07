@@ -207,6 +207,7 @@ function personalize() {
   findEntries(); 
   addOption();
   moveDateHeaders();
+  moveSidebar();
 }
 
 function retrieveTexSource() {
@@ -226,6 +227,17 @@ function retrieveTexSource() {
 		win.document.documentElement.lastElementChild.textContent = tex;
 		win.focus();
 	}
+}
+
+function moveSidebar() {
+  var mq = window.matchMedia('screen and (max-device-width: 480px)');
+  if (mq.matches) {
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+      document.body.removeChild(sidebar);
+      document.body.appendChild(sidebar);
+    }
+  }
 }
 
 // hook event

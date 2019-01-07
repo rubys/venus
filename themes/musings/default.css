@@ -138,6 +138,7 @@ h1 {
 
 #body {
 	margin-top: 10px;
+	max-width: 100%;
 }
 
 .admin {
@@ -438,3 +439,7 @@ mtext {font-family: STIX Two Text;}
          url('fonts/STIX2Math.woff2'), url('fonts/STIX2Math.woff');
 }
 
+img {max-width: 100%; height: auto;}
+@media only screen and (max-device-width: 480px) {
+
+}
