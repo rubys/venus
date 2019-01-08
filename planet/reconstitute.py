@@ -304,8 +304,13 @@ def reconstitute(feed, entry):
         coordinates = where.get('coordinates',None)
         if type == 'Point':
             location(xentry, coordinates[0], coordinates[1])
-        elif type == 'Box' or type == 'LineString' or type == 'Polygon':
-            location(xentry, coordinates[0][0], coordinates[0][1])
+        elif type == 'Box' or type == 'LineString': 
+            location(xentry, (coordinates[0][0]+coordinates[1][0])/2.0, (coordinates[0][1]+coordinates[1][1])/2.0)
+        elif type == 'Polygon':
+            vertices = coordinates[0]
+            lats = [row[0] for row in vertices]
+            longs = [row[1] for row in vertices]
+            location(xentry, sum(lats)/float(len(lats)), sum(longs)/float(len(longs)))
     if entry.has_key('geo_lat') and \
         entry.has_key('geo_long'):
         location(xentry, (float)(entry.get('geo_long',None)), (float)(entry.get('geo_lat',None)))
