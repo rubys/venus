@@ -160,6 +160,8 @@ def writeCache(feed_uri, feed_info, data):
         else:
             data.feed.links.append(feedparser.FeedParserDict(
                 {'rel':'self', 'type':feedtype, 'href':feed_uri}))
+    if not data.has_key('version'):
+        data.version = 'rss10'
     for name, value in config.feed_options(feed_uri).items():
         data.feed['planet_'+name] = value
 

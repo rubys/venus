@@ -1,5 +1,5 @@
 from xml.sax.saxutils import escape
-import sgmllib, time, os, sys, new, urlparse, re
+import sgmllib, time, os, sys, new, urlparse, re, locale
 from planet import config, feedparser
 import htmltmpl
 
@@ -62,7 +62,10 @@ def NewDate(value):
     return time.strftime(config.new_date_format(), value)
 
 def Rfc822(value):
-    return time.strftime("%a, %d %b %Y %H:%M:%S +0000", value)
+    locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
+    nv = time.strftime("%a, %d %b %Y %H:%M:%S +0000", value)
+    locale.setlocale(locale.LC_ALL, "")
+    return nv
 
 def Rfc3399(value):
     return time.strftime("%Y-%m-%dT%H:%M:%S+00:00", value)

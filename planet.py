@@ -14,9 +14,10 @@ __authors__ = [ "Scott James Remnant <scott@netsplit.com>",
 __license__ = "Python"
 
 
-import os, sys
+import os, sys, locale
 
 if __name__ == "__main__":
+    locale.setlocale(locale.LC_ALL, '')
     config_file = []
     offline = 0
     verbose = 0
