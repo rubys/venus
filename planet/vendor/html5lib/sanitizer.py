@@ -19,7 +19,7 @@ class HTMLSanitizerMixin(object):
         'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'input', 'ins',
         'keygen', 'kbd', 'label', 'legend', 'li', 'm', 'map', 'menu', 'meter',
         'multicol', 'nav', 'nextid', 'ol', 'output', 'optgroup', 'option',
-        'p', 'pre', 'progress', 'q', 's', 'samp', 'section', 'select',
+        'output', 'p', 'pre', 'progress', 'q', 's', 'samp', 'section', 'select',
         'small', 'sound', 'source', 'spacer', 'span', 'strike', 'strong',
         'sub', 'sup', 'table', 'tbody', 'td', 'textarea', 'time', 'tfoot',
         'th', 'thead', 'tr', 'tt', 'u', 'ul', 'var', 'video']
@@ -35,7 +35,7 @@ class HTMLSanitizerMixin(object):
                     'font-face', 'font-face-name', 'font-face-src', 'g', 'glyph', 'hkern',
                     'linearGradient', 'line', 'marker', 'metadata', 'missing-glyph',
                     'mpath', 'path', 'polygon', 'polyline', 'radialGradient', 'rect',
-                    'set', 'stop', 'svg', 'switch', 'text', 'title', 'tspan', 'use']
+                    'set', 'stop', 'svg', 'switch', 'symbol', 'text', 'title', 'tspan', 'use']
 
     acceptable_attributes = ['abbr', 'accept', 'accept-charset', 'accesskey',
         'action', 'align', 'alt', 'autocomplete', 'autofocus', 'axis',
@@ -83,7 +83,7 @@ class HTMLSanitizerMixin(object):
         'keyPoints', 'keySplines', 'keyTimes', 'lang', 'marker-end',
         'marker-mid', 'marker-start', 'markerHeight', 'markerUnits',
         'markerWidth', 'mathematical', 'max', 'min', 'name', 'offset',
-        'opacity', 'orient', 'origin', 'overline-position',
+        'opacity', 'orient', 'origin', 'overflow', 'overline-position',
         'overline-thickness', 'panose-1', 'path', 'pathLength', 'points',
         'preserveAspectRatio', 'r', 'refX', 'refY', 'repeatCount',
         'repeatDur', 'requiredExtensions', 'requiredFeatures', 'restart',
@@ -258,7 +258,7 @@ class HTMLSanitizerMixin(object):
         style = re.compile('url\s*\(\s*[^\s)]+?\s*\)\s*').sub(' ', style)
 
         # gauntlet
-        if not re.match("""^([:,;#%.\sa-zA-Z0-9!]|\w-\w|'[\s\w]+'|"[\s\w]+"|\([\d,\s]+\))*$""", style):
+        if not re.match("""^([-:,;#%.\sa-zA-Z0-9!]|\w-\w|'[\s\w]+'|"[\s\w]+"|\([\d,.%\s]+\))*$""", style):
             return ''
         if not re.match("^\s*([-\w]+\s*:[^:;]*(;\s*|$))*$", style):
             return ''
@@ -273,7 +273,7 @@ class HTMLSanitizerMixin(object):
                                                 'padding']:
                 for keyword in value.split():
                     if not keyword in self.acceptable_css_keywords and \
-                            not re.match("^(#[0-9a-f]+|rgb\(\d+%?,\d*%?,?\d*%?\)?|\d{0,2}\.?\d{0,2}(cm|em|ex|in|mm|pc|pt|px|%|,|\))?)$", keyword):
+                            not re.match("^(#[0-9a-f]+|rgb\([\d.]+%?,[\d.]*%?,?[\d.]*%?\)?|\d{0,2}\.?\d{0,2}(cm|em|ex|in|mm|pc|pt|px|%|,|\))?)$", keyword):
                         break
                 else:
                     clean.append(prop + ': ' + value + ';')
