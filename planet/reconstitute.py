@@ -16,8 +16,7 @@ Todo:
 import re, time, sgmllib
 from xml.sax.saxutils import escape
 from xml.dom import minidom, Node
-from html5lib import html5parser
-from html5lib.treebuilders import dom
+from html5lib import html5parser, treebuilders
 import planet, config
 
 try:
@@ -75,8 +74,8 @@ def id(xentry, entry):
         entry_id = entry.link
     elif entry.has_key("title") and entry.title:
         entry_id = (entry.title_detail.base + "/" +
-            md5(entry.title).hexdigest())
-    elif entry.has_key("summary") and entry.summary:
+            md5(entry.title.encode('utf-8')).hexdigest())
+    elif entry.has_key("summary") and entry.summary and entry.has_key("summary_detail") and entry.summary_detail:
         entry_id = (entry.summary_detail.base + "/" +
             md5(entry.summary).hexdigest())
     elif entry.has_key("content") and entry.content:
@@ -168,7 +167,7 @@ def content(xentry, name, detail, bozo):
             bozo=1
 
     if detail.type.find('xhtml')<0 or bozo:
-        parser = html5parser.HTMLParser(tree=dom.TreeBuilder)
+        parser = html5parser.HTMLParser(tree=treebuilders.getTreeBuilder('dom'))
         html = parser.parse(xdiv % detail.value, encoding="utf-8")
         for body in html.documentElement.childNodes:
             if body.nodeType != Node.ELEMENT_NODE: continue
@@ -208,7 +207,7 @@ def location(xentry, long, lat):
 
     xlat = createTextElement(xentry, '%s:%s' % ('geo','lat'), '%f' % lat)
     xlat.setAttribute('xmlns:%s' % 'geo', 'http://www.w3.org/2003/01/geo/wgs84_pos#')
-    xlong = createTextElement(xentry, '%s:%s' % ('geo','long'), '%f' % long)
+    xlong = createTextElement(xentry, '%s:%s' % ('geo','long'), '%.6f' % long)
     xlong.setAttribute('xmlns:%s' % 'geo', 'http://www.w3.org/2003/01/geo/wgs84_pos#')
 
     xentry.appendChild(xlat)
@@ -305,8 +304,13 @@ def reconstitute(feed, entry):
         coordinates = where.get('coordinates',None)
         if type == 'Point':
             location(xentry, coordinates[0], coordinates[1])
-        elif type == 'Box' or type == 'LineString' or type == 'Polygon':
-            location(xentry, coordinates[0][0], coordinates[0][1])
+        elif type == 'Box' or type == 'LineString': 
+            location(xentry, (coordinates[0][0]+coordinates[1][0])/2.0, (coordinates[0][1]+coordinates[1][1])/2.0)
+        elif type == 'Polygon':
+            vertices = coordinates[0]
+            lats = [row[0] for row in vertices]
+            longs = [row[1] for row in vertices]
+            location(xentry, sum(lats)/float(len(lats)), sum(longs)/float(len(longs)))
     if entry.has_key('geo_lat') and \
         entry.has_key('geo_long'):
         location(xentry, (float)(entry.get('geo_long',None)), (float)(entry.get('geo_lat',None)))
@@ -363,7 +367,8 @@ def reconstitute(feed, entry):
 def entry_updated(feed, entry, default = None):
     chks = ((entry, 'updated_parsed'),
             (entry, 'published_parsed'),
-            (feed,  'updated_parsed'),)
+            (feed,  'updated_parsed'),
+            (feed, 'published_parsed'),)
     for node, field in chks:
         if node.has_key(field) and node[field]:
             return node[field]

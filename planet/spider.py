@@ -45,10 +45,10 @@ def filename(directory, filename):
     filename = re_final_cruft.sub("", filename)
 
     # limit length of filename
-    if len(filename)>250:
+    if len(filename)>230:
         parts=filename.split(',')
         for i in range(len(parts),0,-1):
-            if len(','.join(parts[:i])) < 220:
+            if len(','.join(parts[:i])) < 200:
                 filename = ','.join(parts[:i]) + ',' + \
                     md5(','.join(parts[i:])).hexdigest()
                 break
@@ -107,7 +107,7 @@ def writeCache(feed_uri, feed_info, data):
         if not feed_info.feed.has_key('planet_message'):
             if feed_info.feed.has_key('planet_updated'):
                 updated = feed_info.feed.planet_updated
-                if feedparser._parse_date_iso8601(updated) >= activity_horizon:
+                if feedparser.datetimes.iso8601._parse_date_iso8601(updated) >= activity_horizon:
                     return
         else:
             if feed_info.feed.planet_message.startswith("no activity in"):
@@ -158,7 +158,7 @@ def writeCache(feed_uri, feed_info, data):
                 link['type'] = feedtype
                 break
         else:
-            data.feed.links.append(feedparser.FeedParserDict(
+            data.feed.links.append(feedparser.util.FeedParserDict(
                 {'rel':'self', 'type':feedtype, 'href':feed_uri}))
     for name, value in config.feed_options(feed_uri).items():
         data.feed['planet_'+name] = value
@@ -226,7 +226,7 @@ def writeCache(feed_uri, feed_info, data):
 
         # apply any filters
         xdoc = reconstitute.reconstitute(data, entry)
-        output = xdoc.toxml().encode('utf-8')
+        output = xdoc.toxml("utf-8")
         xdoc.unlink()
         for filter in config.filters(feed_uri):
             output = shell.run(filter, output, mode="filter")
@@ -257,7 +257,7 @@ def writeCache(feed_uri, feed_info, data):
             data.feed['planet_updated'] = \
                 time.strftime("%Y-%m-%dT%H:%M:%SZ", updated[-1])
         elif data.feed.has_key('planet_updated'):
-           updated = [feedparser._parse_date_iso8601(data.feed.planet_updated)]
+           updated = [feedparser.datetimes.iso8601._parse_date_iso8601(data.feed.planet_updated)]
 
         if not updated or updated[-1] < activity_horizon:
             msg = "no activity in %d days" % config.activity_threshold(feed_uri)
@@ -287,7 +287,7 @@ def writeCache(feed_uri, feed_info, data):
     xdoc=minidom.parseString('''<feed xmlns:planet="%s"
       xmlns="http://www.w3.org/2005/Atom"/>\n''' % planet.xmlns)
     reconstitute.source(xdoc.documentElement,data.feed,data.bozo,data.version)
-    write(xdoc.toxml().encode('utf-8'), filename(sources, feed_uri))
+    write(xdoc.toxml("utf-8"), filename(sources, feed_uri))
     xdoc.unlink()
 
 def httpThread(thread_index, input_queue, output_queue, log):
@@ -301,7 +301,7 @@ def httpThread(thread_index, input_queue, output_queue, log):
         feed = StringIO('')
         setattr(feed, 'url', uri)
         setattr(feed, 'headers', 
-            feedparser.FeedParserDict({'status':'500'}))
+            feedparser.util.FeedParserDict({'status':'500'}))
         try:
             # map IRI => URI
             try:
@@ -448,7 +448,7 @@ def spiderPlanet(only_if_new = False):
 
                     data = feedparser.parse(feed, **options)
                 else:
-                    data = feedparser.FeedParserDict({'version': None,
+                    data = feedparser.util.FeedParserDict({'version': None,
                         'headers': feed.headers, 'entries': [], 'feed': {},
                         'href': feed.url, 'bozo': 0,
                         'status': int(feed.headers.status)})

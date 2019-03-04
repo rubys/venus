@@ -1,6 +1,6 @@
 <!--
 Description:  enclosure
-Expect:       links[0].rel == 'enclosure' and id == 'http://example.com/1'
+Expect:       links[0].rel == 'enclosure' and links[0].href == 'http://example.com/1'
 -->
 
 <rss>

@@ -207,6 +207,37 @@ function personalize() {
   findEntries(); 
   addOption();
   moveDateHeaders();
+  moveSidebar();
+}
+
+function retrieveTexSource() {
+	var maths = document.querySelectorAll('img.latex, img.tex, math');
+	for (var i = 0; i < maths.length; ++i) maths[i].addEventListener('dblclick', grabTex, false);
+	function grabTex(event){
+		var tex = '';
+		switch (this.tagName) {
+			case 'math':
+				tex = this.firstElementChild.lastElementChild.textContent;
+				break;
+			case 'img':
+				tex = this.getAttribute('alt');
+				break;
+		}
+		var win = window.open('','TeX','scrollbars,resizable,width=500,location=no,toolbar=no,titlebar=no,menubar=no,personalbar=no');
+		win.document.documentElement.lastElementChild.textContent = tex;
+		win.focus();
+	}
+}
+
+function moveSidebar() {
+  var mq = window.matchMedia('screen and (max-device-width: 480px)');
+  if (mq.matches) {
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+      document.body.removeChild(sidebar);
+      document.body.appendChild(sidebar);
+    }
+  }
 }
 
 // hook event
@@ -215,6 +246,7 @@ if (document.addEventListener) {
     onDOMLoad = function() {
       window.onload = undefined;
       personalize();
+      retrieveTexSource();
     };
     document.addEventListener("DOMContentLoaded", onDOMLoad, false);
 }
